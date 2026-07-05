@@ -4,10 +4,10 @@ import bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Seeding DAR Rail CMS database...');
+  console.log('🌱 Seeding НПК CMS database...');
 
   // ─── Admin user ─────────────────────────────────────────────────────────────
-  const adminEmail = 'admin@darrail.com';
+  const adminEmail = 'admin@npk.kz';
   const existing = await prisma.user.findUnique({ where: { email: adminEmail } });
 
   if (!existing) {
@@ -27,34 +27,30 @@ async function main() {
     // ─── Sample published news ───────────────────────────────────────────────
     const news = await prisma.news.create({
       data: {
-        slug: 'podgotovka-k-zimneму-periodu-2024',
-        type: 'press',
-        category: 'corporate',
+        slug: 'npk-nachinaet-rabotu-s-obrashcheniyami-grazhdan',
+        format: 'news',
         status: 'PUBLISHED',
         imageUrl: 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=600',
-        readingTime: 3,
-        publishedAt: new Date('2024-10-28'),
+        readingTime: 2,
+        publishedAt: new Date(),
         authorId: admin.id,
         translations: {
           create: [
             {
               lang: 'ru',
-              title: 'Подготовка к работе в зимний период',
-              excerpt:
-                'Компания DAR RAIL завершила комплексную подготовку локомотивного парка к зимнему сезону.',
+              title: 'НПК запускает новую систему приёма обращений граждан',
+              excerpt: 'Партия запускает обновлённую общественную приёмную для обращений граждан.',
               content:
-                '<p>Компания DAR RAIL завершила комплексную подготовку локомотивного парка к зимнему сезону. Все локомотивы прошли техническое обслуживание и оснащены необходимым оборудованием.</p>',
-              seoTitle: 'DAR RAIL — Подготовка к зимнему периоду 2024',
-              seoDescription:
-                'Компания DAR RAIL завершила подготовку локомотивного парка к зимнему сезону 2024.',
+                '<p>Народная партия Казахстана запускает обновлённую систему обработки заявок на вступление и обращений граждан.</p>',
+              seoTitle: 'НПК — новая система приёма обращений',
+              seoDescription: 'Партия запускает обновлённую общественную приёмную для обращений граждан.',
             },
             {
               lang: 'kz',
-              title: 'Қысқы кезеңде жұмысқа дайындық',
-              excerpt:
-                'DAR RAIL компаниясы локомотив паркін қысқы маусымға дайындауды аяқтады.',
+              title: 'ХНП азаматтардың өтініштерін қабылдаудың жаңа жүйесін іске қосады',
+              excerpt: 'Партия азаматтардың өтініштері үшін жаңартылған қоғамдық қабылдау бөлмесін іске қосады.',
               content:
-                '<p>DAR RAIL компаниясы локомотив паркін қысқы маусымға толыққанды дайындауды аяқтады. Барлық локомотивтер техникалық қызмет көрсетуден өтіп, қажетті жабдықтармен жабдықталды.</p>',
+                '<p>Қазақстан Халық партиясы мүшелікке өтініштерді және азаматтардың өтініштерін өңдеудің жаңартылған жүйесін іске қосады.</p>',
             },
           ],
         },
@@ -66,10 +62,10 @@ async function main() {
   }
 
   // ─── Default pages ───────────────────────────────────────────────────────
-  const pageSlugs = ['home', 'about', 'services', 'esg', 'contacts'];
+  const pageSlugs = ['home', 'about', 'faction', 'contacts', 'footer'];
   for (const slug of pageSlugs) {
-    const existing = await prisma.page.findUnique({ where: { slug } });
-    if (!existing) {
+    const existingPage = await prisma.page.findUnique({ where: { slug } });
+    if (!existingPage) {
       await prisma.page.create({
         data: {
           slug,
@@ -84,6 +80,29 @@ async function main() {
       });
       console.log(`✅ Page created: /${slug}`);
     }
+  }
+
+  // ─── Темы обращений (AppealTopic) ─────────────────────────────────────────
+  const appealTopics: Array<{ nameRu: string; nameKz: string }> = [
+    { nameRu: 'Общий вопрос', nameKz: 'Жалпы сұрақ' },
+    { nameRu: 'Социальная помощь', nameKz: 'Әлеуметтік көмек' },
+    { nameRu: 'ЖКХ и инфраструктура', nameKz: 'ТКШ және инфрақұрылым' },
+    { nameRu: 'Образование', nameKz: 'Білім беру' },
+    { nameRu: 'Медицина', nameKz: 'Медицина' },
+    { nameRu: 'Труд и занятость', nameKz: 'Еңбек және жұмыспен қамту' },
+    { nameRu: 'Другое', nameKz: 'Басқа' },
+  ];
+
+  const existingTopics = await prisma.appealTopic.count();
+  if (existingTopics === 0) {
+    for (const [i, topic] of appealTopics.entries()) {
+      await prisma.appealTopic.create({
+        data: { nameRu: topic.nameRu, nameKz: topic.nameKz, sortOrder: i },
+      });
+    }
+    console.log(`✅ AppealTopic seeded: ${appealTopics.length} тем`);
+  } else {
+    console.log('ℹ️  AppealTopic уже заполнены');
   }
 
   console.log('\n✨ Seed completed successfully');

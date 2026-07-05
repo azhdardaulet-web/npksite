@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "JoinRequest" ALTER COLUMN "email" DROP NOT NULL,
+ALTER COLUMN "city" DROP NOT NULL;

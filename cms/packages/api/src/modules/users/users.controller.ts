@@ -19,6 +19,8 @@ usersRouter.get('/', async (_req: Request, res: Response) => {
       name: true,
       role: true,
       status: true,
+      branchId: true,
+      section: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -47,8 +49,19 @@ usersRouter.post('/', async (req: Request, res: Response) => {
       name: parsed.data.name,
       passwordHash: await hashPassword(parsed.data.password),
       role: parsed.data.role,
+      branchId: parsed.data.branchId ?? null,
+      section: parsed.data.section ?? null,
     },
-    select: { id: true, email: true, name: true, role: true, status: true, createdAt: true },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      status: true,
+      branchId: true,
+      section: true,
+      createdAt: true,
+    },
   });
 
   res.status(201).json(user);
@@ -56,8 +69,12 @@ usersRouter.post('/', async (req: Request, res: Response) => {
 
 const UpdateUserSchema = z.object({
   name: z.string().min(2).max(100).optional(),
-  role: z.enum(['ADMIN', 'NEWS_EDITOR', 'PROCUREMENT_MANAGER', 'CONTENT_MANAGER']).optional(),
+  role: z
+    .enum(['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR', 'FACTION', 'BRANCH_EDITOR', 'RECEPTION_MANAGER'])
+    .optional(),
   status: z.enum(['ACTIVE', 'BLOCKED']).optional(),
+  branchId: z.string().uuid().optional().nullable(),
+  section: z.string().max(200).optional().nullable(),
 });
 
 // PUT /cms/api/v1/users/:id
@@ -77,7 +94,16 @@ usersRouter.put('/:id', async (req: Request, res: Response) => {
   const user = await prisma.user.update({
     where: { id: req.params.id as string },
     data: parsed.data,
-    select: { id: true, email: true, name: true, role: true, status: true, updatedAt: true },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      status: true,
+      branchId: true,
+      section: true,
+      updatedAt: true,
+    },
   }).catch(() => null);
 
   if (!user) {

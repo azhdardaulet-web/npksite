@@ -1,12 +1,33 @@
 import { useState } from 'react';
+import { submitJoinRequest, ApiError } from '@/lib/api';
+
+const KZ_PHONE_RE = /^\+7\s?7\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/;
 
 export function JoinSection() {
   const [consent, setConsent] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    if (!KZ_PHONE_RE.test(phone.trim())) {
+      setError('Формат телефона: +7 7XX XXX XX XX');
+      return;
+    }
+
+    setError(null);
+    setSubmitting(true);
+    try {
+      await submitJoinRequest({ role: 'member', fullName, phone: phone.trim() });
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Не удалось отправить заявку. Попробуйте ещё раз.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const inputStyle: React.CSSProperties = {
@@ -78,6 +99,8 @@ export function JoinSection() {
                     required
                     placeholder="Иванов Иван Иванович"
                     style={inputStyle}
+                    value={fullName}
+                    onChange={e => setFullName(e.target.value)}
                     onFocus={e => (e.currentTarget.style.borderBottomColor = '#db1f26')}
                     onBlur={e => (e.currentTarget.style.borderBottomColor = 'rgba(255,255,255,0.2)')}
                   />
@@ -89,12 +112,20 @@ export function JoinSection() {
                   <input
                     required
                     type="tel"
-                    placeholder="+7 (___) ___-__-__"
+                    placeholder="+7 7XX XXX XX XX"
                     style={inputStyle}
+                    value={phone}
+                    onChange={e => setPhone(e.target.value)}
                     onFocus={e => (e.currentTarget.style.borderBottomColor = '#db1f26')}
                     onBlur={e => (e.currentTarget.style.borderBottomColor = 'rgba(255,255,255,0.2)')}
                   />
                 </div>
+
+                {error && (
+                  <p style={{ fontSize: 13, color: '#db1f26', margin: '0 0 20px', fontFamily: "'Formular',Arial,sans-serif" }}>
+                    {error}
+                  </p>
+                )}
 
                 {/* Согласие */}
                 <label style={{ display: 'flex', alignItems: 'flex-start', gap: 12, cursor: 'pointer', userSelect: 'none', marginBottom: 32 }}>
@@ -122,7 +153,7 @@ export function JoinSection() {
 
                 <button
                   type="submit"
-                  disabled={!consent}
+                  disabled={!consent || submitting}
                   style={{
                     padding: '16px 48px',
                     background: consent ? '#db1f26' : 'rgba(219,31,38,0.25)',
@@ -130,7 +161,7 @@ export function JoinSection() {
                     color: '#fff',
                     fontSize: 14,
                     fontWeight: 700,
-                    cursor: consent ? 'pointer' : 'not-allowed',
+                    cursor: consent && !submitting ? 'pointer' : 'not-allowed',
                     fontFamily: "'Formular',Arial,sans-serif",
                     letterSpacing: '0.04em',
                     textTransform: 'uppercase',
@@ -140,7 +171,7 @@ export function JoinSection() {
                   onMouseEnter={e => { if (consent) e.currentTarget.style.background = '#b91721'; }}
                   onMouseLeave={e => { if (consent) e.currentTarget.style.background = '#db1f26'; }}
                 >
-                  Отправить заявку →
+                  {submitting ? 'Отправка…' : 'Отправить заявку →'}
                 </button>
               </form>
             </>

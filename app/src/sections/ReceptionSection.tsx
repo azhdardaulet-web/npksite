@@ -5,13 +5,18 @@ import { CountUp } from '@/components/CountUp';
 import { testimonials } from '@/lib/data';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { TextReveal } from '@/components/TextReveal';
+import { fetchAppealTopics, submitAppeal, ApiError, type AppealTopic } from '@/lib/api';
 
-const topics = ['Общий вопрос', 'Социальная помощь', 'ЖКХ и инфраструктура', 'Образование', 'Медицина', 'Труд и занятость', 'Другое'];
+const FALLBACK_TOPICS = ['Общий вопрос', 'Социальная помощь', 'ЖКХ и инфраструктура', 'Образование', 'Медицина', 'Труд и занятость', 'Другое'];
+const KZ_PHONE_RE = /^\+7\s?7\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/;
 
 export function ReceptionSection() {
   const [formData, setFormData] = useState({ name: '', phone: '', topic: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [triggered, setTriggered] = useState(false);
+  const [topics, setTopics] = useState<AppealTopic[]>([]);
   const counterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -25,10 +30,37 @@ export function ReceptionSection() {
     return () => observer.disconnect();
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchAppealTopics().then(setTopics).catch(() => {});
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
+    if (!KZ_PHONE_RE.test(formData.phone.trim())) {
+      setError('Формат телефона: +7 7XX XXX XX XX');
+      return;
+    }
+    if (!formData.topic) {
+      setError('Выберите тему обращения');
+      return;
+    }
+
+    setError(null);
+    setSubmitting(true);
+    try {
+      await submitAppeal({
+        fullName: formData.name,
+        phone: formData.phone.trim(),
+        topicId: formData.topic,
+        message: formData.message,
+      });
+      setSubmitted(true);
+      setTimeout(() => setSubmitted(false), 3000);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Не удалось отправить обращение. Попробуйте ещё раз.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -63,16 +95,20 @@ export function ReceptionSection() {
                   <select value={formData.topic} onChange={e => setFormData({ ...formData, topic: e.target.value })}
                     className="w-full bg-ash border border-white/10 rounded-input px-4 py-3.5 text-body text-white focus:border-red focus:shadow-focus outline-none transition-all appearance-none">
                     <option value="" className="bg-cinder">Выберите тему</option>
-                    {topics.map(t => <option key={t} value={t} className="bg-cinder">{t}</option>)}
+                    {(topics.length > 0 ? topics.map(t => ({ id: t.id, label: t.nameRu })) : FALLBACK_TOPICS.map(t => ({ id: t, label: t })))
+                      .map(t => <option key={t.id} value={t.id} className="bg-cinder">{t.label}</option>)}
                   </select>
                   <textarea placeholder="Опишите вашу ситуацию" required rows={4} value={formData.message}
                     onChange={e => setFormData({ ...formData, message: e.target.value })}
                     className="w-full bg-ash border border-white/10 rounded-input px-4 py-3.5 text-body text-white placeholder:text-steel focus:border-red focus:shadow-focus outline-none transition-all resize-y min-h-[120px]" />
+                  {error && <p className="text-body text-red">{error}</p>}
                   <label className="flex items-start gap-3 text-body text-fog cursor-pointer">
                     <input type="checkbox" required className="mt-0.5 accent-red shrink-0" />
                     Согласен с политикой конфиденциальности
                   </label>
-                  <PrimaryButton type="submit" fullWidth>Отправить обращение</PrimaryButton>
+                  <PrimaryButton type="submit" fullWidth disabled={submitting}>
+                    {submitting ? 'Отправка…' : 'Отправить обращение'}
+                  </PrimaryButton>
                 </form>
               )}
             </div>

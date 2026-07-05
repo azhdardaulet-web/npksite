@@ -5,13 +5,19 @@ import { ScrollReveal } from '@/components/ScrollReveal';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { CountUp } from '@/components/CountUp';
 import { testimonials } from '@/lib/data';
+import { fetchAppealTopics, submitAppeal, ApiError, type AppealTopic } from '@/lib/api';
 
-const topics = ['Общий вопрос', 'Социальная помощь', 'ЖКХ и инфраструктура', 'Образование', 'Медицина', 'Труд и занятость', 'Другое'];
+const FALLBACK_TOPICS = ['Общий вопрос', 'Социальная помощь', 'ЖКХ и инфраструктура', 'Образование', 'Медицина', 'Труд и занятость', 'Другое'];
+const KZ_PHONE_RE = /^\+7\s?7\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/;
 
 export function ReceptionPage() {
   const [formData, setFormData] = useState({ name: '', phone: '', topic: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [appealNumber, setAppealNumber] = useState<string | null>(null);
   const [triggered, setTriggered] = useState(false);
+  const [topics, setTopics] = useState<AppealTopic[]>([]);
   const counterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -25,10 +31,37 @@ export function ReceptionPage() {
     return () => observer.disconnect();
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchAppealTopics().then(setTopics).catch(() => {});
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
+    if (!KZ_PHONE_RE.test(formData.phone.trim())) {
+      setError('Формат телефона: +7 7XX XXX XX XX');
+      return;
+    }
+    if (!formData.topic) {
+      setError('Выберите тему обращения');
+      return;
+    }
+
+    setError(null);
+    setSubmitting(true);
+    try {
+      const result = await submitAppeal({
+        fullName: formData.name,
+        phone: formData.phone.trim(),
+        topicId: formData.topic,
+        message: formData.message,
+      });
+      setAppealNumber(result.appealNumber);
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Не удалось отправить обращение. Попробуйте ещё раз.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -43,6 +76,7 @@ export function ReceptionPage() {
               {submitted ? (
                 <div className="bg-red/10 border border-red/25 rounded-card p-6 text-center">
                   <p className="text-body-lg text-white font-medium">Спасибо! Ваше обращение принято.</p>
+                  {appealNumber && <p className="text-body text-white mt-2">Номер обращения: <strong>{appealNumber}</strong></p>}
                   <p className="text-body text-fog mt-2">Мы свяжемся с вами в ближайшее время.</p>
                 </div>
               ) : (
@@ -56,12 +90,16 @@ export function ReceptionPage() {
                   <select value={formData.topic} onChange={e => setFormData({ ...formData, topic: e.target.value })}
                     className="w-full bg-ash border border-white/10 rounded-input px-4 py-3.5 text-body text-white focus:border-red focus:shadow-focus outline-none transition-all appearance-none">
                     <option value="" className="bg-cinder text-fog">Выберите тему</option>
-                    {topics.map(t => <option key={t} value={t} className="bg-cinder">{t}</option>)}
+                    {(topics.length > 0 ? topics.map(t => ({ id: t.id, label: t.nameRu })) : FALLBACK_TOPICS.map(t => ({ id: t, label: t })))
+                      .map(t => <option key={t.id} value={t.id} className="bg-cinder">{t.label}</option>)}
                   </select>
                   <textarea placeholder="Ваше сообщение" required rows={4} value={formData.message}
                     onChange={e => setFormData({ ...formData, message: e.target.value })}
                     className="w-full bg-ash border border-white/10 rounded-input px-4 py-3.5 text-body text-white placeholder:text-steel focus:border-red focus:shadow-focus outline-none transition-all resize-y min-h-[120px]" />
-                  <PrimaryButton type="submit" fullWidth>Отправить обращение</PrimaryButton>
+                  {error && <p className="text-body text-red">{error}</p>}
+                  <PrimaryButton type="submit" fullWidth disabled={submitting}>
+                    {submitting ? 'Отправка…' : 'Отправить обращение'}
+                  </PrimaryButton>
                 </form>
               )}
             </div>

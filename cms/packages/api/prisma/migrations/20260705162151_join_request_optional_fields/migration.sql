@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "JoinRequest" ALTER COLUMN "birthDate" DROP NOT NULL,
+ALTER COLUMN "gender" DROP NOT NULL;

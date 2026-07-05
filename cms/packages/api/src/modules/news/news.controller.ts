@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { prisma } from '../../lib/prisma';
 import { requireNewsEditor } from '../../middleware/auth';
-import { Role, NewsTypeSchema, NewsCategorySchema, NewsStatusSchema, LangSchema } from '@dar-rail/shared';
+import { Role, NewsFormatSchema, NewsStatusSchema, LangSchema } from '@dar-rail/shared';
 import {
   createNews,
   updateNews,
@@ -38,7 +38,7 @@ async function optionalAuth(req: Request, _res: Response, next: NextFunction): P
       const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
       const user = await prisma.user.findUnique({
         where: { id: decoded.userId },
-        select: { id: true, email: true, name: true, role: true, status: true },
+        select: { id: true, email: true, name: true, role: true, status: true, branchId: true },
       });
       if (user && user.status !== 'BLOCKED') {
         req.user = {
@@ -46,6 +46,7 @@ async function optionalAuth(req: Request, _res: Response, next: NextFunction): P
           email: user.email,
           name: user.name,
           role: user.role as Role,
+          branchId: user.branchId,
         };
       }
     } catch {
@@ -59,8 +60,7 @@ async function optionalAuth(req: Request, _res: Response, next: NextFunction): P
 
 const ListQuerySchema = z.object({
   status: NewsStatusSchema.optional(),
-  type: NewsTypeSchema.optional(),
-  category: NewsCategorySchema.optional(),
+  format: NewsFormatSchema.optional(),
   q: z.string().max(100).optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
@@ -77,9 +77,10 @@ const TranslationInputSchema = z.object({
 });
 
 const CreateBodySchema = z.object({
-  type: NewsTypeSchema,
-  category: NewsCategorySchema,
+  format: NewsFormatSchema,
   imageUrl: z.string().url().optional().or(z.literal('')),
+  tags: z.array(z.string()).optional(),
+  tgSkip: z.boolean().optional(),
   translations: z.array(TranslationInputSchema).min(1, 'Добавьте хотя бы один перевод'),
 });
 
@@ -98,10 +99,10 @@ publicNewsRouter.get('/', async (req: Request, res: Response) => {
   }
 
   const lang = LangSchema.catch('ru').parse(req.query.lang);
-  const { type, category, q, page, limit } = parsed.data;
+  const { format, q, page, limit } = parsed.data;
 
   try {
-    const result = await findAll({ status: 'PUBLISHED', type, category, q, page, limit });
+    const result = await findAll({ status: 'PUBLISHED', format, q, page, limit });
     const data = result.data.map((item) => {
       const t =
         item.translations.find((tr) => tr.lang === lang) ??
@@ -137,9 +138,9 @@ cmsNewsRouter.get('/', async (req: Request, res: Response) => {
     return;
   }
 
-  const { status, type, category, q, page, limit } = parsed.data;
+  const { status, format, q, page, limit } = parsed.data;
   try {
-    const result = await findAll({ status, type, category, q, page, limit });
+    const result = await findAll({ status, format, q, page, limit });
     res.json(result);
   } catch (err) {
     handleError(err, res);
@@ -166,9 +167,10 @@ cmsNewsRouter.post('/', async (req: Request, res: Response) => {
     const data = parsed.data;
     const news = await createNews(
       {
-        type: data.type,
-        category: data.category,
+        format: data.format,
         imageUrl: data.imageUrl || undefined,
+        tags: data.tags,
+        tgSkip: data.tgSkip,
         translations: data.translations.map((t) => ({
           lang: t.lang,
           title: t.title,
@@ -197,9 +199,10 @@ cmsNewsRouter.put('/:id', async (req: Request, res: Response) => {
   try {
     const data = parsed.data;
     const news = await updateNews(String(req.params.id), {
-      type: data.type,
-      category: data.category,
+      format: data.format,
       imageUrl: data.imageUrl || null,
+      tags: data.tags,
+      tgSkip: data.tgSkip,
       translations: data.translations.map((t) => ({
         lang: t.lang,
         title: t.title,

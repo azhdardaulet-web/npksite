@@ -2,41 +2,27 @@ import { z } from 'zod';
 
 // ─── Enums ───────────────────────────────────────────────────────────────────
 
-export const RoleSchema = z.enum(['ADMIN', 'NEWS_EDITOR', 'PROCUREMENT_MANAGER', 'CONTENT_MANAGER']);
+export const RoleSchema = z.enum([
+  'ADMIN',
+  'CHIEF_EDITOR',
+  'SECTION_EDITOR',
+  'FACTION',
+  'BRANCH_EDITOR',
+  'RECEPTION_MANAGER',
+]);
 export type Role = z.infer<typeof RoleSchema>;
 
 export const UserStatusSchema = z.enum(['ACTIVE', 'BLOCKED']);
 export type UserStatus = z.infer<typeof UserStatusSchema>;
 
-export const NewsTypeSchema = z.enum(['press', 'article', 'media_mention']);
-export type NewsType = z.infer<typeof NewsTypeSchema>;
-
-export const NewsCategorySchema = z.enum([
-  'corporate',
-  'industry',
-  'safety',
-  'hr',
-  'esg',
-  'financial',
-]);
-export type NewsCategory = z.infer<typeof NewsCategorySchema>;
-
 export const NewsStatusSchema = z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED', 'SCHEDULED']);
 export type NewsStatus = z.infer<typeof NewsStatusSchema>;
 
+export const NewsFormatSchema = z.enum(['news', 'party_release', 'article', 'analytics', 'interview']);
+export type NewsFormat = z.infer<typeof NewsFormatSchema>;
+
 export const MediaTypeSchema = z.enum(['image', 'video', 'pdf', 'document']);
 export type MediaType = z.infer<typeof MediaTypeSchema>;
-
-export const SupplierFormStatusSchema = z.enum(['NEW', 'IN_PROGRESS', 'DONE']);
-export type SupplierFormStatus = z.infer<typeof SupplierFormStatusSchema>;
-
-export const ProcurementMethodSchema = z.enum([
-  'single_source',
-  'request_for_quote',
-  'open_tender',
-  'by_agreement',
-]);
-export type ProcurementMethod = z.infer<typeof ProcurementMethodSchema>;
 
 export const PageBlockTypeSchema = z.enum([
   'hero',
@@ -48,8 +34,33 @@ export const PageBlockTypeSchema = z.enum([
 ]);
 export type PageBlockType = z.infer<typeof PageBlockTypeSchema>;
 
-export const LangSchema = z.enum(['ru', 'kz', 'en', 'zh']);
+export const LangSchema = z.enum(['ru', 'kz']);
 export type Lang = z.infer<typeof LangSchema>;
+
+export const TeamMemberGroupSchema = z.enum(['LEADERSHIP', 'MEDIA_TEAM']);
+export type TeamMemberGroup = z.infer<typeof TeamMemberGroupSchema>;
+
+export const DocumentTypeSchema = z.enum(['ustav', 'deputy_request', 'press_kit', 'other']);
+export type DocumentType = z.infer<typeof DocumentTypeSchema>;
+
+export const JoinRequestRoleSchema = z.enum(['member', 'volunteer', 'observer']);
+export type JoinRequestRole = z.infer<typeof JoinRequestRoleSchema>;
+
+export const GenderSchema = z.enum(['male', 'female']);
+export type Gender = z.infer<typeof GenderSchema>;
+
+export const JoinRequestStatusSchema = z.enum(['NEW', 'PROCESSING', 'ACCEPTED', 'REJECTED']);
+export type JoinRequestStatus = z.infer<typeof JoinRequestStatusSchema>;
+
+export const AppealStatusSchema = z.enum(['NEW', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']);
+export type AppealStatus = z.infer<typeof AppealStatusSchema>;
+
+// ─── Phone (Казахстан: +7 7XX XXX XX XX) ──────────────────────────────────────
+
+export const kzPhoneSchema = z
+  .string()
+  .trim()
+  .regex(/^\+7\s?7\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/, 'Формат телефона: +7 7XX XXX XX XX');
 
 // ─── User ────────────────────────────────────────────────────────────────────
 
@@ -59,6 +70,8 @@ export const UserSchema = z.object({
   name: z.string().min(2).max(100),
   role: RoleSchema,
   status: UserStatusSchema,
+  branchId: z.string().uuid().nullable().optional(),
+  section: z.string().max(200).nullable().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });
@@ -69,6 +82,8 @@ export const CreateUserSchema = z.object({
   name: z.string().min(2).max(100),
   password: z.string().min(8).max(100),
   role: RoleSchema,
+  branchId: z.string().uuid().optional(),
+  section: z.string().max(200).optional(),
 });
 export type CreateUserInput = z.infer<typeof CreateUserSchema>;
 
@@ -98,11 +113,13 @@ export type NewsTranslation = z.infer<typeof NewsTranslationSchema>;
 export const NewsSchema = z.object({
   id: z.string().uuid(),
   slug: z.string(),
-  type: NewsTypeSchema,
-  category: NewsCategorySchema,
+  format: NewsFormatSchema,
   status: NewsStatusSchema,
   imageUrl: z.string().url().optional(),
   readingTime: z.number().int().min(1).optional(),
+  tags: z.array(z.string()).default([]),
+  tgPosted: z.boolean(),
+  tgSkip: z.boolean(),
   publishedAt: z.coerce.date().optional(),
   scheduledAt: z.coerce.date().optional(),
   authorId: z.string().uuid(),
@@ -113,9 +130,10 @@ export const NewsSchema = z.object({
 export type News = z.infer<typeof NewsSchema>;
 
 export const CreateNewsSchema = z.object({
-  type: NewsTypeSchema,
-  category: NewsCategorySchema,
+  format: NewsFormatSchema,
   imageUrl: z.string().url().optional(),
+  tags: z.array(z.string()).optional(),
+  tgSkip: z.boolean().optional(),
   translations: z.array(
     z.object({
       lang: LangSchema,
@@ -169,49 +187,6 @@ export const GallerySchema = z.object({
 });
 export type Gallery = z.infer<typeof GallerySchema>;
 
-// ─── Services ─────────────────────────────────────────────────────────────────
-
-export const ServiceTranslationSchema = z.object({
-  id: z.string().uuid(),
-  serviceId: z.string().uuid(),
-  lang: LangSchema,
-  title: z.string().min(1).max(300),
-  description: z.string().min(1),
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
-});
-
-export const ServiceSchema = z.object({
-  id: z.string().uuid(),
-  iconName: z.string().max(100),
-  imageUrl: z.string().url().optional(),
-  sortOrder: z.number().int(),
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
-  translations: z.array(ServiceTranslationSchema).optional(),
-});
-export type Service = z.infer<typeof ServiceSchema>;
-
-// ─── Partners ────────────────────────────────────────────────────────────────
-
-export const PartnerSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string().min(1).max(300),
-  logoUrl: z.string().url(),
-  websiteUrl: z.string().url().optional(),
-  sortOrder: z.number().int(),
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
-});
-export type Partner = z.infer<typeof PartnerSchema>;
-
-export const CreatePartnerSchema = z.object({
-  name: z.string().min(1).max(300),
-  logoUrl: z.string().url(),
-  websiteUrl: z.string().url().optional(),
-});
-export type CreatePartnerInput = z.infer<typeof CreatePartnerSchema>;
-
 // ─── Team ────────────────────────────────────────────────────────────────────
 
 export const TeamMemberTranslationSchema = z.object({
@@ -228,6 +203,7 @@ export const TeamMemberTranslationSchema = z.object({
 export const TeamMemberSchema = z.object({
   id: z.string().uuid(),
   photoUrl: z.string().url().optional(),
+  group: TeamMemberGroupSchema,
   sortOrder: z.number().int(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
@@ -236,14 +212,6 @@ export const TeamMemberSchema = z.object({
 export type TeamMember = z.infer<typeof TeamMemberSchema>;
 
 // ─── Documents ───────────────────────────────────────────────────────────────
-
-export const DocumentTypeSchema = z.enum([
-  'service_contract',
-  'supply_contract',
-  'purchases_plan',
-  'other',
-]);
-export type DocumentType = z.infer<typeof DocumentTypeSchema>;
 
 export const DocumentSchema = z.object({
   id: z.string().uuid(),
@@ -258,99 +226,6 @@ export const DocumentSchema = z.object({
   updatedAt: z.coerce.date(),
 });
 export type Document = z.infer<typeof DocumentSchema>;
-
-// ─── Purchase Plan ───────────────────────────────────────────────────────────
-
-export const PurchaseItemSchema = z.object({
-  id: z.string().uuid(),
-  number: z.number().int().positive(),
-  name: z.string().min(1).max(500),
-  description: z.string().optional(),
-  procurementType: z.string().min(1).max(200),
-  deliveryPlace: z.string().optional(),
-  unit: z.string().optional(),
-  quantity: z.string().optional(),
-  estimatedAmount: z.number().optional(),
-  totalAmount: z.number().optional(),
-  year: z.number().int().min(2020).max(2100),
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
-});
-export type PurchaseItem = z.infer<typeof PurchaseItemSchema>;
-
-export const PurchaseItemInputSchema = z.object({
-  number: z.number().int().positive(),
-  name: z.string().min(1).max(500),
-  description: z.string().optional(),
-  procurementType: z.string().min(1).max(200),
-  deliveryPlace: z.string().optional(),
-  unit: z.string().optional(),
-  quantity: z.string().optional(),
-  estimatedAmount: z.number().optional(),
-  totalAmount: z.number().optional(),
-  year: z.number().int().min(2020).max(2100),
-});
-export type PurchaseItemInput = z.infer<typeof PurchaseItemInputSchema>;
-
-export const PurchasePlanSchema = z.object({
-  id: z.string().uuid(),
-  year: z.number().int(),
-  title: z.string(),
-  fileUrl: z.string().url().optional(),
-  createdAt: z.coerce.date(),
-});
-export type PurchasePlan = z.infer<typeof PurchasePlanSchema>;
-
-// ─── Supplier Form ────────────────────────────────────────────────────────────
-
-export const SupplierFormSchema = z.object({
-  id: z.string().uuid(),
-  bin: z.string().length(12).regex(/^\d+$/, 'БИН должен состоять из 12 цифр'),
-  companyName: z.string().min(1).max(300),
-  contactPerson: z.string().min(1).max(200),
-  position: z.string().max(200).optional(),
-  phone: z.string().min(10).max(20),
-  email: z.string().email(),
-  supplyCategory: z.string().min(1).max(300),
-  description: z.string().min(10),
-  status: SupplierFormStatusSchema,
-  hCaptchaToken: z.string().optional(),
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
-});
-export type SupplierForm = z.infer<typeof SupplierFormSchema>;
-
-export const SupplierFormInputSchema = SupplierFormSchema.omit({
-  id: true,
-  status: true,
-  createdAt: true,
-  updatedAt: true,
-}).extend({
-  hCaptchaToken: z.string().min(1, 'Пройдите проверку hCaptcha'),
-});
-export type SupplierFormInput = z.infer<typeof SupplierFormInputSchema>;
-
-// ─── Contact Form ─────────────────────────────────────────────────────────────
-
-export const ContactFormSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string().min(1).max(200),
-  email: z.string().email(),
-  phone: z.string().max(20).optional(),
-  subject: z.string().min(1).max(300),
-  message: z.string().min(10),
-  hCaptchaToken: z.string().optional(),
-  createdAt: z.coerce.date(),
-});
-export type ContactForm = z.infer<typeof ContactFormSchema>;
-
-export const ContactFormInputSchema = ContactFormSchema.omit({
-  id: true,
-  createdAt: true,
-}).extend({
-  hCaptchaToken: z.string().min(1, 'Пройдите проверку hCaptcha'),
-});
-export type ContactFormInput = z.infer<typeof ContactFormInputSchema>;
 
 // ─── Pages ────────────────────────────────────────────────────────────────────
 
@@ -389,9 +264,9 @@ export const PageSchema = z.object({
 });
 export type Page = z.infer<typeof PageSchema>;
 
-// ─── Offices / Contacts ───────────────────────────────────────────────────────
+// ─── Branches / Филиалы ────────────────────────────────────────────────────────
 
-export const OfficeSchema = z.object({
+export const BranchSchema = z.object({
   id: z.string().uuid(),
   cityRu: z.string().min(1).max(200),
   cityKz: z.string().min(1).max(200),
@@ -400,19 +275,253 @@ export const OfficeSchema = z.object({
   phone: z.string().max(50),
   email: z.string().email(),
   department: z.string().max(200).optional(),
+  chairman: z.string().max(300).optional(),
+  lng: z.number().optional(),
+  lat: z.number().optional(),
   sortOrder: z.number().int(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });
-export type Office = z.infer<typeof OfficeSchema>;
+export type Branch = z.infer<typeof BranchSchema>;
 
-export const CreateOfficeSchema = OfficeSchema.omit({
+export const CreateBranchSchema = BranchSchema.omit({
   id: true,
   sortOrder: true,
   createdAt: true,
   updatedAt: true,
 });
-export type CreateOfficeInput = z.infer<typeof CreateOfficeSchema>;
+export type CreateBranchInput = z.infer<typeof CreateBranchSchema>;
+
+// ─── CRM: Заявки на вступление ─────────────────────────────────────────────────
+
+export const JoinRequestSchema = z.object({
+  id: z.string().uuid(),
+  role: JoinRequestRoleSchema,
+  fullName: z.string().min(1).max(300),
+  birthDate: z.coerce.date().optional(),
+  gender: GenderSchema.optional(),
+  phone: kzPhoneSchema,
+  email: z.string().email().optional(),
+  city: z.string().min(1).max(200).optional(),
+  branchId: z.string().uuid().nullable().optional(),
+  status: JoinRequestStatusSchema,
+  phoneVerified: z.boolean(),
+  merchAddress: z.string().max(500).optional(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+export type JoinRequest = z.infer<typeof JoinRequestSchema>;
+
+export const JoinRequestInputSchema = JoinRequestSchema.omit({
+  id: true,
+  status: true,
+  phoneVerified: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  hCaptchaToken: z.string().min(1, 'Пройдите проверку hCaptcha'),
+});
+export type JoinRequestInput = z.infer<typeof JoinRequestInputSchema>;
+
+// ─── CRM: Обращения граждан ────────────────────────────────────────────────────
+
+export const AppealTopicSchema = z.object({
+  id: z.string().uuid(),
+  nameRu: z.string().min(1).max(300),
+  nameKz: z.string().min(1).max(300),
+  sortOrder: z.number().int(),
+  createdAt: z.coerce.date(),
+});
+export type AppealTopic = z.infer<typeof AppealTopicSchema>;
+
+export const AppealSchema = z.object({
+  id: z.string().uuid(),
+  appealNumber: z.string(),
+  fullName: z.string().min(1).max(300),
+  phone: kzPhoneSchema,
+  email: z.string().email().optional(),
+  topicId: z.string().uuid(),
+  message: z.string().min(10),
+  fileUrl: z.string().url().optional(),
+  status: AppealStatusSchema,
+  internalNotes: z.string().optional(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+export type Appeal = z.infer<typeof AppealSchema>;
+
+export const AppealInputSchema = AppealSchema.omit({
+  id: true,
+  appealNumber: true,
+  status: true,
+  internalNotes: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  hCaptchaToken: z.string().min(1, 'Пройдите проверку hCaptcha'),
+});
+export type AppealInput = z.infer<typeof AppealInputSchema>;
+
+// ─── Магазин: подписка на открытие ─────────────────────────────────────────────
+
+export const ShopSubscriberInputSchema = z.object({
+  email: z.string().email(),
+  hCaptchaToken: z.string().min(1, 'Пройдите проверку hCaptcha'),
+});
+export type ShopSubscriberInput = z.infer<typeof ShopSubscriberInputSchema>;
+
+// ─── Кандидаты ──────────────────────────────────────────────────────────────────
+
+export const CandidateTranslationSchema = z.object({
+  id: z.string().uuid(),
+  candidateId: z.string().uuid(),
+  lang: LangSchema,
+  promise: z.string().min(1),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+
+export const CandidateSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1).max(300),
+  region: z.string().min(1).max(200),
+  district: z.string().max(200).optional(),
+  photoUrl: z.string().url().optional(),
+  sortOrder: z.number().int(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+  translations: z.array(CandidateTranslationSchema).optional(),
+});
+export type Candidate = z.infer<typeof CandidateSchema>;
+
+// ─── История партии ────────────────────────────────────────────────────────────
+
+export const HistoryEventTranslationSchema = z.object({
+  id: z.string().uuid(),
+  historyEventId: z.string().uuid(),
+  lang: LangSchema,
+  title: z.string().min(1).max(500),
+  text: z.string().min(1),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+
+export const HistoryEventSchema = z.object({
+  id: z.string().uuid(),
+  year: z.number().int(),
+  imageUrl: z.string().url().optional(),
+  sortOrder: z.number().int(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+  translations: z.array(HistoryEventTranslationSchema).optional(),
+});
+export type HistoryEvent = z.infer<typeof HistoryEventSchema>;
+
+// ─── Программа партии ──────────────────────────────────────────────────────────
+
+export const ProgramBlockTranslationSchema = z.object({
+  id: z.string().uuid(),
+  programBlockId: z.string().uuid(),
+  lang: LangSchema,
+  title: z.string().min(1).max(500),
+  lead1: z.string().optional(),
+  lead2: z.string().optional(),
+  points: z.array(z.string()),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+
+export const ProgramBlockSchema = z.object({
+  id: z.string().uuid(),
+  n: z.number().int(),
+  keyword: z.string().min(1).max(200),
+  imageUrl: z.string().url().optional(),
+  sortOrder: z.number().int(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+  translations: z.array(ProgramBlockTranslationSchema).optional(),
+});
+export type ProgramBlock = z.infer<typeof ProgramBlockSchema>;
+
+// ─── Медиапроекты ───────────────────────────────────────────────────────────────
+
+export const MediaProjectTranslationSchema = z.object({
+  id: z.string().uuid(),
+  mediaProjectId: z.string().uuid(),
+  lang: LangSchema,
+  title: z.string().min(1).max(300),
+  description: z.string().min(1),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+
+export const MediaProjectSchema = z.object({
+  id: z.string().uuid(),
+  tag: z.string().min(1).max(100),
+  url: z.string().url().optional(),
+  imageUrl: z.string().url().optional(),
+  sortOrder: z.number().int(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+  translations: z.array(MediaProjectTranslationSchema).optional(),
+});
+export type MediaProject = z.infer<typeof MediaProjectSchema>;
+
+// ─── СМИ о нас ──────────────────────────────────────────────────────────────────
+
+export const MediaPublicationSchema = z.object({
+  id: z.string().uuid(),
+  date: z.coerce.date(),
+  sourceType: z.string().min(1).max(100),
+  mediaName: z.string().min(1).max(300),
+  title: z.string().min(1).max(500),
+  excerpt: z.string().optional(),
+  imageUrl: z.string().url().optional(),
+  url: z.string().url().optional(),
+  sortOrder: z.number().int(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+export type MediaPublication = z.infer<typeof MediaPublicationSchema>;
+
+// ─── Отзывы ─────────────────────────────────────────────────────────────────────
+
+export const TestimonialSchema = z.object({
+  id: z.string().uuid(),
+  quote: z.string().min(1),
+  author: z.string().min(1).max(300),
+  sortOrder: z.number().int(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+export type Testimonial = z.infer<typeof TestimonialSchema>;
+
+// ─── Меню сайта ─────────────────────────────────────────────────────────────────
+
+export const MenuItemSchema = z.object({
+  id: z.string().uuid(),
+  labelRu: z.string().min(1).max(200),
+  labelKz: z.string().min(1).max(200),
+  href: z.string().min(1).max(500),
+  parentId: z.string().uuid().nullable().optional(),
+  sortOrder: z.number().int(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+export type MenuItem = z.infer<typeof MenuItemSchema>;
+
+// ─── FAQ (база знаний чат-бота) ─────────────────────────────────────────────────
+
+export const FaqSchema = z.object({
+  id: z.string().uuid(),
+  question: z.string().min(1).max(1000),
+  answer: z.string().min(1),
+  lang: LangSchema,
+  sortOrder: z.number().int(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+export type Faq = z.infer<typeof FaqSchema>;
 
 // ─── Pagination helper ────────────────────────────────────────────────────────
 

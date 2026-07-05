@@ -1,4 +1,4 @@
-// DAR Rail CMS — Prisma Schema
+// НПК CMS — Prisma Schema
 // PostgreSQL 16 + Prisma ORM
 
 generator client {
@@ -14,29 +14,16 @@ datasource db {
 
 enum Role {
   ADMIN
-  NEWS_EDITOR
-  PROCUREMENT_MANAGER
-  CONTENT_MANAGER
+  CHIEF_EDITOR
+  SECTION_EDITOR
+  FACTION
+  BRANCH_EDITOR
+  RECEPTION_MANAGER
 }
 
 enum UserStatus {
   ACTIVE
   BLOCKED
-}
-
-enum NewsType {
-  press
-  article
-  media_mention
-}
-
-enum NewsCategory {
-  corporate
-  industry
-  safety
-  hr
-  esg
-  financial
 }
 
 enum NewsStatus {
@@ -46,6 +33,14 @@ enum NewsStatus {
   SCHEDULED
 }
 
+enum NewsFormat {
+  news
+  party_release
+  article
+  analytics
+  interview
+}
+
 enum MediaType {
   image
   video
@@ -53,56 +48,71 @@ enum MediaType {
   document
 }
 
-enum SupplierFormStatus {
-  NEW
-  IN_PROGRESS
-  DONE
-}
-
 enum DocumentType {
-  service_contract
-  supply_contract
-  purchases_plan
+  ustav
+  deputy_request
+  press_kit
   other
-}
-
-enum VacancyStatus {
-  DRAFT
-  PUBLISHED
-  CLOSED
-}
-
-enum ResumeStatus {
-  NEW
-  REVIEWED
-  INVITED
-  REJECTED
 }
 
 enum Lang {
   ru
   kz
-  en
-  zh
+}
+
+enum TeamMemberGroup {
+  LEADERSHIP
+  MEDIA_TEAM
+}
+
+// ─── CRM enums ─────────────────────────────────────────────────────────────────
+
+enum JoinRequestRole {
+  member
+  volunteer
+  observer
+}
+
+enum Gender {
+  male
+  female
+}
+
+enum JoinRequestStatus {
+  NEW
+  PROCESSING
+  ACCEPTED
+  REJECTED
+}
+
+enum AppealStatus {
+  NEW
+  IN_PROGRESS
+  RESOLVED
+  REJECTED
 }
 
 // ─── Users & Auth ─────────────────────────────────────────────────────────────
 
 model User {
-  id            String     @id @default(uuid())
-  email         String     @unique
+  id            String         @id @default(uuid())
+  email         String         @unique
   name          String
   passwordHash  String
   role          Role
-  status        UserStatus @default(ACTIVE)
+  status        UserStatus     @default(ACTIVE)
+  branchId      String?
+  branch        Branch?        @relation(fields: [branchId], references: [id])
+  section       String?
   refreshTokens RefreshToken[]
   news          News[]
   media         Media[]
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   @@index([email])
   @@index([role])
+  @@index([branchId])
 }
 
 model RefreshToken {
@@ -120,25 +130,26 @@ model RefreshToken {
 // ─── News ─────────────────────────────────────────────────────────────────────
 
 model News {
-  id           String        @id @default(uuid())
-  slug         String        @unique
-  type         NewsType
-  category     NewsCategory
-  status       NewsStatus    @default(DRAFT)
+  id           String            @id @default(uuid())
+  slug         String            @unique
+  format       NewsFormat
+  status       NewsStatus        @default(DRAFT)
   imageUrl     String?
-  isFeatured   Boolean       @default(false)
+  isFeatured   Boolean           @default(false)
   readingTime  Int?
+  tags         String[]          @default([])
+  tgPosted     Boolean           @default(false)
+  tgSkip       Boolean           @default(false)
   publishedAt  DateTime?
   scheduledAt  DateTime?
   authorId     String
-  author       User          @relation(fields: [authorId], references: [id])
+  author       User              @relation(fields: [authorId], references: [id])
   translations NewsTranslation[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   @@index([status])
-  @@index([type])
-  @@index([category])
+  @@index([format])
   @@index([publishedAt])
   @@index([slug])
 }
@@ -214,89 +225,36 @@ model Gallery {
   @@index([sortOrder])
 }
 
-// ─── Services ─────────────────────────────────────────────────────────────────
-
-model Service {
-  id           String               @id @default(uuid())
-  iconName     String
-  imageUrl     String?
-  sortOrder    Int                  @default(0)
-  translations ServiceTranslation[]
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
-
-  @@index([sortOrder])
-}
-
-model ServiceTranslation {
-  id          String   @id @default(uuid())
-  serviceId   String
-  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  lang        Lang
-  title       String
-  description String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@unique([serviceId, lang])
-}
-
-// ─── Partners ─────────────────────────────────────────────────────────────────
-
-model Partner {
-  id         String   @id @default(uuid())
-  name       String
-  logoUrl    String
-  websiteUrl String?
-  sortOrder  Int      @default(0)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@index([sortOrder])
-}
-
-// ─── Clients (секция «Наши клиенты» на главной) ───────────────────────────────
-
-model Client {
-  id         String   @id @default(uuid())
-  name       String
-  logoUrl    String
-  websiteUrl String?
-  sortOrder  Int      @default(0)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@index([sortOrder])
-}
-
-// ─── Team ─────────────────────────────────────────────────────────────────────
+// ─── Team (Руководство / Народное медиа) ──────────────────────────────────────
 
 model TeamMember {
   id           String                  @id @default(uuid())
   photoUrl     String?
+  group        TeamMemberGroup         @default(LEADERSHIP)
   sortOrder    Int                     @default(0)
   translations TeamMemberTranslation[]
   createdAt    DateTime                @default(now())
   updatedAt    DateTime                @updatedAt
 
   @@index([sortOrder])
+  @@index([group])
 }
 
 model TeamMemberTranslation {
-  id       String     @id @default(uuid())
-  memberId String
-  member   TeamMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  lang     Lang
-  name     String
-  position String
-  bio      String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id        String     @id @default(uuid())
+  memberId  String
+  member    TeamMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  lang      Lang
+  name      String
+  position  String
+  bio       String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   @@unique([memberId, lang])
 }
 
-// ─── Documents ────────────────────────────────────────────────────────────────
+// ─── Documents (Устав, депутатские запросы, пресс-кит) ────────────────────────
 
 model Document {
   id          String       @id @default(uuid())
@@ -314,78 +272,11 @@ model Document {
   @@index([year])
 }
 
-// ─── Purchases Plan ───────────────────────────────────────────────────────────
-
-model PurchaseItem {
-  id               String   @id @default(uuid())
-  number           Int
-  name             String
-  description      String?
-  procurementType  String
-  deliveryPlace    String?
-  unit             String?
-  quantity         String?
-  estimatedAmount  Float?
-  totalAmount      Float?
-  year             Int
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  @@unique([number, year])
-  @@index([year])
-  @@index([procurementType])
-}
-
-model PurchasePlan {
-  id        String   @id @default(uuid())
-  year      Int      @unique
-  title     String
-  fileUrl   String?
-  createdAt DateTime @default(now())
-
-  @@index([year])
-}
-
-// ─── Supplier Forms ───────────────────────────────────────────────────────────
-
-model SupplierForm {
-  id            String             @id @default(uuid())
-  bin           String             @db.Char(12)
-  companyName   String
-  contactPerson String
-  position      String?
-  phone         String
-  email         String
-  supplyCategory String
-  description   String
-  status        SupplierFormStatus @default(NEW)
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-
-  @@index([status])
-  @@index([bin])
-  @@index([createdAt])
-}
-
-// ─── Contact Forms ────────────────────────────────────────────────────────────
-
-model ContactFormSubmission {
-  id        String   @id @default(uuid())
-  name      String
-  email     String
-  phone     String?
-  subject   String
-  message   String
-  createdAt DateTime @default(now())
-
-  @@index([createdAt])
-}
-
 // ─── Pages (CMS-managed static pages) ────────────────────────────────────────
 
 model Page {
   id           String            @id @default(uuid())
-  slug         String            @unique // "home" | "about" | "services" | "esg" | "contacts"
+  slug         String            @unique // "home" | "about" | "faction" | "contacts" | ...
   isPublished  Boolean           @default(true)
   blocks       PageBlock[]
   translations PageTranslation[]
@@ -424,82 +315,6 @@ model PageTranslation {
   @@index([pageId])
 }
 
-// ─── Vacancies & HR ───────────────────────────────────────────────────────────
-
-model Vacancy {
-  id           String               @id @default(uuid())
-  department   String               // "Локомотивные бригады" | "Диспетчерская служба" | etc.
-  employment   String               @default("Полная занятость")
-  location     String               @default("Казахстан")
-  salaryFrom   Int?
-  salaryTo     Int?
-  status       VacancyStatus        @default(DRAFT)
-  sortOrder    Int                  @default(0)
-  translations VacancyTranslation[]
-  applications ResumeApplication[]
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
-
-  @@index([status])
-  @@index([department])
-  @@index([sortOrder])
-}
-
-model VacancyTranslation {
-  id               String   @id @default(uuid())
-  vacancyId        String
-  vacancy          Vacancy  @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
-  lang             Lang
-  title            String
-  description      String   @db.Text
-  requirements     String   @db.Text
-  responsibilities String   @db.Text
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  @@unique([vacancyId, lang])
-  @@index([vacancyId])
-}
-
-model ResumeApplication {
-  id          String       @id @default(uuid())
-  vacancyId   String?
-  vacancy     Vacancy?     @relation(fields: [vacancyId], references: [id], onDelete: SetNull)
-  fullName    String
-  phone       String
-  email       String
-  coverLetter String?      @db.Text
-  resumeUrl   String?
-  status      ResumeStatus @default(NEW)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-
-  @@index([status])
-  @@index([vacancyId])
-  @@index([createdAt])
-}
-
-// ─── Survey Submissions ───────────────────────────────────────────────────────
-
-enum SurveyType {
-  transportation
-  forwarding
-}
-
-model SurveySubmission {
-  id          String     @id @default(uuid())
-  surveyType  SurveyType
-  company     String
-  contactName String
-  phone       String
-  email       String
-  answers     Json       // { q_overall: 4, q_timing: 5, q_nps: 9, q_comment: "..." }
-  createdAt   DateTime   @default(now())
-
-  @@index([surveyType])
-  @@index([createdAt])
-}
-
 // ─── App Settings ─────────────────────────────────────────────────────────────
 
 model Setting {
@@ -508,20 +323,285 @@ model Setting {
   updatedAt DateTime @updatedAt
 }
 
-// ─── Offices / Contacts ───────────────────────────────────────────────────────
+// ─── Branches / Филиалы (было Office) ─────────────────────────────────────────
 
-model Office {
+model Branch {
+  id           String         @id @default(uuid())
+  cityRu       String
+  cityKz       String
+  addressRu    String
+  addressKz    String
+  phone        String
+  email        String
+  department   String?
+  chairman     String?
+  lng          Float?
+  lat          Float?
+  sortOrder    Int            @default(0)
+  users        User[]
+  joinRequests JoinRequest[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([sortOrder])
+}
+
+// ─── CRM: Заявки на вступление ─────────────────────────────────────────────────
+
+model JoinRequest {
+  id            String            @id @default(uuid())
+  role          JoinRequestRole   @default(member)
+  fullName      String
+  birthDate     DateTime?
+  gender        Gender?
+  phone         String
+  email         String?
+  city          String?
+  branchId      String?
+  branch        Branch?           @relation(fields: [branchId], references: [id])
+  status        JoinRequestStatus @default(NEW)
+  phoneVerified Boolean           @default(false)
+  merchAddress  String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([status])
+  @@index([phone])
+  @@index([branchId])
+  @@index([createdAt])
+}
+
+// ─── CRM: Обращения граждан ────────────────────────────────────────────────────
+
+model AppealTopic {
+  id        String   @id @default(uuid())
+  nameRu    String
+  nameKz    String
+  sortOrder Int      @default(0)
+  appeals   Appeal[]
+  createdAt DateTime @default(now())
+
+  @@index([sortOrder])
+}
+
+model Appeal {
+  id            String       @id @default(uuid())
+  appealNumber  String       @unique
+  fullName      String
+  phone         String
+  email         String?
+  topicId       String
+  topic         AppealTopic  @relation(fields: [topicId], references: [id])
+  message       String       @db.Text
+  fileUrl       String?
+  status        AppealStatus @default(NEW)
+  internalNotes String?      @db.Text
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([status])
+  @@index([appealNumber])
+  @@index([createdAt])
+}
+
+// ─── CRM: SMS-верификация ───────────────────────────────────────────────────────
+
+model SmsCode {
+  id        String   @id @default(uuid())
+  phone     String
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([phone])
+  @@index([createdAt])
+}
+
+// ─── Магазин (email-подписка на открытие) ──────────────────────────────────────
+
+model ShopSubscriber {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+// ─── Кандидаты ──────────────────────────────────────────────────────────────────
+
+model Candidate {
+  id           String                 @id @default(uuid())
+  name         String
+  region       String
+  district     String?
+  photoUrl     String?
+  sortOrder    Int                    @default(0)
+  translations CandidateTranslation[]
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+
+  @@index([sortOrder])
+  @@index([region])
+}
+
+model CandidateTranslation {
+  id          String    @id @default(uuid())
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  lang        Lang
+  promise     String    @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([candidateId, lang])
+}
+
+// ─── История партии ──────────────────────────────────────────────────────────────
+
+model HistoryEvent {
+  id           String                    @id @default(uuid())
+  year         Int
+  imageUrl     String?
+  sortOrder    Int                       @default(0)
+  translations HistoryEventTranslation[]
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+
+  @@index([sortOrder])
+  @@index([year])
+}
+
+model HistoryEventTranslation {
+  id             String       @id @default(uuid())
+  historyEventId String
+  historyEvent   HistoryEvent @relation(fields: [historyEventId], references: [id], onDelete: Cascade)
+  lang           Lang
+  title          String
+  text           String       @db.Text
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([historyEventId, lang])
+}
+
+// ─── Программа партии ────────────────────────────────────────────────────────────
+
+model ProgramBlock {
+  id           String                    @id @default(uuid())
+  n            Int
+  keyword      String
+  imageUrl     String?
+  sortOrder    Int                       @default(0)
+  translations ProgramBlockTranslation[]
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+
+  @@index([sortOrder])
+}
+
+model ProgramBlockTranslation {
+  id             String       @id @default(uuid())
+  programBlockId String
+  programBlock   ProgramBlock @relation(fields: [programBlockId], references: [id], onDelete: Cascade)
+  lang           Lang
+  title          String
+  lead1          String?
+  lead2          String?
+  points         Json // string[] по языку
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([programBlockId, lang])
+}
+
+// ─── Медиапроекты (карточки /media) ──────────────────────────────────────────────
+
+model MediaProject {
+  id           String                   @id @default(uuid())
+  tag          String
+  url          String?
+  imageUrl     String?
+  sortOrder    Int                      @default(0)
+  translations MediaProjectTranslation[]
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+
+  @@index([sortOrder])
+}
+
+model MediaProjectTranslation {
+  id             String       @id @default(uuid())
+  mediaProjectId String
+  mediaProject   MediaProject @relation(fields: [mediaProjectId], references: [id], onDelete: Cascade)
+  lang           Lang
+  title          String
+  description    String       @db.Text
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([mediaProjectId, lang])
+}
+
+// ─── СМИ о нас ────────────────────────────────────────────────────────────────────
+
+model MediaPublication {
   id         String   @id @default(uuid())
-  cityRu     String
-  cityKz     String
-  addressRu  String
-  addressKz  String
-  phone      String
-  email      String
-  department String?
+  date       DateTime
+  sourceType String
+  mediaName  String
+  title      String
+  excerpt    String?
+  imageUrl   String?
+  url        String?
   sortOrder  Int      @default(0)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
+  @@index([sortOrder])
+  @@index([date])
+}
+
+// ─── Отзывы ───────────────────────────────────────────────────────────────────────
+
+model Testimonial {
+  id        String   @id @default(uuid())
+  quote     String   @db.Text
+  author    String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+// ─── Меню сайта ───────────────────────────────────────────────────────────────────
+
+model MenuItem {
+  id        String     @id @default(uuid())
+  labelRu   String
+  labelKz   String
+  href      String
+  parentId  String?
+  parent    MenuItem?  @relation("MenuTree", fields: [parentId], references: [id])
+  children  MenuItem[] @relation("MenuTree")
+  sortOrder Int        @default(0)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([parentId])
+  @@index([sortOrder])
+}
+
+// ─── FAQ (база знаний чат-бота) ───────────────────────────────────────────────────
+
+model Faq {
+  id        String   @id @default(uuid())
+  question  String
+  answer    String   @db.Text
+  lang      Lang
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([lang])
   @@index([sortOrder])
 }

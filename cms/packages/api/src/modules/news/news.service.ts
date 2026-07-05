@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../lib/prisma';
-import { Lang, NewsCategory, NewsStatus, NewsType } from '@dar-rail/shared';
+import { Lang, NewsFormat, NewsStatus } from '@dar-rail/shared';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -15,23 +15,24 @@ export interface TranslationInput {
 }
 
 export interface CreateNewsInput {
-  type: NewsType;
-  category: NewsCategory;
+  format: NewsFormat;
   imageUrl?: string;
+  tags?: string[];
+  tgSkip?: boolean;
   translations: TranslationInput[];
 }
 
 export interface UpdateNewsInput {
-  type: NewsType;
-  category: NewsCategory;
+  format: NewsFormat;
   imageUrl?: string | null;
+  tags?: string[];
+  tgSkip?: boolean;
   translations: TranslationInput[];
 }
 
 export interface NewsFilters {
   status?: NewsStatus;
-  type?: NewsType;
-  category?: NewsCategory;
+  format?: NewsFormat;
   q?: string;
   page?: number;
   limit?: number;
@@ -97,10 +98,11 @@ export async function createNews(data: CreateNewsInput, authorId: string) {
   return prisma.news.create({
     data: {
       slug,
-      type: data.type,
-      category: data.category,
+      format: data.format,
       status: 'DRAFT',
       imageUrl: data.imageUrl ?? null,
+      tags: data.tags ?? [],
+      tgSkip: data.tgSkip ?? false,
       readingTime,
       authorId,
       translations: {
@@ -140,9 +142,10 @@ export async function updateNews(id: string, data: UpdateNewsInput) {
     where: { id },
     data: {
       slug,
-      type: data.type,
-      category: data.category,
+      format: data.format,
       imageUrl: data.imageUrl ?? null,
+      ...(data.tags !== undefined ? { tags: data.tags } : {}),
+      ...(data.tgSkip !== undefined ? { tgSkip: data.tgSkip } : {}),
       readingTime,
       translations: {
         upsert: data.translations.map((t) => ({
@@ -226,8 +229,7 @@ export async function findAll(filters: NewsFilters) {
 
   const where: Prisma.NewsWhereInput = {};
   if (filters.status) where.status = filters.status;
-  if (filters.type) where.type = filters.type;
-  if (filters.category) where.category = filters.category;
+  if (filters.format) where.format = filters.format;
   if (filters.q) {
     where.translations = {
       some: { title: { contains: filters.q, mode: 'insensitive' } },

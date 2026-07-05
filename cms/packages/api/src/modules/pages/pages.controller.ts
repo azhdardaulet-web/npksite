@@ -8,7 +8,7 @@ import { LangSchema } from '@dar-rail/shared';
 export const publicPagesRouter = Router();
 export const cmsPagesRouter = Router();
 
-const VALID_SLUGS = ['home', 'about', 'services', 'esg', 'contacts'] as const;
+const VALID_SLUGS = ['home', 'about', 'faction', 'contacts', 'footer'] as const;
 
 const PageBlockInputSchema = z.object({
   type: z.enum(['hero', 'text_image', 'kpi', 'quote', 'pdf_list', 'contacts_block']),
@@ -45,7 +45,7 @@ async function ensurePage(slug: string) {
 
 const requireContent = [
   authenticateToken,
-  requireRole('CONTENT_MANAGER', 'NEWS_EDITOR', 'PROCUREMENT_MANAGER', 'ADMIN'),
+  requireRole('CHIEF_EDITOR', 'SECTION_EDITOR', 'FACTION', 'ADMIN'),
 ];
 
 // ─── Public: GET /api/v1/pages/:slug ─────────────────────────────────────────

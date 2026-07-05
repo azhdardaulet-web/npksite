@@ -8,17 +8,14 @@ import { authRouter } from './modules/auth/auth.controller';
 import { usersRouter } from './modules/users/users.controller';
 import { publicNewsRouter, cmsNewsRouter } from './modules/news/news.controller';
 import { mediaRouter } from './modules/media/media.controller';
-import { procurementRouter, publicPurchaseRouter } from './modules/procurement/purchase.controller';
 import { publicPagesRouter, cmsPagesRouter } from './modules/pages/pages.controller';
-import { partnersRouter } from './modules/partners/partners.controller';
-import { clientsRouter } from './modules/clients/clients.controller';
 import { teamRouter } from './modules/team/team.controller';
-import { officesRouter } from './modules/contacts/offices.controller';
-import { contactFormsRouter, cmsContactFormsRouter } from './modules/contacts/contact-forms.controller';
-import { supplierFormsRouter, cmsSupplierFormsRouter } from './modules/procurement/supplier-forms.controller';
+import { branchesRouter } from './modules/contacts/branches.controller';
 import { documentsRouter, publicDocumentsRouter } from './modules/documents/documents.controller';
-import { publicVacanciesRouter, cmsVacanciesRouter } from './modules/hr/vacancies.controller';
-import { surveysRouter, cmsSurveysRouter, cmsSettingsRouter } from './modules/surveys/surveys.controller';
+import { joinRequestsRouter, cmsJoinRequestsRouter } from './modules/join-requests/join-requests.controller';
+import { appealsRouter, appealTopicsRouter, cmsAppealsRouter } from './modules/appeals/appeals.controller';
+import { shopSubscribersRouter } from './modules/shop-subscribers/shop-subscribers.controller';
+import { cmsSettingsRouter } from './modules/settings/settings.controller';
 import { logger } from './lib/logger';
 import { ensureBucketExists } from './lib/minio';
 
@@ -94,33 +91,25 @@ app.use('/api/v1', generalLimiter);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/news', publicNewsRouter);
 app.use('/api/v1/media', mediaRouter);
-app.use('/api/v1/purchases-plan', publicPurchaseRouter);
-app.use('/api/v1/partners', partnersRouter);
-app.use('/api/v1/clients', clientsRouter);
 app.use('/api/v1/team', teamRouter);
-app.use('/api/v1/contacts', officesRouter);
+app.use('/api/v1/branches', branchesRouter);
 app.use('/api/v1/pages', publicPagesRouter);
-app.use('/api/v1/supplier-form', supplierFormsRouter);
-app.use('/api/v1/contact-form', contactFormsRouter);
 app.use('/api/v1/documents', publicDocumentsRouter);
-app.use('/api/v1/vacancies', publicVacanciesRouter);
-app.use('/api/v1/surveys', surveysRouter);
+app.use('/api/v1/join-requests', joinRequestsRouter);
+app.use('/api/v1/appeals', appealsRouter);
+app.use('/api/v1/appeal-topics', appealTopicsRouter);
+app.use('/api/v1/shop-subscribers', shopSubscribersRouter);
 
 // ─── CMS API routes (require auth — enforced per-router) ──────────────────────
 app.use('/cms/api/v1/users', usersRouter);
 app.use('/cms/api/v1/news', cmsNewsRouter);
 app.use('/cms/api/v1/media', mediaRouter);
-app.use('/cms/api/v1/purchases', procurementRouter);
-app.use('/cms/api/v1/partners', partnersRouter);
-app.use('/cms/api/v1/clients', clientsRouter);
 app.use('/cms/api/v1/team', teamRouter);
-app.use('/cms/api/v1/offices', officesRouter);
+app.use('/cms/api/v1/branches', branchesRouter);
 app.use('/cms/api/v1/pages', cmsPagesRouter);
-app.use('/cms/api/v1/supplier-forms', cmsSupplierFormsRouter);
-app.use('/cms/api/v1/contact-forms', cmsContactFormsRouter);
 app.use('/cms/api/v1/documents', documentsRouter);
-app.use('/cms/api/v1/vacancies', cmsVacanciesRouter);
-app.use('/cms/api/v1/surveys', cmsSurveysRouter);
+app.use('/cms/api/v1/join-requests', cmsJoinRequestsRouter);
+app.use('/cms/api/v1/appeals', cmsAppealsRouter);
 app.use('/cms/api/v1/settings', cmsSettingsRouter);
 
 // ─── 404 handler ──────────────────────────────────────────────────────────────
@@ -143,7 +132,7 @@ app.use(
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 app.listen(PORT, async () => {
-  logger.info(`DAR Rail API listening on port ${PORT}`);
+  logger.info(`НПК CMS API listening on port ${PORT}`);
   try {
     await ensureBucketExists();
     logger.info('MinIO bucket ready');

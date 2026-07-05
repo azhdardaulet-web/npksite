@@ -13,6 +13,7 @@ declare global {
         email: string;
         name: string;
         role: Role;
+        branchId: string | null;
       };
     }
   }
@@ -50,7 +51,7 @@ export async function authenticateToken(
     // Verify user still exists and is active
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: { id: true, email: true, name: true, role: true, status: true },
+      select: { id: true, email: true, name: true, role: true, status: true, branchId: true },
     });
 
     if (!user || user.status === 'BLOCKED') {
@@ -63,6 +64,7 @@ export async function authenticateToken(
       email: user.email,
       name: user.name,
       role: user.role as Role,
+      branchId: user.branchId,
     };
 
     next();
@@ -78,15 +80,9 @@ export async function authenticateToken(
 /**
  * Role-based access control middleware.
  * Must be called AFTER authenticateToken.
- * Role hierarchy: ADMIN > NEWS_EDITOR > PROCUREMENT_MANAGER > CONTENT_MANAGER
+ * Роли НПК не образуют строгую иерархию (у каждой свой участок доступа) —
+ * проверяем принадлежность к списку разрешённых ролей. ADMIN разрешён всегда.
  */
-const ROLE_HIERARCHY: Record<Role, number> = {
-  ADMIN: 100,
-  NEWS_EDITOR: 70,
-  PROCUREMENT_MANAGER: 60,
-  CONTENT_MANAGER: 50,
-};
-
 export function requireRole(...allowedRoles: Role[]) {
   return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {
@@ -94,10 +90,7 @@ export function requireRole(...allowedRoles: Role[]) {
       return;
     }
 
-    const userLevel = ROLE_HIERARCHY[req.user.role] ?? 0;
-    const hasAccess = allowedRoles.some(
-      (role) => userLevel >= ROLE_HIERARCHY[role]
-    );
+    const hasAccess = req.user.role === 'ADMIN' || allowedRoles.includes(req.user.role);
 
     if (!hasAccess) {
       logger.warn(`Access denied: user ${req.user.email} (${req.user.role}) tried to access restricted resource`, {
@@ -112,17 +105,40 @@ export function requireRole(...allowedRoles: Role[]) {
   };
 }
 
+/**
+ * Ограничивает доступ BRANCH_EDITOR только к своему филиалу (req.params.branchId).
+ * ADMIN проходит всегда. Должен вызываться после authenticateToken.
+ */
+export function requireOwnBranch(req: Request, res: Response, next: NextFunction): void {
+  if (!req.user) {
+    res.status(401).json({ error: 'Требуется авторизация' });
+    return;
+  }
+
+  if (req.user.role === 'ADMIN') {
+    next();
+    return;
+  }
+
+  if (req.user.role !== 'BRANCH_EDITOR' || req.user.branchId !== req.params['branchId']) {
+    res.status(403).json({ error: 'Недостаточно прав доступа' });
+    return;
+  }
+
+  next();
+}
+
 // Shorthand middleware combinations
 export const requireAdmin = [authenticateToken, requireRole('ADMIN')];
 export const requireNewsEditor = [
   authenticateToken,
-  requireRole('NEWS_EDITOR', 'ADMIN'),
-];
-export const requireProcurement = [
-  authenticateToken,
-  requireRole('PROCUREMENT_MANAGER', 'ADMIN'),
+  requireRole('CHIEF_EDITOR', 'SECTION_EDITOR', 'ADMIN'),
 ];
 export const requireContentManager = [
   authenticateToken,
-  requireRole('CONTENT_MANAGER', 'NEWS_EDITOR', 'PROCUREMENT_MANAGER', 'ADMIN'),
+  requireRole('CHIEF_EDITOR', 'SECTION_EDITOR', 'BRANCH_EDITOR', 'FACTION', 'ADMIN'),
+];
+export const requireReceptionManager = [
+  authenticateToken,
+  requireRole('RECEPTION_MANAGER', 'ADMIN'),
 ];

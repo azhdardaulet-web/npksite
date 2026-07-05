@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { ScrollReveal } from '@/components/ScrollReveal';
+import { subscribeShop, ApiError } from '@/lib/api';
 
 const CATEGORIES = ['Все', 'Одежда', 'Аксессуары', 'Книги и брошюры', 'Сувениры'];
 
@@ -14,6 +16,25 @@ const PRODUCTS = [
 ];
 
 export function ShopPage() {
+  const [email, setEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [subscribed, setSubscribed] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    try {
+      await subscribeShop(email.trim());
+      setSubscribed(true);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Не удалось подписаться. Попробуйте ещё раз.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div style={{ background: '#050505', color: '#fff', minHeight: '100vh', overflowX: 'hidden' }}>
 
@@ -48,20 +69,32 @@ export function ShopPage() {
                 <p style={{ margin: '20px 0 0', fontSize: 16, lineHeight: 1.6, color: 'rgba(255,255,255,.6)', maxWidth: '46ch' }}>
                   Мы готовим официальный магазин атрибутики Народной партии Казахстана. Оставьте свой email — сообщим первыми об открытии.
                 </p>
-                <form onSubmit={e => e.preventDefault()} style={{ marginTop: 28, display: 'flex', gap: 0, maxWidth: 420 }}>
-                  <input
-                    type="email"
-                    required
-                    placeholder="Ваш email"
-                    style={{ flex: 1, padding: '14px 18px', background: '#050505', border: '1px solid rgba(255,255,255,.14)', borderRight: 'none', color: '#fff', fontSize: 14, outline: 'none', fontFamily: 'inherit' }}
-                  />
-                  <button
-                    type="submit"
-                    style={{ padding: '14px 22px', background: '#db1f26', border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}
-                  >
-                    Уведомить →
-                  </button>
-                </form>
+                {subscribed ? (
+                  <p style={{ marginTop: 28, fontSize: 15, color: '#db1f26', fontWeight: 700 }}>
+                    Готово! Мы сообщим вам, когда магазин откроется.
+                  </p>
+                ) : (
+                  <form onSubmit={handleSubscribe} style={{ marginTop: 28, display: 'flex', gap: 0, maxWidth: 420, flexWrap: 'wrap' }}>
+                    <input
+                      type="email"
+                      required
+                      placeholder="Ваш email"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      style={{ flex: 1, padding: '14px 18px', background: '#050505', border: '1px solid rgba(255,255,255,.14)', borderRight: 'none', color: '#fff', fontSize: 14, outline: 'none', fontFamily: 'inherit' }}
+                    />
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      style={{ padding: '14px 22px', background: '#db1f26', border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', opacity: submitting ? 0.7 : 1 }}
+                    >
+                      {submitting ? 'Отправка…' : 'Уведомить →'}
+                    </button>
+                    {error && (
+                      <p style={{ width: '100%', marginTop: 10, fontSize: 13, color: '#db1f26' }}>{error}</p>
+                    )}
+                  </form>
+                )}
               </div>
 
               {/* Preview cards */}

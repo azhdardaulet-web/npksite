@@ -3,6 +3,9 @@ import { UserPlus, Heart, Eye, CheckCircle } from 'lucide-react';
 import { SectionHeader } from '@/components/SectionHeader';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { PrimaryButton } from '@/components/PrimaryButton';
+import { submitJoinRequest, ApiError } from '@/lib/api';
+
+const KZ_PHONE_RE = /^\+7\s?7\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/;
 
 const roles = [
   {
@@ -30,10 +33,32 @@ export function JoinPage() {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({ name: '', phone: '', email: '', city: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    if (!KZ_PHONE_RE.test(formData.phone.trim())) {
+      setError('Формат телефона: +7 7XX XXX XX XX');
+      return;
+    }
+
+    setError(null);
+    setSubmitting(true);
+    try {
+      await submitJoinRequest({
+        role: selectedRole as 'member' | 'volunteer' | 'observer',
+        fullName: formData.name,
+        phone: formData.phone.trim(),
+        email: formData.email.trim() || undefined,
+        city: formData.city,
+      });
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Не удалось отправить заявку. Попробуйте ещё раз.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -105,13 +130,14 @@ export function JoinPage() {
                     <input type="text" placeholder="Город" required
                       value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })}
                       className="w-full bg-ash border border-white/10 rounded-input px-4 py-3.5 text-body text-white placeholder:text-steel focus:border-red focus:shadow-focus outline-none transition-all" />
+                    {error && <p className="text-body text-red">{error}</p>}
                     <div className="flex gap-3">
                       <button type="button" onClick={() => setStep(1)}
                         className="flex-1 py-3.5 border border-white/20 rounded-pill text-body font-medium text-white hover:bg-white/[0.06] transition-all">
                         Назад
                       </button>
-                      <PrimaryButton type="submit" className="flex-1">
-                        Отправить заявку
+                      <PrimaryButton type="submit" className="flex-1" disabled={submitting}>
+                        {submitting ? 'Отправка…' : 'Отправить заявку'}
                       </PrimaryButton>
                     </div>
                   </form>

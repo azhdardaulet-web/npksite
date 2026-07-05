@@ -31,7 +31,7 @@ function handleError(err: unknown, res: Response): void {
 const requireAdmin = [authenticateToken, requireRole('ADMIN')];
 const requireContent = [
   authenticateToken,
-  requireRole('CONTENT_MANAGER', 'NEWS_EDITOR', 'PROCUREMENT_MANAGER', 'ADMIN'),
+  requireRole('CHIEF_EDITOR', 'SECTION_EDITOR', 'FACTION', 'ADMIN'),
 ];
 
 // ─── Public: GET /api/v1/team ─────────────────────────────────────────────────

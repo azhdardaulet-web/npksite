@@ -22,7 +22,7 @@ const upload = multer({
 });
 
 // Middleware to restrict access to CMS endpoints
-documentsRouter.use(authenticateToken, requireRole('ADMIN', 'CONTENT_MANAGER', 'PROCUREMENT_MANAGER'));
+documentsRouter.use(authenticateToken, requireRole('ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'));
 
 // GET /cms/api/v1/documents
 documentsRouter.get('/', async (req, res, next) => {
