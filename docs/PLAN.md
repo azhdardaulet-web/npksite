@@ -6,6 +6,8 @@
 **Исходная точка:** фронтенд готов (React 19 + TypeScript + React Router v6 + Tailwind, SPA). Все данные хардкожены, формы — имитация без бэкенда.
 **Дедлайн по ТЗ:** Блок 2 — до 10 июля 2026.
 
+> **Ревизия архитектуры (актуальная):** первая версия этого документа предлагала Supabase. От неё отказались — в проекте уже есть папка `cms/`, рабочий backend+admin (Node.js/Express/Prisma/PostgreSQL/MinIO), перенесённый и отточенный автором на другом проекте (DAR Rail). Решено адаптировать этот код под НПК на месте, а не поднимать Supabase с нуля. Часть 1 и Часть 2 ниже написаны под это решение.
+
 ---
 
 ## Часть 0. Что именно извлечено из ТЗ (scope Блока 2)
@@ -53,75 +55,109 @@
 
 ## Часть 1. Архитектурное решение
 
-ТЗ требует «Node.js или аналог + PostgreSQL». Для вайб-кодинга с нулём в программировании писать собственный Node.js-сервер с нуля — худший путь: ты будешь дебажить auth, миграции и деплой вместо того, чтобы сдавать проект.
+Backend и админка **уже существуют** в папке `cms/` — это рабочий проект DAR Rail CMS, перенесённый и отточенный автором на предыдущей работе. Решение — **адаптировать его на месте под НПК**, а не поднимать новую инфраструктуру (Supabase из первой версии этого документа отменяется).
 
-**Решение: Supabase.** Это и есть PostgreSQL (условие ТЗ выполнено) + готовая аутентификация + хранилище файлов + Edge Functions (серверный код) + автоматические бэкапы. Формально это «Node.js или аналог» — аналог. Клиенту без разницы, у него полный контроль: проект Supabase регистрируется на аккаунт заказчика или self-host при необходимости.
+**Стек (уже в проекте, не меняется):**
+
+| Часть | Расположение | Технологии |
+|---|---|---|
+| API | `cms/packages/api` | Node.js 20 + Express 5 + Prisma + PostgreSQL 16 |
+| Админка | `cms/packages/cms` | React 19 + Vite + Tailwind |
+| Общие типы/схемы | `cms/packages/shared` | Zod-схемы, переиспользуются и в API, и в админке |
+| Файлы | MinIO (S3-совместимо) | тот же self-hosted инстанс в деве и в проде (см. ниже про бэкапы) |
+| Инфраструктура | `cms/docker-compose.yml`, `cms/nginx/` | Docker + nginx как реверс-прокси/SSL |
+
+**Что уже реализовано и переиспользуется как есть — трогать не нужно:**
+
+- JWT-авторизация (access-токен + httpOnly refresh-cookie), роли с иерархией доступа — `cms/packages/api/src/middleware/auth.ts`, `cms/packages/api/src/modules/auth/*`.
+- helmet, CORS с allowlist через `CORS_ORIGINS`, rate-limiting (общий + отдельно жёсткий на `/auth/login`), логирование (winston + morgan) — `cms/packages/api/src/index.ts`.
+- Чёткое разделение публичных роутов (`/api/v1/*`) и CMS-роутов, требующих авторизации (`/cms/api/v1/*`).
+- **hCaptcha уже встроен** в схемы публичных форм (`SupplierFormInputSchema`, `ContactFormInputSchema` в `cms/packages/shared/src/index.ts`) — это закрывает требование ТЗ про reCAPTCHA на формах, менять механизм не нужно, только завести ключи hCaptcha под домен НПК.
+- Excel-экспорт (`xlsx` уже в зависимостях `packages/api`) — нужен для «Заявок» (п. 6.4 ТЗ).
+- Обработка изображений (`sharp`), email через `nodemailer`/SMTP (`cms/packages/api/src/lib/mailer.ts`).
+- Медиабиблиотека с папками (`Media`, `GalleryFolder`, `Gallery`) — используем как есть для фото новостей, PDF, резюме и т.д.
+- `Page` / `PageBlock` / `PageTranslation` — готовый паттерн для редактируемых текстовых блоков страниц (п. 6.3 ТЗ) — используем как есть.
+- `Document` — готова под PDF (Устав, депутатские запросы, пресс-кит), только расширить enum типов.
+- `Setting` (key/value) — готова под счётчики главной, соцсети, `notify_email`, `tg_delay_minutes`.
+
+**Что предстоит поменять/добавить под НПК:**
+
+1. **Бренд.** Постепенно заменить упоминания «DAR Rail» на «НПК»/нейтральные названия в README, `.env.example`, `mailer.ts` (поле `from`), названиях контейнеров в `docker-compose.yml` — не критично для функциональности, делать по ходу дела, не отдельной задачей.
+2. **Prisma-схема (`cms/packages/api/prisma/schema.prisma`).** Убрать модели, специфичные для DAR Rail и не нужные НПК: `Service`/`ServiceTranslation` (заменяется на `MediaProject`), `Partner`, `Client`, `PurchaseItem`/`PurchasePlan`, `SupplierForm`, `ContactFormSubmission` (заменяется на `Appeal`), `Vacancy`/`VacancyTranslation`/`ResumeApplication`, `SurveySubmission`. Переименовать/расширить переиспользуемые: `Office` → `Branch` (+ `chairman`, `lng`/`lat`), `TeamMember`/`TeamMemberTranslation` — добавить enum `group` (`LEADERSHIP` | `MEDIA_TEAM`), чтобы одна модель обслуживала и «Руководство», и медиакоманду «Народного медиа». Полная новая схема — Часть 2.
+3. **Роли.** Enum `Role` меняется на 6 ролей НПК: `ADMIN`, `CHIEF_EDITOR`, `SECTION_EDITOR`, `FACTION`, `BRANCH_EDITOR`, `RECEPTION_MANAGER` (роль `DEPUTY` добавляется отдельно в Этапе 7 под видеоприём). У `User` — новые поля `branchId` (для `BRANCH_EDITOR`, доступ только к своему филиалу) и `section` (для `SECTION_EDITOR`). Prisma не даёт Row Level Security «из коробки» (это была бы фишка Supabase) — scoping по филиалу/разделу делаем руками: middleware `requireOwnBranch`, проверяющий `req.user.branchId` против запрашиваемой записи, плюс `WHERE branchId = ...` во всех сервисных функциях филиалов.
+4. **Интеграции.** SMS (Mobizon), автопостинг в Telegram, чат-бот на Claude API, видеоприём (Daily.co) реализуются как обычные Express-роуты в новых модулях `cms/packages/api/src/modules/*`. Для отложенных задач (запланированная публикация новости, автопостинг с задержкой, напоминания о видеоприёме за час) — добавляем `node-cron` (аналог pg_cron из Supabase-варианта).
+5. **2FA.** В текущем auth-модуле его нет — добавляется поверх существующего JWT-flow в Этапе 8 (TOTP через `otplib` или аналог), обязателен для роли `ADMIN`.
+6. **Секреты** — как и раньше: только в `cms/.env` (уже в `.gitignore`), никогда во фронтенде и никогда в `cms/packages/cms` (админка — это тоже клиентский код, собирается в статику).
 
 **Итоговая схема:**
 
 ```
-Сайт (React SPA, готов) ──────────┐
-                                   ├──> Supabase (PostgreSQL + Auth + Storage + Edge Functions)
-Админка CMS/CRM (новое React-app) ─┘         │
-                                             ├──> Mobizon API (SMS)
-                                             ├──> Telegram Bot API (автопостинг)
-                                             ├──> Claude API (чат-бот)
-                                             └──> Daily.co (видеоприём, WebRTC)
+Сайт (React SPA, app/, готов) ──────┐
+                                     ├──> cms/packages/api (Express + Prisma + PostgreSQL)
+Админка (cms/packages/cms, React) ──┘         │
+                                              ├──> MinIO (медиа, self-hosted, дев и прод)
+                                              ├──> Mobizon API (SMS)
+                                              ├──> Telegram Bot API (автопостинг)
+                                              ├──> Claude API (чат-бот)
+                                              ├──> Daily.co (видеоприём, WebRTC)
+                                              └──> SMTP (email-уведомления, nodemailer уже настроен)
 ```
 
-**Ключевые решения и почему:**
+**Расхождение с ТЗ, которое снимается этим решением:** в Supabase-варианте был пункт «Supabase как формальный аналог Node.js» — теперь backend буквально Node.js/Express/PostgreSQL, никаких оговорок перед заказчиком не нужно. Остаётся открытым только вопрос SPA vs Next.js SSR для SEO — как и раньше, не блокирует Блок 2, отдельным этапом (см. Этап 9).
 
-1. **Админка — отдельное React-приложение** в том же репозитории (`/admin`), на том же стеке (React + Tailwind). Claude Code отлично генерирует админки. Не Refine, не React-Admin — свой код проще править вайб-кодингом.
-2. **Видеоприём — НЕ пишем WebRTC сами.** Это месяцы работы даже для сеньора. Берём Daily.co: готовый видеозвонок встраивается в браузер одной строкой, бесплатный тариф до 10 000 минут/мес. Условие ТЗ («в браузере, без Zoom/Teams») выполняется.
-3. **Чат-бот — без RAG.** Сайт небольшой: вся программа + FAQ + контакты филиалов влезают в system prompt Claude Haiku. Это в 10 раз проще и дешевле векторной базы. Если база знаний вырастет — перейдём на RAG позже.
-4. **Секреты (API-ключи) живут только в Edge Functions**, никогда во фронтенде. Это критично: ключ Claude API или Mobizon в коде сайта = его украдут в первый день.
-
-**Одно расхождение с ТЗ, которое надо зафиксировать с заказчиком:** ТЗ упоминает Next.js SSR для SEO, а сайт построен как SPA. Для SEO новостей SPA хуже (Google индексирует, но медленнее; соцсети не видят og:image). Решение не блокирует Блок 2: добавить prerender (Prerender.io через Cloudflare Worker) или мигрировать на Next.js отдельным этапом. В этом документе — пункт «Этап 9», делается в конце и только по согласованию.
+**Хостинг и бэкапы (важно из-за self-hosted MinIO):** файлы хранятся на своём MinIO, а не в managed-сервисе вроде S3/R2 — значит резервное копирование volume `minio_data` и `postgres_data` (Docker volumes) — ответственность разработчика/DevOps: ежедневный `pg_dump` + бэкап дисков VPS. Это и есть «ежедневные бэкапы» из п. 8 ТЗ — настраивается в Этапе 9, не забыть.
 
 ---
 
-## Часть 2. Схема базы данных (что попросить Claude Code создать)
+## Часть 2. Схема базы данных (Prisma, `cms/packages/api/prisma/schema.prisma`)
 
-Таблицы напрямую вытекают из архитектуры сайта (SITE_ARCHITECTURE.md, раздел 4–5). Хардкод из `src/lib/data.ts` мигрирует сюда.
+Модели делятся на три группы: **есть, используем как есть**, **есть, адаптируем**, **новые**. Хардкод из `app/src/lib/data.ts` и со страниц мигрирует в новые/адаптированные модели.
+
+### Пользователи и роли
+
+| Модель | Статус | Изменения |
+|---|---|---|
+| `User` | адаптируем | `Role` enum → `ADMIN` \| `CHIEF_EDITOR` \| `SECTION_EDITOR` \| `FACTION` \| `BRANCH_EDITOR` \| `RECEPTION_MANAGER` (+ `DEPUTY` в Этапе 7). Добавить `branchId String?` (FK → `Branch`, для `BRANCH_EDITOR`) и `section String?` (для `SECTION_EDITOR`) |
+| `RefreshToken` | без изменений | — |
 
 ### CRM-таблицы (приоритет 1 — лиды теряются каждый день)
 
-| Таблица | Поля | Откуда |
+| Модель | Статус | Поля |
 |---|---|---|
-| `join_requests` | id, role (member/volunteer/observer), full_name, birth_date, gender, phone, email, city, status (new/processing/accepted/rejected), phone_verified (bool), merch_address, created_at | Форма /vstupit + JoinSection главной |
-| `appeals` | id, appeal_number, full_name, phone, email, topic_id, message, file_url, status, internal_notes, created_at | Форма /priemnaya + ReceptionSection главной |
-| `appeal_topics` | id, name_ru, name_kz | Справочник: 7 тем из текущей формы |
-| `video_appointments` | id, deputy_id, citizen_name, citizen_phone, slot_start, slot_end, status, daily_room_url, sms_confirmed | Видеоприём |
-| `deputy_schedules` | id, deputy_id, weekday, time_from, time_to, slot_minutes | Личный кабинет депутата |
-| `shop_subscribers` | id, email, created_at | Форма «Уведомить» в /magazin |
+| `JoinRequest` | новая | id, role (member/volunteer/observer), fullName, birthDate, gender, phone, email, city, branchId?, status (NEW/PROCESSING/ACCEPTED/REJECTED), phoneVerified, merchAddress, createdAt |
+| `Appeal` | новая | id, appealNumber (уникальный, формат `NPK-2026-00001`), fullName, phone, email, topicId, message, fileUrl, status, internalNotes, createdAt |
+| `AppealTopic` | новая | id, nameRu, nameKz — справочник, 7 тем из текущей формы |
+| `SmsCode` | новая | id, phone, codeHash, expiresAt, attempts — общая для верификации при вступлении (Этап 5) и при записи на видеоприём (Этап 7) |
+| `VideoAppointment` | новая (Этап 7) | id, deputyId, citizenName, citizenPhone, slotStart, slotEnd, status, dailyRoomUrl, smsConfirmed |
+| `DeputySchedule` | новая (Этап 7) | id, deputyId, weekday, timeFrom, timeTo, slotMinutes |
+| `ShopSubscriber` | новая | id, email, createdAt |
 
 ### CMS-таблицы (приоритет 2)
 
-| Таблица | Поля |
-|---|---|
-| `news` | id, slug, title_ru, title_kz, lead_ru, lead_kz, body_ru, body_kz (rich-text JSON), image_url, category, tags[], format, status (draft/published/scheduled), publish_at, tg_posted (bool), tg_skip (bool), author_id |
-| `media_publications` | id, date, source_type, media_name, title, excerpt, image_url, url — для «СМИ о нас» |
-| `candidates` | id, name, region, district, promise, photo_url — миграция из data.ts (6→13 записей) |
-| `leaders` | id, name, role, bio, photo_url, sort_order |
-| `branches` | id, region_id, name, short, city, chairman, address, phone, email, lng, lat — свести две версии справочника в одну (как рекомендует архитектура) |
-| `history_events` | id, year, title, text, image_url |
-| `program_blocks` | id, n, keyword, title, lead1, lead2, points (json[]) |
-| `media_projects` | id, tag, title, description, url, image_url — карточки /media |
-| `team_members` | id, name, role, photo_url — медиакоманда /narodnoe-media |
-| `presskit_files` | id, title, file_url, size |
-| `testimonials` | id, quote, author |
-| `page_blocks` | id, page_slug, block_key, content_ru, content_kz — редактируемые тексты статичных страниц (О партии, Фракция, Контакты, футер) |
-| `menu_items` | id, label_ru, label_kz, href, parent_id, sort_order |
-| `site_settings` | key, value — счётчики главной (число членов, депутатов), соцсети, телефоны |
-| `documents` | id, title, file_url, category — PDF: Устав, депутатские запросы |
+| Модель | Статус | Детали |
+|---|---|---|
+| `News` / `NewsTranslation` | адаптируем | Уже есть почти в нужном виде. Сузить `Lang` до `ru` \| `kz`. Добавить на `News`: `tgPosted Boolean`, `tgSkip Boolean`, `format` (Новости/Релизы партии/Статьи/Аналитика/Интервью — как в фильтрах `NewsPage`), теги (`tags String[]`) |
+| `Branch` | адаптируем (было `Office`) | cityRu/cityKz, addressRu/addressKz, phone, email, + добавить `chairman`, `lng`, `lat` — свести два справочника регионов из `data.ts` и `BranchMapSection` в один |
+| `Candidate` / `CandidateTranslation` | новая, по паттерну `Service`/`ServiceTranslation` | name, region, district, photoUrl + перевод `promise` (RU/KZ) |
+| `TeamMember` / `TeamMemberTranslation` | адаптируем (уже есть) | Добавить enum `group`: `LEADERSHIP` \| `MEDIA_TEAM` — одна модель закрывает и «Руководство» (`/rukovodstvo`), и медиакоманду `/narodnoe-media` |
+| `HistoryEvent` / `HistoryEventTranslation` | новая | year, imageUrl + перевод title/text |
+| `ProgramBlock` / `ProgramBlockTranslation` | новая | n, keyword, imageUrl + перевод title, lead1, lead2, points (json) |
+| `MediaProject` / `MediaProjectTranslation` | новая, заменяет `Service`/`ServiceTranslation` | tag, url, imageUrl + перевод title, description — карточки `/media` |
+| `MediaPublication` | новая | date, sourceType, mediaName, title, excerpt, imageUrl, url — «СМИ о нас» |
+| `Testimonial` | новая | quote, author |
+| `Document` | адаптируем (уже есть) | Расширить `DocumentType`: `ustav`, `deputy_request`, `press_kit`, `other` |
+| `Page` / `PageBlock` / `PageTranslation` | без изменений | Уже подходит для О партии, Фракция, Контакты, футер |
+| `MenuItem` | новая | labelRu, labelKz, href, parentId, sortOrder |
+| `Setting` | без изменений | key/value — счётчики главной, соцсети, `notify_email`, `tg_delay_minutes` |
+| `Faq` | новая (Этап 6) | question, answer, lang — база знаний чат-бота |
 
-### Пользователи и роли (Supabase Auth + таблица)
+### Модели DAR Rail, которые удаляются (не нужны НПК)
 
-| Таблица | Поля |
-|---|---|
-| `cms_users` | id (= auth.users.id), full_name, role (admin/chief_editor/section_editor/faction/branch_editor/reception_manager), branch_id (для редакторов филиалов), section (для редакторов разделов) |
+`Service`/`ServiceTranslation` (логика переносится в `MediaProject`), `Partner`, `Client`, `PurchaseItem`/`PurchasePlan`, `SupplierForm`, `ContactFormSubmission` (заменяется `Appeal`), `Vacancy`/`VacancyTranslation`/`ResumeApplication`, `SurveySubmission`.
 
-Доступы реализуются через **RLS-политики Supabase** (Row Level Security): редактор филиала физически не может изменить чужой регион — это не проверка в интерфейсе, а запрет на уровне базы. Именно это требует раздел 6.1 ТЗ.
+`Media`/`GalleryFolder`/`Gallery` — **остаются без изменений**, они общая инфраструктура медиабиблиотеки, не специфичны для DAR Rail.
+
+Доступы по ролям реализуются вручную в контроллерах/сервисах (см. Часть 1, п. 3) — не через Postgres RLS, как было бы в Supabase-варианте, а через middleware проверки `req.user.role` / `req.user.branchId`.
 
 ---
 
@@ -137,11 +173,11 @@
 
 **Правила экономии токенов Claude Code (критично для тебя):**
 
-1. **Создай `CLAUDE.md` в корне проекта** (промпт в Этапе 0). Claude Code читает его автоматически в каждой сессии — не придётся объяснять проект заново.
+1. **`CLAUDE.md` в корне проекта** уже создан. Claude Code читает его автоматически в каждой сессии — не придётся объяснять проект заново.
 2. **Один этап = одна сессия.** Закончил этап → закоммитил в Git → `/clear` → новая сессия. Длинный контекст жрёт токены квадратично.
 3. **`/compact` в середине длинной сессии**, если Claude начал «забывать» начало.
-4. **План — в файлах, не в чате.** Этот документ положи в проект как `docs/PLAN.md`. В сессии пиши: «Выполни Этап 4 из docs/PLAN.md» — вместо копипасты простыни.
-5. **Не проси Claude Code читать весь проект.** Указывай конкретные файлы: «форма в src/pages/JoinPage.tsx».
+4. **План — в файлах, не в чате.** Этот документ — `docs/PLAN.md`. В сессии пиши: «Выполни Этап 4 из docs/PLAN.md» — вместо копипасты простыни.
+5. **Не проси Claude Code читать весь проект.** Указывай конкретные файлы: «модель в `cms/packages/api/prisma/schema.prisma`», «форма в `app/src/pages/JoinPage.tsx`».
 6. **Черновики UI-страниц админки генерируй в Antigravity**, потом Claude Code подключает их к данным. Вёрстка — самая токеноёмкая часть.
 7. **Git-коммит после каждого работающего шага.** Сломалось — `git checkout .` вместо токенов на починку.
 
@@ -153,134 +189,161 @@
 
 ---
 
-### Этап 0. Подготовка окружения (0,5 дня, без кода)
+### Этап 0. Подготовка окружения — ВЫПОЛНЕН
 
-**Руками, без AI:**
-
-1. Зарегистрируй проект на [supabase.com](https://supabase.com) (Free tier хватит на разработку; перед сдачей — Pro $25/мес на аккаунт заказчика: ежедневные бэкапы из ТЗ входят в Pro).
-2. Сохрани в заметки: `Project URL`, `anon key`, `service_role key` (Settings → API).
-3. Установи Claude Code, если ещё нет: `npm install -g @anthropic-ai/claude-code`.
-4. Проект сайта — в Git (если нет: в VS Code → Source Control → Initialize Repository).
-5. Положи этот файл в проект: `docs/PLAN.md`.
-
-**Промпт для Claude Code (создание CLAUDE.md):**
-
-```
-Создай файл CLAUDE.md в корне проекта. Изучи структуру проекта (package.json,
-src/lib/data.ts, src/pages, src/sections) и опиши в нём: стек, структуру папок,
-где лежат хардкод-данные, список страниц и форм. Добавь раздел «Правила»:
-1) не менять дизайн и вёрстку существующих страниц без явной просьбы,
-2) все секреты только в .env, файл .env добавить в .gitignore,
-3) комментарии в коде на русском,
-4) после каждого изменения писать одной строкой, как проверить результат.
-Также добавь в CLAUDE.md ссылку на docs/PLAN.md как основной план работ.
-```
+- ✅ `CLAUDE.md` создан в корне.
+- ✅ `docs/PLAN.md` — этот файл.
+- ✅ Git-репозиторий инициализирован в корне (`app/` + `cms/` + `content/` одним репо).
+- ✅ Корневой `.gitignore` — `.env` везде исключён.
+- ⬜ Осталось руками: убедиться, что `cms/.env` заполнен реальными значениями (`DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `MINIO_*`, `HCAPTCHA_SECRET` и т.д. — см. таблицу переменных в `cms/README.md`); `cms/.env.example` — актуализировать под НПК по мере добавления новых переменных (Mobizon, Telegram, Claude, Daily.co — появятся в Этапах 4–7).
 
 ---
 
-### Этап 1. База данных и подключение форм — лиды перестают теряться (1–2 дня)
+### Этап 1. Схема БД под НПК + подключение форм — лиды перестают теряться (1–2 дня)
 
-Это самое важное: прямо сейчас каждая заявка на вступление и каждое обращение испаряются. Формы должны заработать до всего остального.
+Это самое важное: прямо сейчас каждая заявка на вступление и каждое обращение испаряются.
 
-**Промпт 1.1 — схема БД:**
-
-```
-Прочитай docs/PLAN.md, Часть 2 (схема базы данных). Мы используем Supabase.
-Создай SQL-миграцию (файл supabase/migrations/001_init.sql) со всеми таблицами
-из раздела «CRM-таблицы» и таблицей cms_users. Требования:
-- RLS включён на всех таблицах;
-- анонимные пользователи могут только INSERT в join_requests, appeals,
-  shop_subscribers (это публичные формы) — читать не могут;
-- добавь справочник appeal_topics и заполни его 7 темами из текущей формы
-  (Общий вопрос, Социальная помощь, ЖКХ и инфраструктура, Образование,
-  Медицина, Труд и занятость, Другое) на русском и казахском;
-- appeal_number генерируется автоматически в формате NPK-2026-00001.
-Объясни мне после этого, как применить миграцию через SQL Editor
-в дашборде Supabase — я скопирую и выполню руками.
-```
-
-**Промпт 1.2 — подключение форм:**
+**Промпт 1.1 — миграция Prisma-схемы:**
 
 ```
-Установи @supabase/supabase-js. Создай src/lib/supabase.ts с клиентом,
-ключи бери из .env (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY).
-Подключи к реальной отправке в Supabase все 5 форм:
-1. src/pages/JoinPage.tsx — визард /vstupit → таблица join_requests
-2. JoinSection на главной → join_requests (role='member')
-3. src/pages/ReceptionPage.tsx → appeals
-4. ReceptionSection на главной → appeals
-5. форма email в ShopPage → shop_subscribers
+Прочитай docs/PLAN.md, Часть 1 (пункт «Prisma-схема») и Часть 2 целиком.
+Отредактируй cms/packages/api/prisma/schema.prisma:
+1. Удали модели, не нужные НПК: Service, ServiceTranslation, Partner, Client,
+   PurchaseItem, PurchasePlan, SupplierForm, ContactFormSubmission, Vacancy,
+   VacancyTranslation, ResumeApplication, SurveySubmission (и связанные enum'ы).
+2. Переименуй Office → Branch, добавь поля chairman, lng, lat.
+3. В TeamMember добавь enum group (LEADERSHIP | MEDIA_TEAM).
+4. В Document расширь DocumentType: добавь ustav, deputy_request, press_kit.
+5. В News/NewsTranslation: сузь Lang до ru|kz, добавь News.tgPosted (Boolean),
+   News.tgSkip (Boolean), News.tags (String[]), News.format (enum: news,
+   party_release, article, analytics, interview).
+6. Добавь новые модели из «CRM-таблицы» (Часть 2): JoinRequest, Appeal,
+   AppealTopic, SmsCode, ShopSubscriber — с учётом связи Appeal.topicId →
+   AppealTopic.id.
+7. Добавь новые модели из «CMS-таблицы»: Candidate/CandidateTranslation,
+   HistoryEvent/HistoryEventTranslation, ProgramBlock/ProgramBlockTranslation,
+   MediaProject/MediaProjectTranslation, MediaPublication, Testimonial,
+   MenuItem, Faq.
+8. Обнови enum Role: ADMIN, CHIEF_EDITOR, SECTION_EDITOR, FACTION,
+   BRANCH_EDITOR, RECEPTION_MANAGER. У модели User добавь branchId (String?,
+   FK на Branch) и section (String?).
+Синхронизируй cms/packages/shared/src/index.ts — обнови/добавь Zod-схемы под
+новые и изменённые модели (по образцу существующих ServiceSchema,
+OfficeSchema и т.д.), убери схемы под удалённые модели.
+Сгенерируй миграцию: npx prisma migrate dev --name npk_domain_model
+(выполни сам через Bash, БД для дева — из cms/docker-compose.yml, подними
+postgres контейнер перед этим). Покажи мне итоговый список изменённых таблиц.
+```
+
+**Промпт 1.2 — Express-роуты для форм + seed справочника тем:**
+
+```
+Прочитай cms/packages/api/src/index.ts и по одному существующему модулю
+(например cms/packages/api/src/modules/contacts/contact-forms.controller.ts)
+как образец структуры (controller + service, zod-валидация, hCaptcha-токен).
+Создай по этому же паттерну новые публичные модули в
+cms/packages/api/src/modules/:
+1. join-requests/ — POST /api/v1/join-requests (создаёт JoinRequest,
+   phoneVerified=false; реальная верификация — Этап 5, пока просто
+   принимаем и сохраняем).
+2. appeals/ — POST /api/v1/appeals (создаёт Appeal, генерирует appealNumber
+   в формате NPK-2026-00001 — используй счётчик по году), возвращает номер
+   в ответе. GET /api/v1/appeal-topics — отдаёт список тем для дропдауна.
+3. shop-subscribers/ — POST /api/v1/shop-subscribers.
+Все три — с hCaptcha-токеном по образцу ContactFormInputSchema, с валидацией
+телефона под формат Казахстана +7 7XX XXX XX XX.
+Добавь seed (cms/packages/api/prisma/seed.ts) для AppealTopic: 7 тем на
+русском и казахском (Общий вопрос, Социальная помощь, ЖКХ и инфраструктура,
+Образование, Медицина, Труд и занятость, Другое).
+```
+
+**Промпт 1.3 — фронтенд отправляет формы на реальный API:**
+
+```
+Создай app/src/lib/api.ts с базовым клиентом (fetch, базовый URL из
+VITE_API_URL в .env). Подключи к реальной отправке все 5 форм:
+1. app/src/pages/JoinPage.tsx — визард /vstupit → POST /api/v1/join-requests
+2. JoinSection на главной → тот же эндпоинт (role='member')
+3. app/src/pages/ReceptionPage.tsx → POST /api/v1/appeals
+4. ReceptionSection на главной → тот же эндпоинт
+5. форма email в ShopPage → POST /api/v1/shop-subscribers
 Требования: не менять внешний вид форм; добавить состояния «отправка» и
 «ошибка» (сейчас есть только success); при успехе обращения показывать
-его номер (appeal_number из ответа БД); валидация телефона под формат
-Казахстана +7 7XX XXX XX XX.
+appealNumber из ответа API; валидация телефона под +7 7XX XXX XX XX.
 ```
 
-**Проверка:** отправь тестовую заявку с сайта → открой Supabase → Table Editor → `join_requests` — запись есть. То же для обращения и подписки магазина.
+**Проверка:** отправь тестовую заявку с сайта → `cd cms/packages/api && npx prisma studio` → таблица `JoinRequest` — запись есть. То же для `Appeal` (с номером) и `ShopSubscriber`.
 
 ---
 
-### Этап 2. Админка: каркас + CRM-разделы «Заявки» и «Обращения» (2–3 дня)
+### Этап 2. Админка: каркас под роли НПК + разделы «Заявки» и «Обращения» (2–3 дня)
 
-Реализует пункты 6.4 и 6.5 ТЗ. После этого этапа заказчику уже можно показывать работающий продукт.
+Реализует пункты 6.1, 6.4 и 6.5 ТЗ, на базе уже существующей `cms/packages/cms`.
 
-**Промпт 2.1 — каркас админки и вход:**
+**Промпт 2.1 — адаптация каркаса админки и ролей:**
 
 ```
-Создай в проекте админ-панель на маршруте /admin (React Router, lazy-загрузка,
-чтобы не утяжелять основной сайт). Дизайн: чистый, светлый, Tailwind,
-сайдбар слева с разделами: Дашборд, Заявки, Обращения, Новости, Контент,
-Пользователи, Настройки. Авторизация через Supabase Auth (email + пароль).
-Неавторизованных редиректить на /admin/login. Роль пользователя читать
-из таблицы cms_users и показывать в сайдбаре только доступные разделы:
-- admin: всё
-- chief_editor: Новости, Контент
-- section_editor: Новости (только свой раздел), Контент (свой раздел)
-- branch_editor: только страница своего филиала
-- reception_manager: только Обращения
-- faction: только контент фракции
-Создай мне первого пользователя-администратора: объясни, как добавить его
-через дашборд Supabase (Authentication → Add user) и вставить строку в cms_users.
+Прочитай текущую структуру cms/packages/cms/src (App.tsx, components/Layout.tsx,
+pages/Login.tsx, store/authStore.ts). Адаптируй под роли НПК из
+docs/PLAN.md (ADMIN, CHIEF_EDITOR, SECTION_EDITOR, FACTION, BRANCH_EDITOR,
+RECEPTION_MANAGER): в сайдбаре (Layout.tsx) показывай только разделы,
+доступные роли текущего пользователя (роль уже приходит в /api/v1/auth/me).
+Разделы: Дашборд, Заявки, Обращения, Новости, Контент, Пользователи,
+Настройки — видимость по роли:
+- ADMIN: всё
+- CHIEF_EDITOR: Новости, Контент
+- SECTION_EDITOR: Новости и Контент (в будущем — фильтр по user.section)
+- BRANCH_EDITOR: только «Мой филиал» (контент своего Branch)
+- RECEPTION_MANAGER: только Обращения
+- FACTION: только контент фракции
+Не трогай сам механизм логина/JWT (cms/packages/cms/src/store/authStore.ts,
+cms/packages/api/src/modules/auth/*) — он уже работает, только правь
+видимость разделов. Замени старые пункты меню DAR Rail (Партнёры, Клиенты,
+Закупки, Вакансии, Опросы) на актуальные для НПК.
 ```
 
 **Промпт 2.2 — раздел «Заявки» (п. 6.4 ТЗ):**
 
 ```
-Сделай раздел /admin/zayavki — заявки на вступление из join_requests.
+Возьми существующий cms/packages/cms/src/pages/procurement/SupplierForms.tsx
+как образец списка с фильтрами и статусами. Сделай по аналогии раздел
+/zayavki (JoinRequest):
 - Таблица: дата, ФИО, роль, телефон, город, статус. Фильтры по статусу,
-  роли и дате. Поиск по ФИО и телефону.
+  роли, дате. Поиск по ФИО и телефону.
 - Клик по строке — карточка заявки со всеми полями.
-- Смена статуса: Новая → В обработке → Принята → Отклонена (цветные бейджи).
-- Кнопка «Экспорт в Excel» — выгрузка отфильтрованного списка в .xlsx
-  (библиотека xlsx), колонки на русском.
-- Счётчик новых заявок красным бейджем в сайдбаре.
+- Смена статуса: NEW → PROCESSING → ACCEPTED → REJECTED (цветные бейджи).
+- Кнопка «Экспорт в Excel» — используй уже установленный xlsx в
+  cms/packages/api, сделай эндпоинт GET /cms/api/v1/join-requests/export.
+- Счётчик новых заявок (status=NEW) бейджем в сайдбаре — используй паттерн
+  из cms/packages/cms/src/hooks (создай useJoinRequests.ts по образцу
+  useSupplierForms.ts).
 ```
 
 **Промпт 2.3 — раздел «Обращения» (п. 6.5 ТЗ):**
 
 ```
-Сделай раздел /admin/obrashcheniya по аналогии с заявками, из таблицы appeals:
-- Таблица: номер обращения, дата, ФИО, тема, статус.
-- Карточка обращения: все поля, прикреплённый файл (скачивание из
-  Supabase Storage), поле «Внутренние заметки» (сохраняется в internal_notes,
-  видно только сотрудникам), смена статуса.
-- Доступ у ролей admin и reception_manager (проверь RLS-политику).
+Сделай /obrashcheniya по аналогии с Заявками, из модели Appeal:
+- Таблица: appealNumber, дата, ФИО, тема, статус.
+- Карточка обращения: все поля, прикреплённый файл (ссылка на MinIO),
+  поле «Внутренние заметки» (internalNotes, видно только сотрудникам),
+  смена статуса.
+- Доступ у ролей ADMIN и RECEPTION_MANAGER — проверь в
+  cms/packages/api/src/middleware/auth.ts (requireRole).
 ```
 
-**Промпт 2.4 — email-уведомления:**
+**Промпт 2.4 — email-уведомления (используем существующий mailer):**
 
 ```
-Настрой email-уведомления через Resend (resend.com, бесплатно 100 писем/день)
-и Supabase Edge Function + Database Webhook:
-1. Новая запись в join_requests или appeals → письмо ответственному
-   (email задаётся в таблице site_settings, ключ notify_email).
-2. Смена статуса в appeals → письмо заявителю на его email (если указан):
+cms/packages/api/src/lib/mailer.ts уже настроен на nodemailer/SMTP.
+Подключи вызовы sendMail():
+1. При создании JoinRequest или Appeal → письмо на email из Setting
+   (ключ notify_email).
+2. При смене статуса Appeal → письмо заявителю на его email (если указан):
    «Ваше обращение NPK-2026-XXXXX: статус изменён на ...».
-Объясни пошагово, где взять API-ключ Resend и как добавить его в секреты
-Supabase (Edge Functions → Secrets). Ключ в код не вставляй.
+Не создавай новую инфраструктуру для писем — используй sendMail() как есть.
 ```
 
-**Проверка:** отправь заявку с сайта → в админке появилась с бейджем «Новая» → смени статус → экспортни Excel → на email пришло уведомление.
+**Проверка:** отправь заявку с сайта → в админке появилась с бейджем «Новая» → смени статус → экспортни Excel → на email пришло уведомление (нужен настроенный SMTP в `cms/.env`).
 
 ---
 
@@ -288,198 +351,225 @@ Supabase (Edge Functions → Secrets). Ключ в код не вставляй.
 
 Реализует пункты 6.2 и 6.3 ТЗ. Самый объёмный этап — дели на сессии по промптам.
 
-**Промпт 3.1 — миграция данных из кода в БД:**
+**Промпт 3.1 — seed: перенос хардкода в БД:**
 
 ```
-Прочитай docs/PLAN.md, Часть 2, раздел «CMS-таблицы». Создай миграцию
-supabase/migrations/002_cms.sql со всеми CMS-таблицами. Затем напиши
-одноразовый seed-скрипт, который переносит в БД весь хардкод:
-- candidates, regions (объединить с BRANCHES из BranchMapSection в одну
-  таблицу branches — в архитектуре это помечено как обязательная задача),
-  newsItems, testimonials, socialStats из src/lib/data.ts;
-- leaders из LeadershipPage, sections из HistoryPage, BLOCKS из ProgramPage,
-  PROJECTS и SOCIALS из MediaPage, ALL_NEWS из NewsPage, ALL_SMI из SmiPage,
-  PRODUCTS из ShopPage, materials из PressKitPage, контакты футера.
-Публичное чтение этих таблиц разрешено (RLS: select для anon), запись — только
-по ролям. Seed выполни как SQL-вставки, дай мне файл для SQL Editor.
+Прочитай app/src/lib/data.ts и данные, разбросанные по страницам (candidates,
+regions/BRANCHES из BranchMapSection, newsItems, testimonials, socialStats,
+leaders из LeadershipPage, sections из HistoryPage, BLOCKS из ProgramPage,
+PROJECTS из MediaPage, ALL_NEWS из NewsPage, ALL_SMI из SmiPage, materials из
+PressKitPage, контакты футера). Дополни cms/packages/api/prisma/seed.ts:
+перенеси весь этот хардкод в соответствующие модели (Часть 2 docs/PLAN.md).
+Регионы и BRANCHES свести в одну таблицу Branch (убрать дублирование).
+Выполни: cd cms/packages/api && pnpm db:seed — покажи результат.
 ```
 
-**Промпт 3.2 — сайт читает из БД:**
+**Промпт 3.2 — публичные Express-роуты для контента:**
 
 ```
-Переведи страницы сайта с хардкода на чтение из Supabase. По одной за раз,
-начни с новостей: NewsPage, NewsSection главной, NewsArticlePage (по slug),
-SearchPage. Затем: CandidatesPage, LeadershipPage, BranchesPage + BranchMapSection
-+ дропдаун филиалов в хедере, HistoryPage, ProgramPage, SmiPage, PressKitPage,
-MediaPage, ShopPage, контакты футера и ContactsPage.
-Требования: дизайн не трогать; добавить скелетон-загрузку; если БД недоступна —
-показывать текущие данные как фолбэк, а не белый экран; фильтры и пагинация
-NewsPage должны работать с данными из БД.
-Работай поэтапно и после каждой страницы останавливайся, чтобы я проверил.
+По образцу существующих публичных роутов (cms/packages/api/src/modules/team/
+team.controller.ts, .../contacts/offices.controller.ts) создай публичные
+GET-эндпоинты (/api/v1/...) для: news (с фильтром по категории/формату и
+пагинацией), candidates, branches, history-events, program-blocks,
+media-projects, media-publications, testimonials, team (с фильтром по
+group), documents, menu-items, settings, faq.
 ```
 
-**Промпт 3.3 — редактор новостей (п. 6.2 ТЗ):**
+**Промпт 3.3 — сайт читает из API вместо хардкода:**
 
 ```
-Сделай раздел /admin/novosti:
-- Список новостей: статус (черновик/опубликовано/запланировано), дата, заголовок,
-  категория, отметка «в Telegram». Фильтры и поиск.
-- Форма создания/редактирования: заголовок и лид на двух языках (вкладки
-  РУС/ҚАЗ), тело — rich-text редактор Tiptap (жирный, ссылки, подзаголовки,
-  цитаты, фото по тексту), обложка с загрузкой в Supabase Storage и
-  автосжатием до WebP, категория, теги, формат (Новости/Релизы/Статьи/
-  Аналитика/Интервью — как в фильтрах NewsPage).
-- Кнопки: «Сохранить черновик», «Опубликовать», «Запланировать» (дата и время;
-  публикация по расписанию — через pg_cron в Supabase).
-- Чекбокс «Не публиковать в Telegram» (поле tg_skip).
-- slug генерируется из заголовка транслитерацией.
+Переведи страницы сайта на чтение из app/src/lib/api.ts вместо
+app/src/lib/data.ts. По одной странице за раз, начни с новостей: NewsPage,
+NewsSection главной, NewsArticlePage (по slug), SearchPage. Затем:
+CandidatesPage, LeadershipPage, BranchesPage + BranchMapSection + дропдаун
+филиалов в хедере, HistoryPage, ProgramPage, SmiPage, PressKitPage,
+MediaPage, ShopPage, контакты футера, ContactsPage.
+Требования: дизайн не трогать; скелетон-загрузка; если API недоступен —
+показывать текущие хардкод-данные как фолбэк, а не белый экран; фильтры и
+пагинация NewsPage — через query-параметры к API.
+Работай по одной странице за раз, останавливайся после каждой для проверки.
 ```
 
-**Промпт 3.4 — редактор контента страниц (п. 6.3 ТЗ):**
+**Промпт 3.4 — редактор новостей (п. 6.2 ТЗ):**
 
 ```
-Сделай раздел /admin/kontent — управление остальными сущностями. Для каждой —
-простая CRUD-таблица с формой (создать/изменить/удалить, загрузка фото
-в Storage): Кандидаты, Руководство, Филиалы, История партии, Программные
-блоки, Медиапроекты, Медиакоманда, Пресс-кит (с загрузкой файлов и
-автозаполнением размера), Отзывы, СМИ о нас, Товары магазина.
-Плюс: /admin/stranicy — редактирование текстовых блоков статичных страниц
-(таблица page_blocks: О партии, Фракция, Контакты, футер) через Tiptap;
-/admin/menu — пункты меню с drag-and-drop сортировкой;
-/admin/nastroyki — site_settings: счётчики главной, соцсети, email для
-уведомлений; /admin/dokumenty — PDF-документы (Устав, депутатские запросы).
-Доступ по ролям: branch_editor видит только свой филиал (проверь RLS).
+Возьми cms/packages/cms/src/pages/news/NewsEditor.tsx и NewsList.tsx как
+основу (они уже почти готовы под мультиязычные новости) и адаптируй:
+- Список: статус (черновик/опубликовано/запланировано), дата, заголовок,
+  категория, формат, отметка «в Telegram» (tgPosted). Фильтры и поиск.
+- Форма: заголовок и лид на RU/KZ (вкладки), тело — уже используемый
+  RichTextEditor.tsx (проверь, TipTap или аналог), обложка — загрузка через
+  существующий MediaLibrary/MediaPicker, категория, теги, format.
+- Кнопки: «Сохранить черновик», «Опубликовать», «Запланировать» (дата и
+  время — используй node-cron джобу, которая раз в минуту проверяет
+  scheduledAt <= now() и переводит SCHEDULED → PUBLISHED).
+- Чекбокс «Не публиковать в Telegram» → News.tgSkip.
+- slug — транслитерация из заголовка (проверь, есть ли уже утилита в
+  cms/packages/api/src/modules/news/news.service.ts).
+```
+
+**Промпт 3.5 — редактор контента страниц (п. 6.3 ТЗ):**
+
+```
+Сделай в cms/packages/cms/src разделы CRUD (по образцу существующих
+pages/team/TeamPage.tsx, pages/offices/OfficesPage.tsx): Кандидаты,
+Руководство/Медиакоманда (TeamMember с фильтром по group), Филиалы (Branch),
+История партии, Программные блоки, Медиапроекты, Пресс-кит и документы
+(Document), Отзывы, СМИ о нас.
+Плюс: /stranicy — редактирование PageBlock/PageTranslation (уже есть
+PageEditor.tsx — адаптировать под блоки НПК: О партии, Фракция, Контакты,
+футер) через RichTextEditor; /menu — MenuItem с drag-and-drop сортировкой;
+/nastroyki — Setting (счётчики главной, соцсети, notify_email,
+tg_delay_minutes).
+Доступ по ролям: BRANCH_EDITOR видит и редактирует только свой Branch
+(добавь middleware requireOwnBranch в cms/packages/api/src/middleware/auth.ts,
+проверяющий req.user.branchId === req.params.branchId для не-ADMIN).
 Делай по 2–3 сущности за раз, я проверяю между шагами.
 ```
 
-**Промпт 3.5 — пользователи CMS:**
+**Промпт 3.6 — пользователи CMS:**
 
 ```
-Сделай раздел /admin/polzovateli (только для admin): список пользователей CMS,
-приглашение нового по email (Supabase Auth invite), назначение роли и, для
-branch_editor, привязка к филиалу. Деактивация пользователя.
+Адаптируй cms/packages/cms/src/pages/UsersPage.tsx под роли НПК: список
+пользователей, создание нового (email, имя, роль, для BRANCH_EDITOR —
+привязка к Branch, для SECTION_EDITOR — поле section), деактивация
+(User.status = BLOCKED). Доступ — только ADMIN.
 ```
 
-**Проверка:** создай новость в админке → она появилась на сайте в /novosti и в поиске. Черновик — не появился. Запланируй на +5 минут — появилась сама. Поменяй телефон филиала — обновился на карте.
+**Проверка:** создай новость в админке → появилась на сайте в /novosti и в поиске. Черновик — не появился. Запланируй на +5 минут — появилась сама (node-cron сработал). Поменяй телефон филиала в BRANCH_EDITOR-аккаунте своего региона — обновился на карте; попробуй отредактировать чужой филиал — должен быть запрещён (403).
 
 ---
 
 ### Этап 4. Автопостинг в Telegram (0,5 дня) — п. 7.2 ТЗ
 
-**Руками:** в Telegram открой @BotFather → /newbot → получи токен. Добавь бота администратором в канал @halykparty (на тесте — в свой тестовый канал).
+**Руками:** в Telegram открой @BotFather → /newbot → получи токен. Добавь бота администратором в канал @halykparty (на тесте — в свой тестовый канал). Добавь `TELEGRAM_BOT_TOKEN` и `TELEGRAM_CHANNEL_ID` в `cms/.env`.
 
 **Промпт 4.1:**
 
 ```
-Сделай Supabase Edge Function tg-autopost: при публикации новости (webhook на
-изменение status → published, если tg_skip = false) отправляет в Telegram-канал
-пост через Bot API sendPhoto: фото обложки, жирный заголовок, лид до 200
-символов, гиперссылка «Читать полностью →» на страницу новости.
-Задержка публикации настраивается в site_settings (tg_delay_minutes: 0–15).
-После отправки ставить tg_posted = true, чтобы не задублировать.
-Токен бота и ID канала — в секретах Edge Functions. Объясни, как узнать
-chat_id канала и куда вставить секреты.
+Создай модуль cms/packages/api/src/modules/telegram/ с сервисом, который
+отправляет пост в Telegram-канал через Bot API (sendPhoto): фото обложки
+новости, жирный заголовок, лид до 200 символов, гиперссылка
+«Читать полностью →» на страницу новости на сайте.
+Вызывай эту функцию из news.service.ts сразу после смены status → PUBLISHED
+(если News.tgSkip = false), с задержкой из Setting (ключ tg_delay_minutes,
+0–15 минут) — реализуй через node-cron (джоба проверяет новости со статусом
+PUBLISHED, tgPosted=false, publishedAt + delay <= now()).
+После отправки — News.tgPosted = true, чтобы не задублировать.
+Токен и chat_id — только через process.env, не хардкодить. Объясни, как
+узнать chat_id канала.
 ```
 
-**Проверка:** опубликуй новость → пост в тестовом канале с фото и ссылкой. Опубликуй с чекбоксом «Не публиковать» — поста нет.
+**Проверка:** опубликуй новость → пост в тестовом канале с фото и ссылкой. Опубликуй с `tgSkip=true` — поста нет.
 
 ---
 
 ### Этап 5. SMS-верификация формы вступления (1–2 дня) — п. 5.8 ТЗ
 
-**Руками:** дождись ответа заказчика про SMS-шлюз (блок «ЗАПОЛНИТЬ ЗАКАЗЧИКУ» в ТЗ). Если шлюза нет — регистрируй mobizon.kz (казахстанский, простой REST API), пополни на тест ~1000 ₸. **Пока провайдера нет, этап можно построить целиком на «тестовом режиме» (код в консоли) и подключить шлюз за час позже.**
+**Руками:** дождись ответа заказчика про SMS-шлюз. Если шлюза нет — регистрируй mobizon.kz, пополни на тест ~1000 ₸. Добавь `MOBIZON_API_KEY` в `cms/.env`. **Пока провайдера нет, этап можно построить целиком на «тестовом режиме» (код в логах) и подключить шлюз позже.**
 
 **Промпт 5.1:**
 
 ```
-Переделай визард /vstupit под 4 шага из ТЗ:
-Шаг 1: ФИО (обязательно), дата рождения, пол.
-Шаг 2: телефон (обязательно), email, город/область (выпадающий список
-       из таблицы branches).
-Шаг 3: ввод SMS-кода (4 цифры, 6 полей автофокуса, повторная отправка через
-       60 секунд, максимум 3 кода на номер в час).
-Шаг 4: экран успеха «Поздравляем! Ваша заявка принята» + опциональный блок
-       «Хотите получить значок члена партии?» с полем адреса (merch_address).
-Логика кода: Edge Function sms-send генерирует код, хранит хэш кода в таблице
-sms_codes (номер, хэш, expires_at 5 минут, попытки), отправляет через
-Mobizon API (ключ в секретах). Edge Function sms-verify проверяет код и
-ставит phone_verified = true в заявке. Заявка создаётся только после
-верификации. Режим разработки: если секрета MOBIZON_KEY нет — код не
-отправляется, а пишется в логи функции, чтобы тестировать без SMS.
-Существующий выбор роли (member/volunteer/observer) оставить как шаг 0.
+Создай модуль cms/packages/api/src/modules/sms/ с двумя эндпоинтами:
+- POST /api/v1/sms/send { phone } — генерирует 4-значный код, сохраняет хэш
+  (bcrypt, как уже используется для паролей в auth.service.ts) в SmsCode
+  (expiresAt = +5 минут), отправляет через Mobizon API. Ограничение: не
+  больше 3 кодов на номер в час (проверка по SmsCode.createdAt). Если
+  MOBIZON_API_KEY не задан в .env — код не отправляется, а пишется в лог
+  (logger.info), чтобы тестировать без реальных SMS.
+- POST /api/v1/sms/verify { phone, code } — сверяет с хэшем, ставит
+  phoneVerified=true у соответствующего JoinRequest (или VideoAppointment
+  в Этапе 7).
+Переделай визард /vstupit (app/src/pages/JoinPage.tsx) под 4 шага из ТЗ:
+Шаг 1: ФИО, дата рождения, пол.
+Шаг 2: телефон, email, город/область (список из GET /api/v1/branches).
+Шаг 3: 4 поля SMS-кода с автофокусом, повторная отправка через 60 секунд.
+Шаг 4: экран успеха + опциональный блок «Хотите получить значок?» с полем
+       адреса (JoinRequest.merchAddress).
+JoinRequest создаётся в БД только после успешной верификации кода.
 ```
 
-**Проверка:** пройди визард на своём номере → SMS пришла → неверный код отклонён → верный код создал заявку с phone_verified = true в админке.
+**Проверка:** пройди визард на своём номере (или проверь код в логах API, если Mobizon не подключён) → неверный код отклонён → верный код создал заявку с `phoneVerified=true` в админке.
 
 ---
 
 ### Этап 6. AI чат-бот (1–2 дня) — п. 7.1 ТЗ
 
-**Руками:** создай API-ключ на console.anthropic.com (позже — на аккаунт заказчика, оплата ~30 000 ₸/мес по ТЗ на нём). Запроси у заказчика FAQ 20–50 вопросов (блок в ТЗ) — но не жди: бот работает и без FAQ, на контенте сайта.
+**Руками:** создай API-ключ на console.anthropic.com, добавь `ANTHROPIC_API_KEY` в `cms/.env`. Запроси у заказчика FAQ 20–50 вопросов — не жди, бот работает и без FAQ, на контенте сайта.
 
 **Промпт 6.1:**
 
 ```
-Сделай чат-бот согласно п. 7.1 ТЗ (docs/PLAN.md, Часть 0, AI-функции):
-1. Edge Function chatbot: принимает историю диалога, вызывает Claude API
-   (модель claude-haiku-4-5, ключ в секретах). System prompt собирается из БД:
-   программные блоки, контакты всех филиалов, руководство, темы приёмной,
-   таблица faq (создай: question, answer, lang) + жёсткие правила:
-   - отвечать только по информации сайта партии;
-   - на языке обращения (русский/казахский);
-   - не генерировать политических высказываний и оценок, не обещать ничего
-     от лица партии;
-   - вне темы: «Этот вопрос вне моей компетенции. Могу помочь найти
-     информацию о партии»;
-   - направлять на страницы: вступление → /vstupit, обращение → /priemnaya,
-     руководство → /rukovodstvo, филиалы → /filialy.
-2. Виджет на сайте: кнопка в правом нижнем углу на всех страницах
-   (в PageLayout), окно чата в стиле сайта, история в sessionStorage,
-   индикатор набора, ссылки в ответах кликабельны.
-3. Лимит: 20 сообщений на сессию, защита от спама по IP (rate limit
-   в Edge Function).
-4. Раздел /admin/faq для управления вопросами-ответами.
-Кэшируй system prompt (Anthropic prompt caching), чтобы снизить расходы.
+Создай модуль cms/packages/api/src/modules/chatbot/ с эндпоинтом
+POST /api/v1/chatbot: принимает историю диалога, вызывает Claude API
+(модель claude-haiku-4-5, ключ из process.env.ANTHROPIC_API_KEY через
+официальный @anthropic-ai/sdk). System prompt собирается из БД: программные
+блоки (ProgramBlock), контакты всех филиалов (Branch), руководство
+(TeamMember, group=LEADERSHIP), темы приёмной (AppealTopic), Faq + жёсткие
+правила:
+- отвечать только по информации сайта партии;
+- на языке обращения (русский/казахский);
+- не генерировать политических высказываний и оценок, не обещать ничего
+  от лица партии;
+- вне темы: «Этот вопрос вне моей компетенции. Могу помочь найти
+  информацию о партии»;
+- направлять на страницы: вступление → /vstupit, обращение → /priemnaya,
+  руководство → /rukovodstvo, филиалы → /filialy.
+Кэшируй system prompt через prompt caching Anthropic API. Rate limit по IP
+(express-rate-limit уже есть в проекте — переиспользуй паттерн из index.ts)
+— 20 сообщений на сессию.
+Виджет на сайте app/: кнопка в правом нижнем углу во всех страницах
+(app/src/components/PageLayout.tsx), окно чата в стиле сайта, история в
+sessionStorage, индикатор набора, ссылки в ответах кликабельны.
+Сделай в cms/packages/cms раздел /faq — CRUD для модели Faq (только ADMIN
+и CHIEF_EDITOR).
 ```
 
-**Проверка (сценарии прямо из ТЗ):** «Как вступить в партию?» → объясняет + ссылка /vstupit. «Где ваш офис в Таразе?» → контакты Жамбылского филиала. «Что партия думает о пенсиях?» → цитирует программу. Вопрос про погоду → отказ по скрипту. Вопрос на казахском → ответ на казахском.
+**Проверка (сценарии из ТЗ):** «Как вступить в партию?» → объясняет + ссылка /vstupit. «Где ваш офис в Таразе?» → контакты Жамбылского филиала. «Что партия думает о пенсиях?» → цитирует программу. Вопрос про погоду → отказ по скрипту. Вопрос на казахском → ответ на казахском.
 
 ---
 
 ### Этап 7. Видеоприём (3–4 дня) — п. 5.9 ТЗ, самая сложная часть
 
-**Руками:** зарегистрируйся на daily.co (Free: 10 000 минут/мес — хватит). Возьми API-ключ. Дождись ответа заказчика «кто ведёт приёмы» (блок в ТЗ) — от этого зависит, сколько кабинетов заводить, но систему строим универсально.
+**Руками:** зарегистрируйся на daily.co (Free: 10 000 минут/мес), возьми API-ключ, добавь `DAILY_API_KEY` в `cms/.env`. Дождись ответа заказчика «кто ведёт приёмы».
 
-**Промпт 7.1 — запись на приём:**
+**Промпт 7.1 — модель и запись на приём:**
 
 ```
-Сделай на странице /priemnaya вторую вкладку «Видеоприём» (первая — текущая
-форма письменного обращения):
-Шаг 1: выбор депутата/представителя (карточки из таблицы cms_users с ролью
-       deputy — добавь такую роль и таблицу профилей deputies: имя, фото,
-       должность).
-Шаг 2: календарь свободных слотов на 2 недели вперёд (генерируются из
-       deputy_schedules минус занятые video_appointments).
-Шаг 3: ФИО + телефон + SMS-подтверждение (переиспользуй Edge Functions
-       sms-send/sms-verify из Этапа 5).
-Шаг 4: экран успеха с датой, временем и ссылкой на видеозвонок.
-При подтверждении: Edge Function создаёт комнату через Daily API
-(https://api.daily.co/v1/rooms, ключ в секретах), комната с exp = конец
-слота + 15 минут, ссылка сохраняется в video_appointments.
+Добавь роль DEPUTY в enum Role (cms/packages/api/prisma/schema.prisma) и
+модель DeputyProfile (userId, photoUrl, position) — для карточек выбора на
+сайте. Убедись, что модели VideoAppointment и DeputySchedule из Часть 2
+уже добавлены в Этапе 1 (если нет — добавь сейчас с миграцией).
+На странице app/src/pages/ReceptionPage.tsx сделай вторую вкладку
+«Видеоприём» (первая — текущая форма письменного обращения):
+Шаг 1: выбор депутата (карточки из GET /api/v1/deputies).
+Шаг 2: календарь свободных слотов на 2 недели вперёд — эндпоинт
+       GET /api/v1/deputies/:id/slots (генерируется из DeputySchedule
+       минус занятые VideoAppointment).
+Шаг 3: ФИО + телефон + SMS-подтверждение (переиспользуй /api/v1/sms/send
+       и /api/v1/sms/verify из Этапа 5).
+Шаг 4: экран успеха с датой, временем и ссылкой на звонок.
+При подтверждении: POST /api/v1/video-appointments создаёт комнату через
+Daily API (https://api.daily.co/v1/rooms, ключ в cms/.env), комната с
+exp = конец слота + 15 минут, ссылка сохраняется в
+VideoAppointment.dailyRoomUrl.
 ```
 
 **Промпт 7.2 — сам звонок и кабинет депутата:**
 
 ```
-1. Страница /videopriem/:id — встроенный звонок через @daily-co/daily-js
-   (Daily Prebuilt iframe на весь экран, камера/микрофон/выход). Доступ
-   к странице открывается за 10 минут до слота.
-2. Личный кабинет депутата /admin/priem (роль deputy): «Моё расписание» —
-   задание рабочих окон по дням недели и длительности слота (30/45/60 мин),
-   блокировка дат; «Мои записи» — список записей с кнопкой «Присоединиться»
-   и статусами (запланирован/завершён/не состоялся).
-3. Напоминания за 1 час: pg_cron каждые 10 минут находит записи, до которых
-   осталось 55–65 минут, и шлёт гражданину SMS и email со ссылкой.
+1. Страница app/src/pages/VideoCallPage.tsx на роуте /videopriem/:id —
+   встроенный звонок через @daily-co/daily-js (Daily Prebuilt iframe на
+   весь экран). Доступ открывается за 10 минут до слота (проверка на
+   бэкенде по slotStart).
+2. В cms/packages/cms сделай личный кабинет /priem (роль DEPUTY):
+   «Моё расписание» — задание рабочих окон по дням недели и длительности
+   слота (30/45/60 мин, DeputySchedule), блокировка дат; «Мои записи» —
+   список VideoAppointment с кнопкой «Присоединиться» и статусами.
+3. node-cron джоба каждые 10 минут находит VideoAppointment, до которых
+   осталось 55–65 минут, и шлёт гражданину SMS (Mobizon) и email
+   (mailer.ts) со ссылкой.
 ```
 
 **Проверка:** задай расписание депутата → запишись как гражданин с SMS-подтверждением → открой звонок в двух браузерах (депутат в кабинете, гражданин по ссылке) → видео и звук работают → напоминание пришло.
@@ -492,23 +582,34 @@ Mobizon API (ключ в секретах). Edge Function sms-verify прове�
 
 ```
 Проведи аудит по требованиям безопасности из ТЗ и исправь:
-1. reCAPTCHA v3 (или Cloudflare Turnstile — проще и без Google) на формах
-   вступления, обращения и подписки магазина; проверка токена в Edge Function.
-2. 2FA (TOTP через Supabase Auth MFA) — обязательна для роли admin,
-   опциональна для остальных ролей CMS.
-3. Проверь все RLS-политики: анонимный пользователь не должен читать
-   join_requests, appeals, sms_codes, cms_users. Выпиши таблицей: таблица →
-   кто читает → кто пишет.
-4. Валидация и санитизация всех входных данных в Edge Functions (XSS в
-   текстах обращений, ограничение размера файлов 10 МБ, только PDF/JPG/PNG).
-5. Rate limit на все публичные Edge Functions.
-6. Страница «Политика конфиденциальности» (по закону РК «О персональных
-   данных» № 94-V: цель сбора, согласие, право на удаление) и подключение
-   к чекбоксам согласия в формах — контент страницы через page_blocks.
-7. Автогенерация sitemap.xml при публикации новости (Edge Function, п. 8.2 ТЗ).
+1. hCaptcha уже подключён к формам (JoinRequest/Appeal/ShopSubscriber —
+   проверь, что добавлен по тому же паттерну, что SupplierFormInputSchema
+   в Этапе 1). Заведи ключи hCaptcha под домен НПК в .env.
+2. 2FA (TOTP, библиотека otplib) — добавь поверх существующего JWT-flow в
+   cms/packages/api/src/modules/auth/: обязательна для роли ADMIN,
+   опциональна для остальных ролей CMS. Экран настройки в
+   cms/packages/cms (QR-код + ввод кода подтверждения).
+3. Пройдись по всем контроллерам cms/packages/api/src/modules/*: убедись,
+   что публичные роуты (/api/v1/*) не отдают приватные поля (internalNotes
+   у Appeal, passwordHash у User и т.д. — используй select в Prisma-запросах,
+   не полагайся на фронтенд). Выпиши таблицей: модель → кто читает публично
+   → кто пишет/читает полностью.
+4. Валидация и санитизация всех входных данных (zod-схемы в
+   cms/packages/shared уже частично это делают — проверь XSS в текстах
+   обращений/новостей, ограничение размера файлов 10 МБ, только
+   PDF/JPG/PNG — multer уже настроен, проверь fileFilter).
+5. Rate limit — express-rate-limit уже используется в index.ts, убедись,
+   что все новые публичные роуты (join-requests, appeals, sms, chatbot)
+   тоже под ним.
+6. Страница «Политика конфиденциальности» (закон РК № 94-V: цель сбора,
+   согласие, право на удаление) — через существующую модель Page/PageBlock;
+   подключи чекбоксы согласия к формам JoinPage и ReceptionPage.
+7. Автогенерация sitemap.xml — эндпоинт GET /sitemap.xml на API (или
+   отдельный статический файл, перегенерируемый node-cron раз в час) со
+   всеми опубликованными новостями и статичными страницами.
 ```
 
-**Руками:** в Supabase Pro включи Point-in-Time Recovery (это и есть «ежедневные бэкапы» из ТЗ, даже лучше). Прогони формы: SQL-инъекция в поле имени (`' OR 1=1 --`), скрипт в тексте обращения (`<script>alert(1)</script>`) — всё должно сохраняться как безобидный текст.
+**Руками:** настрой автоматический `pg_dump` по крону на сервере (ежедневно) + бэкап Docker-volume `minio_data` — это и есть «ежедневные бэкапы» из ТЗ (см. предупреждение в Часть 1 про self-hosted MinIO). Прогони формы: SQL-инъекция в поле имени (`' OR 1=1 --`), скрипт в тексте обращения (`<script>alert(1)</script>`) — всё должно сохраняться как безобидный текст (Prisma параметризует запросы сама, но проверь ручные `$queryRaw`, если такие есть).
 
 ---
 
@@ -518,23 +619,30 @@ Mobizon API (ключ в секретах). Edge Function sms-verify прове�
 
 ```
 Подготовь проект к продакшену:
-1. Сборка: vite build, проверь что /admin не попадает в основной бандл
-   (code splitting работает).
-2. Деплой фронтенда на Cloudflare Pages (объясни пошагово: подключение
-   Git-репозитория, переменные окружения, кастомный домен).
-3. Чек-лист DNS для переноса halykpartiyasy.kz на Cloudflare + 301-redirect
-   qhp.kz (Bulk Redirects).
-4. robots.txt и мета-теги: закрой /admin от индексации.
-5. Прогони Lighthouse: цель PageSpeed Mobile ≥ 80 (требование ТЗ) —
-   если ниже, оптимизируй (ленивые изображения, WebP, префетч шрифтов).
+1. Проверь cms/docker-compose.yml — актуализируй сервисы (postgres, minio,
+   api, cms, nginx, frontend). Добавь healthcheck и restart policy, если
+   где-то не хватает.
+2. vite build для app/ и cms/packages/cms — проверь, что CMS собирается
+   отдельным бандлом от основного сайта (уже так по структуре — админка
+   не примешивается к app/, она отдельный docker-сервис).
+3. Чек-лист деплоя на VPS (казахстанский или европейский облачный
+   провайдер): Docker Compose поднимается, nginx с SSL-сертификатом
+   (Let's Encrypt или свой), домен halykpartiyasy.kz указывает на сервер.
+4. Cloudflare перед VPS: proxy DNS-записи (оранжевое облако) — даёт CDN
+   и скрывает IP сервера, плюс 301-redirect qhp.kz через Bulk Redirects.
+5. robots.txt и мета-теги: закрой /cms (админку) от индексации.
+6. Настрой ежедневный cron на сервере: pg_dump + архивирование volume
+   minio_data в отдельное хранилище (S3/облако) — см. Часть 1 про бэкапы.
+7. Прогони Lighthouse: цель PageSpeed Mobile ≥ 80 — если ниже, оптимизируй
+   (ленивые изображения, WebP, префетч шрифтов).
 ```
 
 **Руками — передача заказчику (требования раздела 11 ТЗ):**
 
-- Перевести Supabase-проект и API-ключи (Anthropic, Mobizon, Daily, Resend, Telegram) на аккаунты/оплату заказчика.
-- Создать учётки CMS по списку заказчика (блок «Список пользователей CMS» в ТЗ).
-- Записать видеоинструкцию по CMS (входит в стоимость по ТЗ) — экран + голос, по разделам админки.
-- День обучения Маргариты (редактор) и администратора.
+- Перевести VPS-хостинг, домен и все API-ключи (Anthropic, Mobizon, Daily, Telegram, SMTP) на аккаунты/оплату заказчика.
+- Создать учётки CMS по списку заказчика.
+- Записать видеоинструкцию по CMS — экран + голос, по разделам админки.
+- День обучения редактора(ов) и администратора.
 - Зафиксировать открытый вопрос SSR/prerender для SEO (Часть 1) — предложить заказчику как доп. соглашение, если критично.
 
 ---
@@ -543,9 +651,9 @@ Mobizon API (ключ в секретах). Edge Function sms-verify прове�
 
 | Этап | Что | Дней | Зависимости от заказчика |
 |---|---|---|---|
-| 0 | Окружение, CLAUDE.md | 0,5 | — |
-| 1 | БД + рабочие формы | 1–2 | — |
-| 2 | Админка: заявки + обращения + email | 2–3 | email ответственного |
+| 0 | Окружение, CLAUDE.md | 0,5 | — (выполнен) |
+| 1 | Prisma-схема + рабочие формы | 1–2 | — |
+| 2 | Админка: роли + заявки + обращения + email | 2–3 | email ответственного |
 | 3 | CMS: новости + контент + миграция | 3–4 | список пользователей CMS |
 | 4 | Автопостинг Telegram | 0,5 | Bot Token / доступ к каналу |
 | 5 | SMS-верификация /vstupit | 1–2 | выбор SMS-шлюза |
@@ -561,12 +669,13 @@ Mobizon API (ключ в секретах). Edge Function sms-verify прове�
 
 | Сервис | Стоимость | Зачем |
 |---|---|---|
-| Supabase Pro | $25/мес | БД, бэкапы, файлы |
+| VPS-хостинг (Docker: Postgres+MinIO+API+CMS+nginx) | ~$20–40/мес в зависимости от провайдера | БД, файлы, backend, deploy |
 | Claude API | ~$50–70/мес (~30 000 ₸ из ТЗ) | чат-бот |
 | Mobizon | ~15–25 ₸/SMS по факту | верификация + напоминания |
 | Daily.co | $0 (до 10 000 мин/мес) | видеоприём |
-| Resend | $0 (до 100 писем/день) | email-уведомления |
-| Cloudflare | $0 | CDN + хостинг фронта + редиректы |
+| SMTP (существующий провайдер почты заказчика или Resend free-tier) | $0 | email-уведомления |
+| Cloudflare | $0 | CDN + редиректы |
+| hCaptcha | $0 (free tier) | защита форм |
 
 ---
 
@@ -574,9 +683,10 @@ Mobizon API (ключ в секретах). Edge Function sms-verify прове�
 
 | Этап | Статус |
 |---|---|
-| 0 | В работе |
-| 1–9 | Не начаты |
+| 0 | Выполнен |
+| 1 | Не начат |
+| 2–9 | Не начаты |
 
 ---
 
-*Документ производный от ТЗ v1.0 (июнь 2026) и SITE_ARCHITECTURE.md. Расхождения с ТЗ, требующие фиксации с заказчиком: 1) Supabase как «аналог Node.js» — формально соответствует; 2) SPA вместо Next.js SSR — вопрос SEO вынесен в отдельное решение. Папка `cms/` (собственный Node.js backend, docker-compose, pnpm-workspace) признана устаревшим черновиком более раннего подхода и заменяется на Supabase + `/admin` внутри `app/` — см. CLAUDE.md.*
+*Документ производный от ТЗ v1.0 (июнь 2026) и SITE_ARCHITECTURE.md. Архитектура пересмотрена: вместо Supabase используется адаптация существующего backend/admin проекта из папки `cms/` (Node.js/Express/Prisma/PostgreSQL/MinIO, изначально написан для другого проекта — DAR Rail). Расхождение с ТЗ, требующее фиксации с заказчиком: вопрос SPA vs Next.js SSR для SEO — вынесен в отдельное решение (Этап 9).*
