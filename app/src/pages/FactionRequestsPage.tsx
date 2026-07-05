@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FileText } from 'lucide-react';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
+import { fetchDocuments } from '@/lib/api';
 
 interface DeputyRequest {
   date: string;
@@ -12,7 +13,9 @@ interface DeputyRequest {
 
 const BASE_URL = 'https://halykpartiyasy.kz';
 
-const requests: DeputyRequest[] = [
+// Фолбэк на случай недоступности API — те же данные, что уже перенесены в CMS
+// (модель Document, type=deputy_request).
+const FALLBACK_REQUESTS: DeputyRequest[] = [
   { date: '17.06.2026', title: 'О неполноте информации о финансировании организаций из иностранных источников', excerpt: 'В марте этого года Комитетом государственных доходов Министерства финансов Республики Казахстан был опубликован так называемый в народе «список иноагентов».', url: `${BASE_URL}/ru/deputatskij-zapros/o-nepolnote-informacii-o-finansirovanii-organizacij-poluchayushchih-sredstva-iz-inostrannyh-istochnikov` },
   { date: '03.06.2026', title: 'Об организации и проведении выпускных мероприятий учреждений образования', excerpt: 'Воспитание подрастающего поколения — это общая ответственность государства, педагогов и родителей.', url: `${BASE_URL}/ru/deputatskij-zapros/ob-organizacii-i-provedenii-vypusknyh-meropriyatij-uchrezhdenij-obrazovaniya-rk` },
   { date: '03.06.2026', title: 'О создании единого контролирующего органа в сфере промышленной безопасности', excerpt: 'Сохранение жизни и здоровья граждан является безусловным приоритетом государственной политики.', url: `${BASE_URL}/ru/deputatskij-zapros/o-sozdanii-edinogo-samostoyatelnogo-kontroliruyushchego-gosudarstvennogo-organa-v-sfere-promyshlennoj-bezopasnosti` },
@@ -23,17 +26,23 @@ const requests: DeputyRequest[] = [
   { date: '08.04.2026', title: 'О повышении эффективности институтов советов и уполномоченных по защите прав уязвимых граждан', excerpt: 'Принцип «слышащего государства» должен активно реализовываться на практике.', url: `${BASE_URL}/ru/deputatskij-zapros/o-povyshenii-effektivnosti-institutov-sovetov-i-upolnomochennyh-po-zashchite-prav-socialno-uyazvimyh-kategorij-grazhdan` },
   { date: '08.04.2026', title: 'О проблемах обеспечения сельских населенных пунктов природным газом', excerpt: 'Обеспечение природным газом остаётся одним из наиболее актуальных вопросов для сельских регионов.', url: `${BASE_URL}/ru/deputatskij-zapros/o-problemah-obespecheniya-selskih-naselennyh-punktov-prirodnym-gazom` },
   { date: '18.03.2026', title: 'Об обеспечении водной безопасности: модернизация инфраструктуры и мониторинг утечек', excerpt: 'Вопрос рационального использования водных ресурсов неоднократно поднимался на высоком государственном уровне.', url: `${BASE_URL}/ru/deputatskij-zapros/ob-obespechenii-vodnoj-bezopasnosti-strany-modernizaciya-iznoshennoj-infrastruktury-i-vnedrenie-sistem-onlajn-monitoringa-utechek-kak-prioritet-gosudarstvennoj-politiki` },
-  { date: '18.03.2026', title: 'Об индексации государственных расходов в рамках образовательной программы «Болашак»', excerpt: 'Программа международной стипендии, учреждённая в 1993 году, — ключевой инструмент подготовки высококвалифицированных кадров.', url: `${BASE_URL}/ru/deputatskij-zapros` },
-  { date: '26.02.2026', title: 'О модернизации дорожной инфраструктуры в области Улытау', excerpt: 'Запрос о развитии дорожной сети региона в соответствии с государственным курсом на масштабную модернизацию.', url: `${BASE_URL}/ru/deputatskij-zapros` },
-  { date: '28.01.2026', title: 'О внедрении в Республике Казахстан налогового рулинга', excerpt: 'Инициатива связана с цифровизацией и интеграцией искусственного интеллекта в экономику страны.', url: `${BASE_URL}/ru/deputatskij-zapros` },
-  { date: '28.01.2026', title: 'О проблемах рынка оказания социальных и психологических услуг', excerpt: 'Запрос направлен на регулирование качества и безопасности психологической помощи населению.', url: `${BASE_URL}/ru/deputatskij-zapros` },
-  { date: '14.01.2026', title: 'О проблемах дополнительного образования в Республике Казахстан', excerpt: 'Система дополнительного образования демонстрирует системные изъяны, ведущие к ограничению доступа детей.', url: `${BASE_URL}/ru/deputatskij-zapros` },
-  { date: '14.01.2026', title: 'Об ужесточении требований к обороту алкогольной продукции', excerpt: 'Половина убийств в стране совершаются в состоянии опьянения, согласно данным МВД.', url: `${BASE_URL}/ru/deputatskij-zapros` },
-  { date: '17.12.2025', title: 'О проблемах развития туризма в Республике Казахстан', excerpt: 'Несмотря на большой потенциал, туристическая отрасль развивается недостаточно динамично.', url: `${BASE_URL}/ru/deputatskij-zapros` },
-  { date: '17.12.2025', title: 'О мерах повышения качества обязательного социального медицинского страхования', excerpt: 'Отсутствие прозрачного контроля за объёмом ОСМС вызывает недовольство граждан.', url: `${BASE_URL}/ru/deputatskij-zapros` },
-  { date: '10.12.2025', title: 'О прозрачности иностранного финансирования физических и юридических лиц', excerpt: 'Анализ реестра получателей иностранного финансирования вызывает озабоченность в вопросах национальной безопасности.', url: `${BASE_URL}/ru/deputatskij-zapros` },
-  { date: '10.12.2025', title: 'О недостатках реформы технического и профессионального образования', excerpt: 'Деление колледжей на «лиги» вызывает опасения среди экспертов и педагогов.', url: `${BASE_URL}/ru/deputatskij-zapros` },
+  { date: '18.03.2026', title: 'Об индексации государственных расходов в рамках образовательной программы «Болашак»', excerpt: 'Программа международной стипендии, учреждённая в 1993 году, — ключевой инструмент подготовки высококвалифицированных кадров.', url: `${BASE_URL}/ru/deputatskij-zapros/ob-indeksacii-gosudarstvennyh-rashodov-v-ramkah-obrazovatelnoj-programmy-bolashak` },
+  { date: '26.02.2026', title: 'О модернизации дорожной инфраструктуры в области Улытау', excerpt: 'Запрос о развитии дорожной сети региона в соответствии с государственным курсом на масштабную модернизацию.', url: `${BASE_URL}/ru/deputatskij-zapros/o-modernizacii-dorozhnoj-infrastruktury-v-oblasti-ulytau` },
+  { date: '28.01.2026', title: 'О внедрении в Республике Казахстан налогового рулинга', excerpt: 'Инициатива связана с цифровизацией и интеграцией искусственного интеллекта в экономику страны.', url: `${BASE_URL}/ru/deputatskij-zapros/o-vnedrenii-v-respublike-kazahstan-nalogovogo-rulinga` },
+  { date: '28.01.2026', title: 'О проблемах рынка оказания социальных и психологических услуг', excerpt: 'Запрос направлен на регулирование качества и безопасности психологической помощи населению.', url: `${BASE_URL}/ru/deputatskij-zapros/o-problemah-rynka-okazaniya-socialnyh-i-psihologicheskih-uslug-naseleniyu-i-ih-nizkom-kachestve` },
+  { date: '14.01.2026', title: 'О проблемах дополнительного образования в Республике Казахстан', excerpt: 'Система дополнительного образования демонстрирует системные изъяны, ведущие к ограничению доступа детей.', url: `${BASE_URL}/ru/deputatskij-zapros/o-problemah-dopolnitelnogo-obrazovaniya-v-respublike-kazahstan` },
+  { date: '14.01.2026', title: 'Об ужесточении требований к обороту алкогольной продукции', excerpt: 'Половина убийств в стране совершаются в состоянии опьянения, согласно данным МВД.', url: `${BASE_URL}/ru/deputatskij-zapros/ob-uzhestochenii-trebovanij-k-oborotu-alkogolnoj-produkcii-v-strane` },
+  { date: '17.12.2025', title: 'О проблемах развития туризма в Республике Казахстан', excerpt: 'Несмотря на большой потенциал, туристическая отрасль развивается недостаточно динамично.', url: `${BASE_URL}/ru/deputatskij-zapros/o-problemah-razvitiya-turizma-v-respublike-kazahstan` },
+  { date: '17.12.2025', title: 'О мерах повышения качества обязательного социального медицинского страхования', excerpt: 'Отсутствие прозрачного контроля за объёмом ОСМС вызывает недовольство граждан.', url: `${BASE_URL}/ru/deputatskij-zapros/o-merah-povysheniya-kachestva-i-sozdanie-uslovij-prozrachnosti-obyazatelnogo-socialnogo-medicinskogo-strahovaniya` },
+  { date: '10.12.2025', title: 'О прозрачности иностранного финансирования физических и юридических лиц', excerpt: 'Анализ реестра получателей иностранного финансирования вызывает озабоченность в вопросах национальной безопасности.', url: `${BASE_URL}/ru/deputatskij-zapros/o-prozrachnosti-inostrannogo-finansirovaniya-fizicheskih-i-yuridicheskih-lic-v-kazahstane` },
+  { date: '10.12.2025', title: 'О недостатках реформы технического и профессионального образования', excerpt: 'Деление колледжей на «лиги» вызывает опасения среди экспертов и педагогов.', url: `${BASE_URL}/ru/deputatskij-zapros/o-nedostatkah-reformy-sistemy-tehnicheskogo-i-professionalnogo-obrazovaniya` },
 ];
+
+function formatDate(iso: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '.');
+}
 
 const PER_PAGE = 6;
 
@@ -109,6 +118,28 @@ function RequestCard({ item }: { item: DeputyRequest }) {
 /* ─── Page ────────────────────────────────────────────────────────── */
 export function FactionRequestsPage() {
   const [page, setPage] = useState(1);
+  const [requests, setRequests] = useState<DeputyRequest[]>(FALLBACK_REQUESTS);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDocuments('deputy_request')
+      .then((docs) => {
+        if (docs.length === 0) return;
+        setRequests(
+          docs.map((d) => ({
+            date: formatDate(d.publishedAt),
+            title: d.title,
+            excerpt: d.description ?? '',
+            url: d.fileUrl,
+          }))
+        );
+      })
+      .catch(() => {
+        // API недоступен — остаёмся на FALLBACK_REQUESTS
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
   const total = requests.length;
   const start = (page - 1) * PER_PAGE;
   const visible = requests.slice(start, start + PER_PAGE);
@@ -177,7 +208,7 @@ export function FactionRequestsPage() {
           </span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 2 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 2, opacity: loading ? 0.6 : 1, transition: 'opacity .2s' }}>
           {visible.map((item, i) => (
             <RequestCard key={start + i} item={item} />
           ))}

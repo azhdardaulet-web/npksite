@@ -265,6 +265,7 @@ model Document {
   fileName    String
   fileSize    Int
   year        Int?
+  publishedAt DateTime?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 

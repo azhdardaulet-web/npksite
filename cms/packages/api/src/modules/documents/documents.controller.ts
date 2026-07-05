@@ -33,7 +33,7 @@ documentsRouter.get('/', async (req, res, next) => {
         ...(type ? { type: type as DocumentType } : {}),
         ...(year ? { year: parseInt(year as string) } : {}),
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: [{ publishedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }]
     });
     res.json(documents);
   } catch (err) {
@@ -127,7 +127,7 @@ publicDocumentsRouter.get('/', async (req, res, next) => {
         ...(type ? { type: type as DocumentType } : {}),
         ...(year ? { year: parseInt(year as string) } : {}),
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: [{ publishedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }]
     });
     res.json(documents);
   } catch (err) {

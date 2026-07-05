@@ -222,6 +222,7 @@ export const DocumentSchema = z.object({
   fileName: z.string(),
   fileSize: z.number().int(),
   year: z.number().int().min(2020).max(2100).optional(),
+  publishedAt: z.coerce.date().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });

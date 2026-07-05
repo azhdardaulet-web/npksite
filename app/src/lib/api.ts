@@ -279,6 +279,7 @@ export interface PublicDocument {
   fileName: string;
   fileSize: number;
   year: number | null;
+  publishedAt: string | null;
 }
 
 export function fetchDocuments(type?: DocumentType) {
