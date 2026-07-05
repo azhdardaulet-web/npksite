@@ -686,7 +686,7 @@ VideoAppointment.dailyRoomUrl.
 | 0 | Выполнен |
 | 1 | Выполнен |
 | 2 | Выполнен |
-| 3 | Частично: Промпты 3.1, 3.2, 3.4, 3.5 (частично), 3.6 выполнены + доработана старая админка darrail (News/Branches/Users/Pages, которые были не адаптированы при переносе). Осталось: Промпт 3.3 — миграция сайта (`app/`) с хардкода на API, по одной странице за раз |
+| 3 | Частично: Промпты 3.1, 3.2, 3.4, 3.5 (частично), 3.6 выполнены + доработана старая админка darrail (News/Branches/Users/Pages). Промпт 3.3 (сайт `app/` на API) — сделаны News (NewsPage/NewsSection/NewsArticlePage/SearchPage), CandidatesPage, LeadershipPage, HistoryPage, ProgramPage, MediaPage, SmiPage, PressKitPage, отзывы в ReceptionPage/Section. Осталось: BranchesPage + BranchMapSection + дропдаун филиалов в хедере, ShopPage, ContactsPage + контакты футера, NarodnoeMediaPage (медиакоманда, group=MEDIA_TEAM) |
 | 4–9 | Не начаты |
 
 ---
