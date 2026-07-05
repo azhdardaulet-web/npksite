@@ -21,6 +21,8 @@ import { NarodnoeMediaPage } from '@/pages/NarodnoeMediaPage';
 import { HistoryPage } from '@/pages/HistoryPage';
 import { ProjectsPage } from '@/pages/ProjectsPage';
 import { ProjectDetailPage } from '@/pages/ProjectDetailPage';
+import { FactionCompositionPage } from '@/pages/FactionCompositionPage';
+import { FactionRequestsPage } from '@/pages/FactionRequestsPage';
 
 function App() {
   return (
@@ -42,6 +44,8 @@ function App() {
         <Route path="/novosti" element={<NewsPage />} />
         <Route path="/rukovodstvo" element={<LeadershipPage />} />
         <Route path="/frakciya" element={<FactionPage />} />
+        <Route path="/frakciya/sostav" element={<FactionCompositionPage />} />
+        <Route path="/frakciya/zaprosy" element={<FactionRequestsPage />} />
         <Route path="/mediakits" element={<PressKitPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/magazin" element={<ShopPage />} />
