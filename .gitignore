@@ -1,0 +1,37 @@
+# Секреты — реальные .env-файлы никогда не коммитим (см. правило 2 в CLAUDE.md)
+.env
+.env.local
+.env.*.local
+**/.env
+!**/.env.example
+
+# Зависимости
+node_modules
+**/node_modules
+
+# Сборки
+dist
+dist-ssr
+**/dist
+build
+
+# Логи
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Система/редакторы
+.DS_Store
+*.local
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

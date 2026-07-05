@@ -1,0 +1,192 @@
+import { Router, Request, Response } from 'express';
+import { z } from 'zod';
+import { prisma } from '../../lib/prisma';
+import { authenticateToken, requireRole } from '../../middleware/auth';
+import { LangSchema } from '@dar-rail/shared';
+
+export const teamRouter = Router();
+
+const TranslationSchema = z.object({
+  lang: LangSchema,
+  name: z.string().min(1),
+  position: z.string().min(1),
+  bio: z.string().optional().nullable(),
+});
+
+const TeamMemberInputSchema = z.object({
+  photoUrl: z.string().url().optional().nullable(),
+  sortOrder: z.number().int().min(0).optional(),
+  translations: z.array(TranslationSchema).min(1),
+});
+
+const ReorderSchema = z.object({
+  ids: z.array(z.string().uuid()),
+});
+
+function handleError(err: unknown, res: Response): void {
+  const e = err as { message?: string; status?: number };
+  res.status(e.status ?? 500).json({ error: e.message ?? 'Внутренняя ошибка' });
+}
+
+const requireAdmin = [authenticateToken, requireRole('ADMIN')];
+const requireContent = [
+  authenticateToken,
+  requireRole('CONTENT_MANAGER', 'NEWS_EDITOR', 'PROCUREMENT_MANAGER', 'ADMIN'),
+];
+
+// ─── Public: GET /api/v1/team ─────────────────────────────────────────────────
+
+teamRouter.get('/', async (req: Request, res: Response): Promise<void> => {
+  const lang = (typeof req.query.lang === 'string' ? req.query.lang : undefined) ?? 'ru';
+
+  try {
+    const members = await prisma.teamMember.findMany({
+      orderBy: { sortOrder: 'asc' },
+      include: { translations: true },
+    });
+
+    const result = members.map((m) => {
+      const translation =
+        m.translations.find((t) => t.lang === lang) ??
+        m.translations.find((t) => t.lang === 'ru') ??
+        null;
+      return { id: m.id, photoUrl: m.photoUrl, sortOrder: m.sortOrder, translation };
+    });
+
+    res.json(result);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
+
+// ─── CMS: GET /cms/api/v1/team ───────────────────────────────────────────────
+
+teamRouter.get('/cms', ...requireContent, async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const members = await prisma.teamMember.findMany({
+      orderBy: { sortOrder: 'asc' },
+      include: { translations: true },
+    });
+    res.json(members);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
+
+// ─── CMS: POST /cms/api/v1/team ──────────────────────────────────────────────
+
+teamRouter.post('/', ...requireContent, async (req: Request, res: Response): Promise<void> => {
+  const parsed = TeamMemberInputSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'Ошибка валидации', details: parsed.error.flatten() });
+    return;
+  }
+
+  try {
+    const maxOrder = await prisma.teamMember.aggregate({ _max: { sortOrder: true } });
+    const nextOrder = (maxOrder._max.sortOrder ?? -1) + 1;
+
+    const member = await prisma.teamMember.create({
+      data: {
+        photoUrl: parsed.data.photoUrl ?? null,
+        sortOrder: parsed.data.sortOrder ?? nextOrder,
+        translations: {
+          create: parsed.data.translations.map((t) => ({
+            lang: t.lang,
+            name: t.name,
+            position: t.position,
+            bio: t.bio ?? null,
+          })),
+        },
+      },
+      include: { translations: true },
+    });
+    res.status(201).json(member);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
+
+// ─── CMS: PUT /cms/api/v1/team/:id ───────────────────────────────────────────
+
+teamRouter.put('/:id', ...requireContent, async (req: Request, res: Response): Promise<void> => {
+  const id = String(req.params['id']);
+  const parsed = TeamMemberInputSchema.partial().safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'Ошибка валидации', details: parsed.error.flatten() });
+    return;
+  }
+
+  try {
+    const { translations, ...memberData } = parsed.data;
+
+    const member = await prisma.$transaction(async (tx) => {
+      const updated = await tx.teamMember.update({
+        where: { id },
+        data: memberData,
+      });
+
+      if (translations && translations.length > 0) {
+        for (const t of translations) {
+          await tx.teamMemberTranslation.upsert({
+            where: { memberId_lang: { memberId: id, lang: t.lang } },
+            create: {
+              memberId: id,
+              lang: t.lang,
+              name: t.name,
+              position: t.position,
+              bio: t.bio ?? null,
+            },
+            update: {
+              name: t.name,
+              position: t.position,
+              bio: t.bio ?? null,
+            },
+          });
+        }
+      }
+
+      return tx.teamMember.findUnique({
+        where: { id: updated.id },
+        include: { translations: true },
+      });
+    });
+
+    res.json(member);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
+
+// ─── CMS: DELETE /cms/api/v1/team/:id ────────────────────────────────────────
+
+teamRouter.delete('/:id', ...requireAdmin, async (req: Request, res: Response): Promise<void> => {
+  const id = String(req.params['id']);
+  try {
+    await prisma.teamMember.delete({ where: { id } });
+    res.status(204).send();
+  } catch (err) {
+    handleError(err, res);
+  }
+});
+
+// ─── CMS: PATCH /cms/api/v1/team/reorder ─────────────────────────────────────
+
+teamRouter.patch('/reorder', ...requireContent, async (req: Request, res: Response): Promise<void> => {
+  const parsed = ReorderSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'Ошибка валидации', details: parsed.error.flatten() });
+    return;
+  }
+
+  try {
+    await prisma.$transaction(
+      parsed.data.ids.map((id, index) =>
+        prisma.teamMember.update({ where: { id }, data: { sortOrder: index } })
+      )
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    handleError(err, res);
+  }
+});

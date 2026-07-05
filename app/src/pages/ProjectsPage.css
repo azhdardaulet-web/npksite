@@ -1,0 +1,237 @@
+/* ===== PROJECTS LIST — BENTO GRID ===== */
+.npp {
+  background: #050505;
+  color: #fff;
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Breadcrumbs */
+.npp-crumbs {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 128px 40px 0;
+}
+
+/* Hero */
+.npp-hero {
+  padding: 24px 40px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.npp-hero__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 10000px;
+  border: 1.5px solid rgba(219,31,38,0.35);
+  color: #db1f26;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  margin-bottom: 24px;
+}
+.npp-hero__title {
+  font-size: clamp(40px, 7vw, 72px);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  margin: 0;
+}
+.npp-hero__text {
+  font-size: 17px;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.65;
+  margin-top: 20px;
+  max-width: 600px;
+}
+
+/* Filter pills */
+.npp-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 32px 0 0;
+}
+.npp-filter {
+  padding: 10px 20px;
+  border-radius: 10000px;
+  border: 1.5px solid rgba(255,255,255,0.12);
+  background: transparent;
+  color: rgba(255,255,255,0.5);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.npp-filter:hover {
+  border-color: rgba(219,31,38,0.4);
+  color: #fff;
+}
+.npp-filter--active {
+  background: #db1f26;
+  border-color: #db1f26;
+  color: #fff;
+}
+
+/* Bento grid */
+.npp-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 40px 100px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 260px;
+  gap: 16px;
+}
+
+/* Card sizes */
+.npp-cell--lg { grid-column: span 2; grid-row: span 2; }
+.npp-cell--wide { grid-column: span 2; }
+.npp-cell--tall { grid-row: span 2; }
+
+.npp-card {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  background: #111;
+  border: 1px solid rgba(255,255,255,0.06);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+.npp-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  border-color: rgba(219,31,38,0.2);
+}
+.npp-card__img {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+.npp-card__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+.npp-card:hover .npp-card__img img {
+  transform: scale(1.05);
+}
+.npp-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 40%, transparent 70%);
+  z-index: 2;
+}
+.npp-card__badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 6px 14px;
+  border-radius: 10000px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  z-index: 3;
+}
+.npp-card__badge--active {
+  background: #db1f26;
+  color: #fff;
+}
+.npp-card__badge--legend {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  color: rgba(255,255,255,0.7);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.npp-card__info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px;
+  z-index: 3;
+}
+.npp-card__title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  letter-spacing: -0.01em;
+}
+.npp-card__desc {
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+  margin: 0;
+  line-height: 1.4;
+}
+.npp-card__arrow {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.25s ease;
+  color: #fff;
+  font-size: 16px;
+}
+.npp-card:hover .npp-card__arrow {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Ghost watermark */
+.npp-card__ghost {
+  position: absolute;
+  bottom: -8px;
+  right: -4px;
+  font-size: 100px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.015);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .npp-grid { grid-template-columns: repeat(3, 1fr); }
+  .npp-cell--lg { grid-column: span 2; grid-row: span 2; }
+}
+@media (max-width: 768px) {
+  .npp-crumbs { padding-top: 72px; }
+  .npp-hero { padding: 16px 24px 32px; }
+  .npp-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 200px;
+    padding: 24px 24px 60px;
+    gap: 12px;
+  }
+  .npp-cell--lg { grid-column: span 2; grid-row: span 2; }
+  .npp-cell--wide { grid-column: span 2; }
+  .npp-card__title { font-size: 16px; }
+  .npp-card__info { padding: 16px; }
+}
+@media (max-width: 480px) {
+  .npp-grid { grid-template-columns: 1fr; }
+  .npp-cell--lg,
+  .npp-cell--wide { grid-column: span 1; grid-row: span 1; }
+}

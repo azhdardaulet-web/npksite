@@ -1,0 +1,292 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Formular brand font ──────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'Formular';
+  src: url('/fonts/Formular-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Formular';
+  src: url('/fonts/Formular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Formular';
+  src: url('/fonts/Formular-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Formular';
+  src: url('/fonts/Formular-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    --color-void: #000001;
+    --color-coal: #0a0a0a;
+    --color-cinder: #141414;
+    --color-ash: #1f1f1f;
+    --color-graphite: #3a3a3a;
+    --color-steel: #6b6b6b;
+    --color-fog: #a8a8a8;
+    --color-silver: #d4d4d4;
+    --color-snow: #ffffff;
+    --color-red: #db1f26;
+    --color-red-dark: #b81920;
+    --color-red-glow: rgba(219, 31, 38, 0.15);
+
+    --radius: 0.75rem;
+    --background: 0 0% 4%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 100%;
+    --primary: 358 80% 49%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 42%;
+    --accent: 0 0% 12%;
+    --accent-foreground: 0 0% 100%;
+    --border: 0 0% 100% / 0.08;
+    --input: 0 0% 12%;
+    --ring: 358 80% 49%;
+  }
+
+  html {
+    scroll-behavior: auto; /* Lenis handles scrolling */
+  }
+
+  html.lenis, html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+
+  .lenis.lenis-scrolling iframe {
+    pointer-events: none;
+  }
+
+  html {
+    overflow-x: hidden;
+  }
+
+  body {
+    font-family: 'Formular', 'Helvetica Neue', -apple-system, sans-serif;
+    background-color: var(--color-coal);
+    color: var(--color-snow);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  * {
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  ::selection {
+    background-color: rgba(219, 31, 38, 0.3);
+    color: #ffffff;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Marquee animations */
+  @keyframes marquee-left {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  @keyframes marquee-right {
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
+  }
+
+  @keyframes ticker-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .animate-marquee-left {
+    animation: marquee-left 40s linear infinite;
+  }
+
+  .animate-marquee-right {
+    animation: marquee-right 40s linear infinite;
+  }
+
+  .animate-ticker {
+    animation: ticker-scroll 25s linear infinite;
+  }
+
+  /* Image reveal clip */
+  .clip-reveal {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  .clip-reveal-open {
+    clip-path: inset(0 0% 0 0);
+  }
+
+  /* Parallax container */
+  .parallax-img {
+    will-change: transform;
+    transition: transform 0.1s linear;
+  }
+}
+
+/* ─── News slider animations ───────────────────────────────────────────────── */
+@keyframes news-img-in {
+  from { transform: scale(1.06); opacity: 0.6; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+@keyframes news-content-in {
+  from { transform: translateY(14px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.news-slide-img {
+  animation: news-img-in 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+.news-slide-content {
+  animation: news-content-in 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .news-slide-img, .news-slide-content { animation: none; }
+}
+
+/* ─── Side news scrollbar ──────────────────────────────────────────────────── */
+.news-side-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #db1f26 transparent;
+}
+.news-side-scroll::-webkit-scrollbar {
+  width: 3px;
+}
+.news-side-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.news-side-scroll::-webkit-scrollbar-thumb {
+  background-color: #db1f26;
+  border-radius: 0;
+}
+
+/* ─── Hero grain texture ───────────────────────────────────────────────────── */
+/* WHAT: SVG-based noise filter as a pseudo-element, no external image needed
+   WHY:  Grain breaks the "too-clean digital" flatness — adds tactile depth
+         that photography and gradients alone can't achieve */
+@keyframes grain-shift {
+  0%, 100% { transform: translate(0, 0); }
+  10%       { transform: translate(-2%, -3%); }
+  20%       { transform: translate(3%, 2%); }
+  30%       { transform: translate(-1%, 4%); }
+  40%       { transform: translate(4%, -1%); }
+  50%       { transform: translate(-3%, 3%); }
+  60%       { transform: translate(2%, -4%); }
+  70%       { transform: translate(-4%, 1%); }
+  80%       { transform: translate(1%, -2%); }
+  90%       { transform: translate(-2%, 4%); }
+}
+
+.hero-grain {
+  width: calc(100% + 200px);
+  height: calc(100% + 200px);
+  margin: -100px;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  animation: grain-shift 0.5s steps(1) infinite;
+}
+
+/* ─── Custom Cursor ────────────────────────────────────────────────────────── */
+/* WHAT: Hide native cursor globally on non-touch devices
+   WHY:  Required so the custom cursor is the only visible pointer */
+@media (pointer: fine) {
+  *, *::before, *::after {
+    cursor: none !important;
+  }
+}
+
+.cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  background: #ffffff;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  /* mix-blend-mode: difference makes it invert whatever is beneath */
+  mix-blend-mode: difference;
+  will-change: transform;
+}
+
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99998;
+  mix-blend-mode: difference;
+  will-change: transform;
+  /* Slightly transparent so it shows beneath without being harsh */
+  background: transparent;
+}
+
+/* ─── Magnetic button base ─────────────────────────────────────────────────── */
+/* WHAT: Prevent layout shift from GSAP translate on magnetic buttons
+   WHY:  GSAP applies transform; element must stay in flow at original position */
+[data-magnetic] {
+  display: inline-block;
+  position: relative;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .cursor-dot,
+  .cursor-ring {
+    display: none;
+  }
+}

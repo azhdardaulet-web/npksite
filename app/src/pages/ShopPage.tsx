@@ -1,0 +1,146 @@
+import { ScrollReveal } from '@/components/ScrollReveal';
+
+const CATEGORIES = ['Все', 'Одежда', 'Аксессуары', 'Книги и брошюры', 'Сувениры'];
+
+const PRODUCTS = [
+  { id: 1, name: 'Футболка НПК', category: 'Одежда', price: '4 990 ₸', badge: 'Новинка' },
+  { id: 2, name: 'Худи «Билік — халыққа»', category: 'Одежда', price: '14 990 ₸', badge: '' },
+  { id: 3, name: 'Кепка с логотипом', category: 'Аксессуары', price: '3 490 ₸', badge: 'Хит' },
+  { id: 4, name: 'Значок НПК (набор 3 шт)', category: 'Аксессуары', price: '1 490 ₸', badge: '' },
+  { id: 5, name: 'Сумка-шопер', category: 'Аксессуары', price: '2 990 ₸', badge: '' },
+  { id: 6, name: 'Программа партии (брошюра)', category: 'Книги и брошюры', price: 'Бесплатно', badge: '' },
+  { id: 7, name: 'Флаг НПК 90×150 см', category: 'Сувениры', price: '5 990 ₸', badge: '' },
+  { id: 8, name: 'Кружка «Народная партия»', category: 'Сувениры', price: '2 490 ₸', badge: 'Хит' },
+];
+
+export function ShopPage() {
+  return (
+    <div style={{ background: '#050505', color: '#fff', minHeight: '100vh', overflowX: 'hidden' }}>
+
+      {/* HERO */}
+      <section style={{ position: 'relative', padding: 'clamp(120px,16vh,180px) clamp(16px,4vw,44px) clamp(40px,5vw,70px)', maxWidth: 1180, margin: '0 auto' }}>
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0, backgroundImage: 'radial-gradient(circle at 70% 30%, rgba(219,31,38,.2), transparent 50%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '7px 14px 7px 12px', border: '1px solid rgba(255,255,255,.16)', borderRadius: 100, fontSize: 12, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,.8)' }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#db1f26', display: 'block' }} />
+            Официальный магазин
+          </div>
+          <h1 style={{ margin: '24px 0 0', fontWeight: 800, fontSize: 'clamp(44px,7vw,100px)', lineHeight: .94, letterSpacing: '-.035em' }}>
+            Мерч{' '}<span style={{ color: '#db1f26' }}>Народной</span><br />партии
+          </h1>
+          <p style={{ margin: '24px 0 0', maxWidth: '52ch', fontSize: 'clamp(16px,1.6vw,20px)', lineHeight: 1.55, color: 'rgba(255,255,255,.65)', fontWeight: 500 }}>
+            Носи идею. Официальная атрибутика НПК — одежда, аксессуары и сувениры для тех, кто за справедливый Казахстан.
+          </p>
+        </div>
+      </section>
+
+      {/* COMING SOON BANNER */}
+      <section style={{ maxWidth: 1180, margin: '0 auto', padding: '0 clamp(16px,4vw,44px) clamp(60px,8vw,100px)' }}>
+        <ScrollReveal>
+          <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 'clamp(28px,3vw,44px)', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.09)', padding: 'clamp(40px,5vw,72px)' }}>
+            <span aria-hidden style={{ position: 'absolute', top: '-.2em', right: '-.02em', fontSize: 'clamp(130px,22vw,320px)', fontWeight: 800, lineHeight: 1, color: 'rgba(255,255,255,.025)', pointerEvents: 'none', letterSpacing: '-.04em' }}>СКОРО</span>
+            <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: 'clamp(32px,4vw,60px)', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: '#db1f26', marginBottom: 16 }}>Магазин открывается</div>
+                <h2 style={{ margin: 0, fontSize: 'clamp(28px,3.6vw,48px)', fontWeight: 800, lineHeight: 1.05, letterSpacing: '-.025em' }}>
+                  Скоро здесь появится официальный мерч партии
+                </h2>
+                <p style={{ margin: '20px 0 0', fontSize: 16, lineHeight: 1.6, color: 'rgba(255,255,255,.6)', maxWidth: '46ch' }}>
+                  Мы готовим официальный магазин атрибутики Народной партии Казахстана. Оставьте свой email — сообщим первыми об открытии.
+                </p>
+                <form onSubmit={e => e.preventDefault()} style={{ marginTop: 28, display: 'flex', gap: 0, maxWidth: 420 }}>
+                  <input
+                    type="email"
+                    required
+                    placeholder="Ваш email"
+                    style={{ flex: 1, padding: '14px 18px', background: '#050505', border: '1px solid rgba(255,255,255,.14)', borderRight: 'none', color: '#fff', fontSize: 14, outline: 'none', fontFamily: 'inherit' }}
+                  />
+                  <button
+                    type="submit"
+                    style={{ padding: '14px 22px', background: '#db1f26', border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}
+                  >
+                    Уведомить →
+                  </button>
+                </form>
+              </div>
+
+              {/* Preview cards */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                {PRODUCTS.slice(0, 4).map(p => (
+                  <div key={p.id} style={{ position: 'relative', background: '#050505', border: '1px solid rgba(255,255,255,.07)', padding: '20px 16px' }}>
+                    {p.badge && (
+                      <span style={{ position: 'absolute', top: 10, right: 10, padding: '3px 8px', background: '#db1f26', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#fff' }}>{p.badge}</span>
+                    )}
+                    {/* Placeholder image */}
+                    <div style={{ width: '100%', aspectRatio: '1', background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                      <span style={{ fontSize: 28, opacity: .35 }}>
+                        {p.category === 'Одежда' ? '👕' : p.category === 'Аксессуары' ? '🎩' : p.category === 'Сувениры' ? '🏅' : '📄'}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,.5)', marginBottom: 4 }}>{p.name}</div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: p.price === 'Бесплатно' ? '#db1f26' : '#fff' }}>{p.price}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </ScrollReveal>
+
+        {/* CATEGORY PILLS */}
+        <div style={{ marginTop: 'clamp(48px,6vw,80px)' }}>
+          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: '#db1f26', marginBottom: 16 }}>Категории</div>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            {CATEGORIES.map((cat, i) => (
+              <span key={cat} style={{ padding: '10px 20px', background: i === 0 ? '#db1f26' : '#0e0e0f', border: i === 0 ? '1px solid #db1f26' : '1px solid rgba(255,255,255,.1)', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                {cat}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* PRODUCT GRID */}
+        <div style={{ marginTop: 32, display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 'clamp(14px,1.8vw,20px)' }}>
+          {PRODUCTS.map((p, i) => (
+            <ScrollReveal key={p.id} delay={i * 0.04}>
+              <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.07)', overflow: 'hidden' }}>
+                {p.badge && (
+                  <span style={{ position: 'absolute', top: 12, left: 12, zIndex: 2, padding: '4px 10px', background: '#db1f26', fontSize: 10, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: '#fff' }}>{p.badge}</span>
+                )}
+                {/* Product image placeholder */}
+                <div style={{ aspectRatio: '1', background: '#050505', borderBottom: '1px solid rgba(255,255,255,.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: 48, opacity: .25 }}>
+                    {p.category === 'Одежда' ? '👕' : p.category === 'Аксессуары' ? '🎩' : p.category === 'Сувениры' ? '🏅' : '📄'}
+                  </span>
+                </div>
+                <div style={{ padding: '18px 20px 22px', flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,.35)' }}>{p.category}</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', lineHeight: 1.3 }}>{p.name}</div>
+                  <div style={{ marginTop: 'auto', paddingTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 18, fontWeight: 800, color: p.price === 'Бесплатно' ? '#db1f26' : '#fff' }}>{p.price}</span>
+                    <button style={{ padding: '9px 16px', background: 'transparent', border: '1px solid rgba(255,255,255,.18)', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '.04em' }}>
+                      В корзину
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
+          ))}
+        </div>
+
+        {/* BOTTOM CTA */}
+        <ScrollReveal>
+          <div style={{ marginTop: 'clamp(48px,6vw,80px)', padding: 'clamp(36px,4vw,60px)', background: '#db1f26', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+            <span aria-hidden style={{ position: 'absolute', bottom: '-.3em', left: '50%', transform: 'translateX(-50%)', fontSize: 'clamp(100px,18vw,260px)', fontWeight: 800, color: 'rgba(0,0,0,.08)', pointerEvents: 'none', whiteSpace: 'nowrap' }}>НПК</span>
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <h2 style={{ margin: 0, fontSize: 'clamp(22px,3.4vw,44px)', fontWeight: 800, lineHeight: 1.05, letterSpacing: '-.02em' }}>Носи идею. Поддержи партию.</h2>
+              <p style={{ margin: '14px auto 0', maxWidth: '48ch', fontSize: 16, color: 'rgba(255,255,255,.85)', lineHeight: 1.55 }}>Каждая покупка помогает партии работать для народа.</p>
+              <a href="/vstupit" style={{ display: 'inline-flex', marginTop: 24, padding: '15px 30px', background: '#050505', color: '#fff', textDecoration: 'none', fontSize: 15, fontWeight: 700 }}>
+                Вступить в партию →
+              </a>
+            </div>
+          </div>
+        </ScrollReveal>
+      </section>
+    </div>
+  );
+}

@@ -1,0 +1,279 @@
+/* ===== NPK HISTORY — FBK STYLE ===== */
+
+.nph {
+  background: #050505;
+  color: #fff;
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* --- HERO (compact) --- */
+.nph-hero {
+  padding: 100px 40px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.nph-hero__title {
+  font-size: clamp(36px, 6vw, 64px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  margin: 0 0 16px;
+}
+.nph-hero__text {
+  font-size: 17px;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.65;
+  max-width: 600px;
+  margin: 0;
+}
+
+/* --- STICKY TIMELINE BAR --- */
+.nph-bar {
+  position: sticky;
+  top: 64px;
+  z-index: 100;
+  background: rgba(5,5,5,0.96);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 16px 40px 0;
+}
+.nph-bar__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+}
+.nph-bar__years {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+}
+.nph-bar__year {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 4px 0;
+  position: relative;
+  background: none;
+  border: none;
+}
+.nph-bar__year:hover {
+  color: rgba(255,255,255,0.7);
+}
+.nph-bar__year--active {
+  color: #db1f26;
+  font-weight: 700;
+}
+
+/* Progress track */
+.nph-bar__track {
+  position: relative;
+  height: 2px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.nph-bar__fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: #db1f26;
+  border-radius: 2px;
+  transition: width 0.15s linear;
+}
+
+/* --- MAIN LAYOUT --- */
+.nph-main {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 80px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 40px 120px;
+}
+
+/* Left column — sticky year counter */
+.nph-main__left {
+  position: sticky;
+  top: 130px;
+  align-self: start;
+  height: fit-content;
+}
+
+.nph-year {
+  font-size: clamp(56px, 8vw, 96px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+.nph-year__label {
+  font-size: 13px;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+.nph-tags {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.nph-tag {
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  transition: all 0.3s ease;
+  line-height: 1.4;
+}
+.nph-tag--active {
+  color: rgba(255,255,255,0.75);
+}
+
+/* --- RIGHT COLUMN — SCROLLING CONTENT --- */
+.nph-main__right {
+  display: flex;
+  flex-direction: column;
+}
+
+.nph-section {
+  min-height: 70vh;
+  padding: 40px 0 80px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  opacity: 0.25;
+  transition: opacity 0.5s ease;
+}
+.nph-section--active {
+  opacity: 1;
+}
+.nph-section:last-child {
+  border-bottom: none;
+}
+
+.nph-section__title {
+  font-size: clamp(24px, 3.5vw, 36px);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0 0 20px;
+}
+
+.nph-section__text {
+  font-size: 16px;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.6);
+  margin: 0 0 36px;
+  max-width: 640px;
+}
+
+.nph-section__img {
+  border-radius: 32px;
+  overflow: hidden;
+  max-width: 720px;
+  background: #111;
+}
+.nph-section__img img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.6s ease;
+}
+.nph-section__img:hover img {
+  transform: scale(1.02);
+}
+
+/* --- TICKER --- */
+.nph-ticker {
+  overflow: hidden;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 20px 0;
+  background: #000001;
+}
+.nph-ticker__track {
+  display: flex;
+  white-space: nowrap;
+  animation: nph-ticker 40s linear infinite;
+}
+.nph-ticker__item {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.25);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding-right: 60px;
+  display: flex;
+  align-items: center;
+  gap: 60px;
+}
+.nph-ticker__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #db1f26;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+@keyframes nph-ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 900px) {
+  .nph-main {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 40px 24px 80px;
+  }
+  .nph-main__left {
+    position: relative;
+    top: auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .nph-year {
+    font-size: 48px;
+  }
+  .nph-year__label {
+    margin-top: 0;
+  }
+  .nph-tags {
+    display: none;
+  }
+  .nph-section {
+    min-height: auto;
+    padding: 32px 0 48px;
+  }
+  .nph-hero {
+    padding: 90px 24px 32px;
+  }
+  .nph-bar {
+    padding: 12px 24px 0;
+    top: 56px;
+  }
+}
+
+@media (max-width: 600px) {
+  .nph-year {
+    font-size: 40px;
+  }
+  .nph-section__img {
+    border-radius: 20px;
+  }
+  .nph-bar__year {
+    font-size: 12px;
+  }
+}
