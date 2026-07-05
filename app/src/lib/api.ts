@@ -32,8 +32,19 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   return data as T;
 }
 
+function withQuery(path: string, params?: Record<string, string | number | undefined>): string {
+  if (!params) return path;
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== '') search.set(key, String(value));
+  }
+  const qs = search.toString();
+  return qs ? `${path}?${qs}` : path;
+}
+
 export const api = {
-  get: <T>(path: string) => request<T>(path),
+  get: <T>(path: string, params?: Record<string, string | number | undefined>) =>
+    request<T>(withQuery(path, params)),
   post: <T>(path: string, body: unknown) =>
     request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
 };
@@ -92,4 +103,80 @@ export function subscribeShop(email: string) {
     email,
     hCaptchaToken: DEV_HCAPTCHA_TOKEN,
   });
+}
+
+// ─── Новости (/novosti) ────────────────────────────────────────────────────────
+
+export type NewsFormat = 'news' | 'party_release' | 'article' | 'analytics' | 'interview';
+
+export const NEWS_FORMAT_LABELS: Record<NewsFormat, string> = {
+  news: 'Новости',
+  party_release: 'Релизы партии',
+  article: 'Статьи',
+  analytics: 'Аналитика',
+  interview: 'Интервью',
+};
+
+export interface PublicNewsItem {
+  id: string;
+  slug: string;
+  format: NewsFormat;
+  imageUrl: string | null;
+  isFeatured: boolean;
+  readingTime: number | null;
+  tags: string[];
+  publishedAt: string | null;
+  title: string;
+  excerpt: string | null;
+}
+
+// GET /api/v1/news/:slug возвращает полную запись News (все языки в translations[])
+// плюс activeTranslation — перевод для запрошенного lang (или ru, если такого нет).
+export interface PublicNewsDetail {
+  id: string;
+  slug: string;
+  format: NewsFormat;
+  imageUrl: string | null;
+  readingTime: number | null;
+  tags: string[];
+  publishedAt: string | null;
+  author: { id: string; name: string };
+  activeTranslation?: {
+    title: string;
+    content: string;
+    excerpt: string | null;
+    seoTitle: string | null;
+    seoDescription: string | null;
+  };
+}
+
+export interface PublicNewsListResponse {
+  data: PublicNewsItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export function fetchNews(params: { format?: NewsFormat; q?: string; page?: number; limit?: number; lang?: string } = {}) {
+  return api.get<PublicNewsListResponse>('/api/v1/news', params);
+}
+
+export function fetchNewsBySlug(slug: string, lang = 'ru') {
+  return api.get<PublicNewsDetail>(`/api/v1/news/${slug}`, { lang });
+}
+
+// ─── Кандидаты (/kandidaty, поиск по сайту) ────────────────────────────────────
+
+export interface PublicCandidate {
+  id: string;
+  name: string;
+  region: string;
+  district: string | null;
+  photoUrl: string | null;
+  promise: string;
+}
+
+export function fetchCandidates(lang = 'ru') {
+  return api.get<PublicCandidate[]>('/api/v1/candidates', { lang });
 }

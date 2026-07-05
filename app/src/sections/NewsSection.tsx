@@ -1,5 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ArrowUpRight, Play } from 'lucide-react';
+import { fetchNews, NEWS_FORMAT_LABELS, type PublicNewsItem } from '@/lib/api';
 
 const VIDEOS = [
   { id: 'McSNWo1FcuU', title: 'Нурсұлтан Шоқанов Қазақстан Халық партиясының төрағасы болып сайланды', date: '27.06.2026' },
@@ -20,35 +22,48 @@ const SOCIAL = [
   { name: 'Facebook',  count: '7 тыс.',   href: 'https://www.facebook.com/halykpartiyasy',              icon: <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> },
 ];
 
-const NEWS = [
-  { id: 1, date: '29.06.2026', tag: 'Политика',  title: 'От обещаний — к гарантиям!', excerpt: 'Переход от предвыборных обещаний к конкретным гарантиям для граждан — главный приоритет партии.', image: '/images/marquee-1.jpg' },
-  { id: 2, date: '27.06.2026', tag: 'Партия',    title: 'Нурсултан Шоканов избран председателем Народной партии Казахстана', excerpt: 'На внеочередном съезде делегаты единогласно проголосовали за нового лидера партии.', image: '/images/marquee-2.jpg' },
-  { id: 3, date: '26.06.2026', tag: 'Анализ',    title: 'Последний аккорд', excerpt: 'Итоги политического сезона: что успела сделать партия и что предстоит в новом году.', image: '/images/marquee-3.jpg' },
-  { id: 4, date: '26.06.2026', tag: 'Общество',  title: 'Долг в жизни', excerpt: 'Гражданская ответственность и личный долг в контексте современного казахстанского общества.', image: '/images/marquee-4.jpg' },
-  { id: 5, date: '26.06.2026', tag: 'Экономика', title: 'Плата за неэффективность', excerpt: 'Анализ последствий институциональной неэффективности и механизмов привлечения к ответственности.', image: '/images/marquee-5.jpg' },
-  { id: 6, date: '25.06.2026', tag: 'Социалка',  title: 'Сопровождающая помощь', excerpt: 'Новые программы поддержки для уязвимых слоёв населения Казахстана.', image: '/images/candidate-1.jpg' },
-  { id: 7, date: '24.06.2026', tag: 'Регионы',   title: 'Народная партия открыла приёмную в Шымкенте', excerpt: 'Новый офис для работы с обращениями граждан начал работу в южной столице.', image: '/images/candidate-2.jpg' },
-  { id: 8, date: '23.06.2026', tag: 'Фракция',   title: 'Фракция НПК внесла законопроект о минимальной зарплате', excerpt: 'Депутаты предлагают поднять МРОТ до 120 000 тенге к 2027 году.', image: '/images/candidate-3.jpg' },
-  { id: 9, date: '22.06.2026', tag: 'Программа', title: 'Пять столпов: партия представила обновлённую программу', excerpt: 'Обновлённая программа охватывает экономику, образование, здравоохранение, жильё и экологию.', image: '/images/marquee-1.jpg' },
+// Хардкод-фолбэк на случай недоступности API — не белый экран, а прежние демо-данные.
+const FALLBACK_NEWS: PublicNewsItem[] = [
+  { id: '1', slug: 'ot-obeshchaniy-k-garantiyam', format: 'news', imageUrl: '/images/marquee-1.jpg', isFeatured: false, readingTime: 5, tags: ['Политика'], publishedAt: '2026-06-29', title: 'От обещаний — к гарантиям!', excerpt: 'Переход от предвыборных обещаний к конкретным гарантиям для граждан — главный приоритет партии.' },
+  { id: '2', slug: 'shokanov-izbran-predsedatelem', format: 'party_release', imageUrl: '/images/marquee-2.jpg', isFeatured: false, readingTime: 5, tags: ['Партия'], publishedAt: '2026-06-27', title: 'Нурсултан Шоканов избран председателем Народной партии Казахстана', excerpt: 'На внеочередном съезде делегаты единогласно проголосовали за нового лидера партии.' },
+  { id: '3', slug: 'posledniy-akkord', format: 'analytics', imageUrl: '/images/marquee-3.jpg', isFeatured: false, readingTime: 4, tags: ['Анализ'], publishedAt: '2026-06-26', title: 'Последний аккорд', excerpt: 'Итоги политического сезона: что успела сделать партия и что предстоит в новом году.' },
+  { id: '4', slug: 'dolg-v-zhizni', format: 'article', imageUrl: '/images/marquee-4.jpg', isFeatured: false, readingTime: 3, tags: ['Общество'], publishedAt: '2026-06-26', title: 'Долг в жизни', excerpt: 'Гражданская ответственность и личный долг в контексте современного казахстанского общества.' },
 ];
 
+function getTag(item: PublicNewsItem) {
+  return item.tags[0] ?? NEWS_FORMAT_LABELS[item.format];
+}
+
+function formatDate(iso: string | null) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('ru-RU');
+}
 
 export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } = {}) {
   const [mainIdx, setMainIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const videoScrollRef = useRef<HTMLDivElement>(null);
+  const [news, setNews] = useState<PublicNewsItem[]>(FALLBACK_NEWS);
 
-  const mainNews = NEWS[mainIdx];
-  const sideNews = NEWS.filter((_, i) => i !== mainIdx);
+  useEffect(() => {
+    let cancelled = false;
+    fetchNews({ limit: 9 })
+      .then((res) => { if (!cancelled && res.data.length > 0) setNews(res.data); })
+      .catch(() => { /* остаёмся на демо-данных */ });
+    return () => { cancelled = true; };
+  }, []);
+
+  const mainNews = news[mainIdx] ?? news[0];
+  const sideNews = news.filter((_, i) => i !== mainIdx);
 
   // Auto-advance every 3s, pause on hover
   useEffect(() => {
     if (paused) return;
     const timer = setInterval(() => {
-      setMainIdx((i) => (i + 1) % NEWS.length);
+      setMainIdx((i) => (i + 1) % news.length);
     }, 3000);
     return () => clearInterval(timer);
-  }, [paused]);
+  }, [paused, news.length]);
 
   return (
     <section className="bg-[#0a0a0a] pt-6 pb-16 md:pt-8 md:pb-20 overflow-hidden">
@@ -58,10 +73,10 @@ export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } =
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-[28px] md:text-[36px] font-bold text-white">Новости</h2>
           {!hideAllNewsLink && (
-            <a href="https://halykpartiyasy.kz/ru" target="_blank" rel="noopener noreferrer"
+            <Link to="/novosti"
                className="inline-flex items-center gap-1.5 text-[14px] font-medium text-red hover:text-red/70 transition-colors">
               Все новости <ArrowUpRight size={16} />
-            </a>
+            </Link>
           )}
         </div>
 
@@ -75,12 +90,14 @@ export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } =
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
           >
-            <img
-              key={`img-${mainIdx}`}
-              src={mainNews.image}
-              alt={mainNews.title}
-              className="w-full h-full object-cover group-hover:scale-105 news-slide-img"
-            />
+            {mainNews.imageUrl && (
+              <img
+                key={`img-${mainIdx}`}
+                src={mainNews.imageUrl}
+                alt={mainNews.title}
+                className="w-full h-full object-cover group-hover:scale-105 news-slide-img"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
             {/* Tag */}
@@ -88,37 +105,37 @@ export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } =
               key={`tag-${mainIdx}`}
               className="absolute top-4 left-4 px-3 py-1 bg-red text-white text-[11px] font-bold uppercase tracking-wider news-slide-content"
             >
-              {mainNews.tag}
+              {getTag(mainNews)}
             </span>
 
             {/* Slider nav */}
-            <button onClick={() => setMainIdx((mainIdx - 1 + NEWS.length) % NEWS.length)}
+            <button onClick={() => setMainIdx((mainIdx - 1 + news.length) % news.length)}
               className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/50 border border-white/20 flex items-center justify-center text-white hover:bg-black/80 transition-all opacity-0 group-hover:opacity-100"
               aria-label="Предыдущая">
               <ChevronLeft size={16} />
             </button>
-            <button onClick={() => setMainIdx((mainIdx + 1) % NEWS.length)}
+            <button onClick={() => setMainIdx((mainIdx + 1) % news.length)}
               className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/50 border border-white/20 flex items-center justify-center text-white hover:bg-black/80 transition-all opacity-0 group-hover:opacity-100"
               aria-label="Следующая">
               <ChevronRight size={16} />
             </button>
 
             {/* Caption */}
-            <div key={`caption-${mainIdx}`} className="absolute bottom-0 left-0 right-0 p-5 news-slide-content">
-              <p className="text-[11px] text-fog/70 mb-1.5">{mainNews.date}</p>
+            <Link to={`/novosti/${mainNews.slug}`} key={`caption-${mainIdx}`} className="absolute bottom-0 left-0 right-0 p-5 news-slide-content block">
+              <p className="text-[11px] text-fog/70 mb-1.5">{formatDate(mainNews.publishedAt)}</p>
               <h3 className="text-[18px] md:text-[20px] font-bold text-white leading-snug mb-1.5 line-clamp-2">
                 {mainNews.title}
               </h3>
               <p className="text-[13px] text-fog/70 line-clamp-2 mb-4">{mainNews.excerpt}</p>
               {/* Dots */}
               <div className="flex gap-1.5">
-                {NEWS.map((_, i) => (
-                  <button key={i} onClick={() => setMainIdx(i)}
+                {news.map((_, i) => (
+                  <button key={i} onClick={(e) => { e.preventDefault(); setMainIdx(i); }}
                     className={`h-1 transition-all duration-300 ${i === mainIdx ? 'w-5 bg-red' : 'w-1 bg-white/25'}`}
                     aria-label={`Слайд ${i + 1}`} />
                 ))}
               </div>
-            </div>
+            </Link>
           </div>
 
           {/* Right: side news list — data-lenis-prevent stops Lenis from eating wheel events */}
@@ -126,17 +143,19 @@ export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } =
             {sideNews.map((item) => (
               <div key={item.id}
                 className="flex gap-3 p-4 cursor-pointer hover:bg-white/[0.03] transition-colors group"
-                onClick={() => setMainIdx(NEWS.indexOf(item))}>
+                onClick={() => setMainIdx(news.indexOf(item))}>
                 {/* Thumb */}
                 <div className="shrink-0 w-[80px] h-[60px] overflow-hidden">
-                  <img src={item.image} alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  {item.imageUrl && (
+                    <img src={item.imageUrl} alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  )}
                 </div>
                 {/* Text */}
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-bold text-red uppercase tracking-wider">{item.tag}</span>
-                    <span className="text-[10px] text-steel">{item.date}</span>
+                    <span className="text-[10px] font-bold text-red uppercase tracking-wider">{getTag(item)}</span>
+                    <span className="text-[10px] text-steel">{formatDate(item.publishedAt)}</span>
                   </div>
                   <p className="text-[13px] font-medium text-white leading-snug line-clamp-2 group-hover:text-fog transition-colors">
                     {item.title}
@@ -146,10 +165,10 @@ export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } =
             ))}
             {/* All link */}
             <div className="p-4 mt-auto">
-              <a href="https://halykpartiyasy.kz/ru" target="_blank" rel="noopener noreferrer"
+              <Link to="/novosti"
                 className="inline-flex items-center gap-1.5 text-[13px] text-fog hover:text-white transition-colors">
                 Все материалы <ArrowUpRight size={13} />
-              </a>
+              </Link>
             </div>
           </div>
         </div>

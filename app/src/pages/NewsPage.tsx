@@ -1,28 +1,39 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { NewsSection, NarodnoeMediaSection } from '@/sections/NewsSection';
-import { ChevronRight, Search, X, SlidersHorizontal, Calendar } from 'lucide-react';
+import { ChevronRight, Search, X, Calendar } from 'lucide-react';
+import { fetchNews, NEWS_FORMAT_LABELS, type NewsFormat, type PublicNewsItem } from '@/lib/api';
 
 /* ─── Data ────────────────────────────────────────────────────────── */
 type Format = 'Все' | 'Новости' | 'Релизы партии' | 'Статьи' | 'Аналитика' | 'Интервью';
 
-const ALL_NEWS = [
-  { id: 1,  date: '29.06.2026', tag: 'Политика',  format: 'Новости',       title: 'От обещаний — к гарантиям!',                                            excerpt: 'Переход от предвыборных обещаний к конкретным гарантиям для граждан — главный приоритет партии.', image: '/images/marquee-1.jpg' },
-  { id: 2,  date: '27.06.2026', tag: 'Партия',    format: 'Релизы партии', title: 'Нурсултан Шоканов избран председателем Народной партии Казахстана',      excerpt: 'На внеочередном съезде делегаты единогласно проголосовали за нового лидера партии.', image: '/images/marquee-2.jpg' },
-  { id: 3,  date: '26.06.2026', tag: 'Анализ',    format: 'Аналитика',     title: 'Последний аккорд',                                                       excerpt: 'Итоги политического сезона: что успела сделать партия и что предстоит в новом году.', image: '/images/marquee-3.jpg' },
-  { id: 4,  date: '26.06.2026', tag: 'Общество',  format: 'Статьи',        title: 'Долг в жизни',                                                           excerpt: 'Гражданская ответственность и личный долг в контексте современного казахстанского общества.', image: '/images/marquee-4.jpg' },
-  { id: 5,  date: '26.06.2026', tag: 'Экономика', format: 'Аналитика',     title: 'Плата за неэффективность',                                               excerpt: 'Анализ последствий институциональной неэффективности и механизмов привлечения к ответственности.', image: '/images/marquee-5.jpg' },
-  { id: 6,  date: '25.06.2026', tag: 'Социалка',  format: 'Статьи',        title: 'Сопровождающая помощь',                                                  excerpt: 'Новые программы поддержки для уязвимых слоёв населения Казахстана.', image: '/images/candidate-1.jpg' },
-  { id: 7,  date: '24.06.2026', tag: 'Регионы',   format: 'Новости',       title: 'Народная партия открыла приёмную в Шымкенте',                            excerpt: 'Новый офис для работы с обращениями граждан начал работу в южной столице.', image: '/images/candidate-2.jpg' },
-  { id: 8,  date: '23.06.2026', tag: 'Фракция',   format: 'Релизы партии', title: 'Фракция НПК внесла законопроект о минимальной зарплате',                 excerpt: 'Депутаты предлагают поднять МРОТ до 120 000 тенге к 2027 году.', image: '/images/candidate-3.jpg' },
-  { id: 9,  date: '22.06.2026', tag: 'Программа', format: 'Новости',       title: 'Пять столпов: партия представила обновлённую программу',                 excerpt: 'Обновлённая программа охватывает экономику, образование, здравоохранение, жильё и экологию.', image: '/images/marquee-1.jpg' },
-  { id: 10, date: '20.06.2026', tag: 'Интервью',  format: 'Интервью',      title: '«Мы строим страну, где каждый имеет шанс»',                              excerpt: 'Эксклюзивное интервью с новым председателем партии о планах на ближайший год.', image: '/images/marquee-2.jpg' },
-  { id: 11, date: '18.06.2026', tag: 'Образование', format: 'Новости',     title: 'НПК представила план строительства 50 новых школ',                       excerpt: 'Партия объявила программу строительства школ в сельской местности по всему Казахстану.', image: '/images/news-1.jpg' },
-  { id: 12, date: '15.06.2026', tag: 'Экономика', format: 'Релизы партии', title: 'Сельхозпроизводители получат дополнительные субсидии',                   excerpt: 'Фракция НПК добилась увеличения субсидий на сельскохозяйственную технику.', image: '/images/news-2.jpg' },
+const FORMAT_TO_API: Record<Format, NewsFormat | undefined> = {
+  Все: undefined,
+  Новости: 'news',
+  'Релизы партии': 'party_release',
+  Статьи: 'article',
+  Аналитика: 'analytics',
+  Интервью: 'interview',
+};
+
+// Хардкод-фолбэк на случай недоступности API — не белый экран, а прежние демо-данные.
+const FALLBACK_NEWS: PublicNewsItem[] = [
+  { id: '1', slug: 'ot-obeshchaniy-k-garantiyam', format: 'news', imageUrl: '/images/marquee-1.jpg', isFeatured: false, readingTime: 5, tags: ['Политика'], publishedAt: '2026-06-29', title: 'От обещаний — к гарантиям!', excerpt: 'Переход от предвыборных обещаний к конкретным гарантиям для граждан — главный приоритет партии.' },
+  { id: '2', slug: 'shokanov-izbran-predsedatelem', format: 'party_release', imageUrl: '/images/marquee-2.jpg', isFeatured: false, readingTime: 5, tags: ['Партия'], publishedAt: '2026-06-27', title: 'Нурсултан Шоканов избран председателем Народной партии Казахстана', excerpt: 'На внеочередном съезде делегаты единогласно проголосовали за нового лидера партии.' },
+  { id: '3', slug: 'posledniy-akkord', format: 'analytics', imageUrl: '/images/marquee-3.jpg', isFeatured: false, readingTime: 4, tags: ['Анализ'], publishedAt: '2026-06-26', title: 'Последний аккорд', excerpt: 'Итоги политического сезона: что успела сделать партия и что предстоит в новом году.' },
 ];
 
 const FORMATS: Format[] = ['Все', 'Новости', 'Релизы партии', 'Статьи', 'Аналитика', 'Интервью'];
 const PER_PAGE = 6;
+
+function getTag(item: PublicNewsItem) {
+  return item.tags[0] ?? NEWS_FORMAT_LABELS[item.format];
+}
+
+function formatDate(iso: string | null) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('ru-RU');
+}
 
 /* ─── Breadcrumbs ─────────────────────────────────────────────────── */
 function Breadcrumbs() {
@@ -128,32 +139,35 @@ function Sidebar({
 }
 
 /* ─── News Card ────────────────────────────────────────────────────── */
-function NewsCard({ item }: { item: typeof ALL_NEWS[0] }) {
+function NewsCard({ item }: { item: PublicNewsItem }) {
   const [hovered, setHovered] = useState(false);
   return (
-    <article
+    <Link
+      to={`/novosti/${item.slug}`}
       className="news-card"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{ display: 'flex', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.07)', overflow: 'hidden', cursor: 'pointer', transition: 'border-color .2s', borderColor: hovered ? 'rgba(255,255,255,.18)' : 'rgba(255,255,255,.07)' }}
+      style={{ display: 'flex', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.07)', overflow: 'hidden', cursor: 'pointer', transition: 'border-color .2s', borderColor: hovered ? 'rgba(255,255,255,.18)' : 'rgba(255,255,255,.07)', textDecoration: 'none' }}
     >
       {/* Image */}
-      <div className="news-card-img" style={{ flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
-        <img
-          src={item.image}
-          alt={item.title}
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform .5s', transform: hovered ? 'scale(1.05)' : 'scale(1)' }}
-        />
+      <div className="news-card-img" style={{ flexShrink: 0, overflow: 'hidden', position: 'relative', background: '#151515' }}>
+        {item.imageUrl && (
+          <img
+            src={item.imageUrl}
+            alt={item.title}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform .5s', transform: hovered ? 'scale(1.05)' : 'scale(1)' }}
+          />
+        )}
         <span style={{ position: 'absolute', top: 10, left: 10, padding: '3px 8px', background: '#db1f26', fontSize: 10, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: '#fff' }}>
-          {item.tag}
+          {getTag(item)}
         </span>
       </div>
       {/* Content */}
       <div className="news-card-body" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', fontWeight: 600 }}>{item.date}</span>
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', fontWeight: 600 }}>{formatDate(item.publishedAt)}</span>
           <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,.2)', display: 'block' }} />
-          <span style={{ fontSize: 11, color: '#db1f26', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>{item.format}</span>
+          <span style={{ fontSize: 11, color: '#db1f26', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>{NEWS_FORMAT_LABELS[item.format]}</span>
         </div>
         <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#fff', lineHeight: 1.35 }}>{item.title}</h3>
         <p className="news-card-excerpt" style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,.5)', lineHeight: 1.6, flex: 1 }}>{item.excerpt}</p>
@@ -161,7 +175,7 @@ function NewsCard({ item }: { item: typeof ALL_NEWS[0] }) {
           Читать →
         </span>
       </div>
-    </article>
+    </Link>
   );
 }
 
@@ -201,6 +215,19 @@ function Pagination({ page, total, perPage, onChange }: { page: number; total: n
   );
 }
 
+/* ─── Skeleton ────────────────────────────────────────────────────── */
+function CardSkeleton() {
+  return (
+    <div style={{ display: 'flex', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.07)', overflow: 'hidden' }}>
+      <div className="news-card-img" style={{ flexShrink: 0, background: 'rgba(255,255,255,.04)' }} />
+      <div className="news-card-body" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10, justifyContent: 'center' }}>
+        <div style={{ width: '30%', height: 10, background: 'rgba(255,255,255,.06)' }} />
+        <div style={{ width: '70%', height: 16, background: 'rgba(255,255,255,.08)' }} />
+        <div style={{ width: '90%', height: 12, background: 'rgba(255,255,255,.05)' }} />
+      </div>
+    </div>
+  );
+}
 
 /* ─── Page ────────────────────────────────────────────────────────── */
 export function NewsPage() {
@@ -209,22 +236,45 @@ export function NewsPage() {
   const [format, setFormat] = useState<Format>('Все');
   const [page, setPage] = useState(1);
 
+  const [items, setItems] = useState<PublicNewsItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [usedFallback, setUsedFallback] = useState(false);
+
   const reset = () => { setKeyword(''); setDate(''); setFormat('Все'); setPage(1); };
 
-  const filtered = ALL_NEWS.filter(n => {
-    const kw = keyword.toLowerCase();
-    if (kw && !n.title.toLowerCase().includes(kw) && !n.excerpt.toLowerCase().includes(kw)) return false;
-    if (format !== 'Все' && n.format !== format) return false;
-    if (date) {
-      // date is YYYY-MM-DD, news date is DD.MM.YYYY
-      const [d, m, y] = n.date.split('.');
-      const newsIso = `${y}-${m}-${d}`;
-      if (newsIso !== date) return false;
-    }
-    return true;
-  });
+  // Debounce keyword before hitting the API
+  const [debouncedKeyword, setDebouncedKeyword] = useState('');
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedKeyword(keyword), 350);
+    return () => clearTimeout(t);
+  }, [keyword]);
 
-  const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    fetchNews({ format: FORMAT_TO_API[format], q: debouncedKeyword || undefined, page, limit: PER_PAGE })
+      .then((res) => {
+        if (cancelled) return;
+        setItems(res.data);
+        setTotal(res.total);
+        setUsedFallback(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        // API недоступен — показываем демо-данные вместо белого экрана
+        setItems(FALLBACK_NEWS);
+        setTotal(FALLBACK_NEWS.length);
+        setUsedFallback(true);
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [format, debouncedKeyword, page]);
+
+  // Мягкий фильтр по дате публикации — применяется к уже загруженной странице.
+  const visible = date
+    ? items.filter((n) => n.publishedAt && n.publishedAt.slice(0, 10) === date)
+    : items;
 
   const handleFormat = (f: Format) => { setFormat(f); setPage(1); };
   const handleKeyword = (v: string) => { setKeyword(v); setPage(1); };
@@ -248,11 +298,14 @@ export function NewsPage() {
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '48px clamp(16px,4vw,40px) 24px' }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 'clamp(24px,3vw,36px)', fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1.1 }}>Все новости</h2>
         <span style={{ fontSize: 13, color: 'rgba(255,255,255,.4)', fontWeight: 500 }}>
-          Найдено: <strong style={{ color: '#fff' }}>{filtered.length}</strong> материалов
+          Найдено: <strong style={{ color: '#fff' }}>{total}</strong> материалов
           {format !== 'Все' && (
             <span style={{ marginLeft: 10, padding: '3px 10px', background: 'rgba(219,31,38,.12)', border: '1px solid rgba(219,31,38,.3)', fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#ff5a60' }}>
               {format}
             </span>
+          )}
+          {usedFallback && (
+            <span style={{ marginLeft: 10, fontSize: 11, color: 'rgba(255,255,255,.3)' }}>· демо-данные (сервер недоступен)</span>
           )}
         </span>
       </div>
@@ -298,9 +351,13 @@ export function NewsPage() {
 
         {/* LEFT: cards grid */}
         <div>
-          {paginated.length > 0 ? (
+          {loading ? (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 2 }}>
-              {paginated.map(item => <NewsCard key={item.id} item={item} />)}
+              {Array.from({ length: PER_PAGE }).map((_, i) => <CardSkeleton key={i} />)}
+            </div>
+          ) : visible.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 2 }}>
+              {visible.map(item => <NewsCard key={item.id} item={item} />)}
             </div>
           ) : (
             <div style={{ padding: '60px 0', textAlign: 'center' }}>
@@ -311,7 +368,7 @@ export function NewsPage() {
               </button>
             </div>
           )}
-          <Pagination page={page} total={filtered.length} perPage={PER_PAGE} onChange={p => { setPage(p); window.scrollTo({ top: 500, behavior: 'smooth' }); }} />
+          <Pagination page={page} total={total} perPage={PER_PAGE} onChange={p => { setPage(p); window.scrollTo({ top: 500, behavior: 'smooth' }); }} />
         </div>
 
         {/* RIGHT: sidebar — sticky, hidden on mobile */}
