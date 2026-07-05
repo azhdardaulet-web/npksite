@@ -4,10 +4,11 @@ import { SectionHeader } from '@/components/SectionHeader';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { CountUp } from '@/components/CountUp';
-import { testimonials } from '@/lib/data';
-import { fetchAppealTopics, submitAppeal, ApiError, type AppealTopic } from '@/lib/api';
+import { testimonials as fallbackTestimonials } from '@/lib/data';
+import { fetchAppealTopics, fetchTestimonials, submitAppeal, ApiError, type AppealTopic, type PublicTestimonial } from '@/lib/api';
 
 const FALLBACK_TOPICS = ['Общий вопрос', 'Социальная помощь', 'ЖКХ и инфраструктура', 'Образование', 'Медицина', 'Труд и занятость', 'Другое'];
+const FALLBACK_TESTIMONIALS: PublicTestimonial[] = fallbackTestimonials.map((t) => ({ id: String(t.id), quote: t.quote, author: t.author }));
 const KZ_PHONE_RE = /^\+7\s?7\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/;
 
 export function ReceptionPage() {
@@ -18,6 +19,7 @@ export function ReceptionPage() {
   const [appealNumber, setAppealNumber] = useState<string | null>(null);
   const [triggered, setTriggered] = useState(false);
   const [topics, setTopics] = useState<AppealTopic[]>([]);
+  const [testimonials, setTestimonials] = useState<PublicTestimonial[]>(FALLBACK_TESTIMONIALS);
   const counterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -33,6 +35,10 @@ export function ReceptionPage() {
 
   useEffect(() => {
     fetchAppealTopics().then(setTopics).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetchTestimonials().then((data) => { if (data.length > 0) setTestimonials(data); }).catch(() => {});
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -284,3 +284,15 @@ export interface PublicDocument {
 export function fetchDocuments(type?: DocumentType) {
   return api.get<PublicDocument[]>('/api/v1/documents', { type });
 }
+
+// ─── Отзывы граждан (главная, /priemnaya) ──────────────────────────────────────
+
+export interface PublicTestimonial {
+  id: string;
+  quote: string;
+  author: string;
+}
+
+export function fetchTestimonials() {
+  return api.get<PublicTestimonial[]>('/api/v1/testimonials');
+}
