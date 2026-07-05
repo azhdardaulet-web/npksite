@@ -231,3 +231,56 @@ export interface PublicProgramBlock {
 export function fetchProgramBlocks(lang = 'ru') {
   return api.get<PublicProgramBlock[]>('/api/v1/program-blocks', { lang });
 }
+
+// ─── Медиапроекты (/media) ──────────────────────────────────────────────────────
+
+export interface PublicMediaProject {
+  id: string;
+  tag: string;
+  url: string | null;
+  imageUrl: string | null;
+  sortOrder: number;
+  title: string;
+  description: string;
+}
+
+export function fetchMediaProjects(lang = 'ru') {
+  return api.get<PublicMediaProject[]>('/api/v1/media-projects', { lang });
+}
+
+// ─── СМИ о нас (/smi-o-nas) ─────────────────────────────────────────────────────
+
+export interface PublicMediaPublication {
+  id: string;
+  date: string;
+  sourceType: string;
+  mediaName: string;
+  title: string;
+  excerpt: string | null;
+  imageUrl: string | null;
+  url: string | null;
+  sortOrder: number;
+}
+
+export function fetchMediaPublications() {
+  return api.get<PublicMediaPublication[]>('/api/v1/media-publications');
+}
+
+// ─── Документы (/mediakits — пресс-кит) ────────────────────────────────────────
+
+export type DocumentType = 'ustav' | 'deputy_request' | 'press_kit' | 'other';
+
+export interface PublicDocument {
+  id: string;
+  title: string;
+  description: string | null;
+  type: DocumentType;
+  fileUrl: string;
+  fileName: string;
+  fileSize: number;
+  year: number | null;
+}
+
+export function fetchDocuments(type?: DocumentType) {
+  return api.get<PublicDocument[]>('/api/v1/documents', { type });
+}

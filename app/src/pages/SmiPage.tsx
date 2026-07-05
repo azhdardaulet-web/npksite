@@ -1,24 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Search, X } from 'lucide-react';
 import { ReadAlsoSlider } from '@/sections/ReadAlsoSlider';
+import { fetchMediaPublications, type PublicMediaPublication } from '@/lib/api';
 
 /* ─── Data ────────────────────────────────────────────────────────── */
 type Source = 'Все' | 'Телевидение' | 'Радио' | 'Интернет-СМИ' | 'Газеты' | 'Информагентства';
 
-const ALL_SMI = [
-  { id: 1,  date: '29.06.2026', tag: 'Телевидение',      source: 'Телевидение',     title: 'НПК назвала главным приоритетом повышение благосостояния граждан', excerpt: 'Председатель партии в интервью Хабар 24 рассказал о ключевых целях нового политсезона.', image: '/images/marquee-1.jpg', media: 'Хабар 24' },
-  { id: 2,  date: '27.06.2026', tag: 'Интернет-СМИ',     source: 'Интернет-СМИ',    title: 'Народная партия — новый лидер казахстанской политики', excerpt: 'Эксперты оценивают перспективы Народной партии после смены руководства.', image: '/images/marquee-2.jpg', media: 'Tengrinews.kz' },
-  { id: 3,  date: '26.06.2026', tag: 'Газеты',            source: 'Газеты',          title: 'НПК предложила системные реформы в здравоохранении', excerpt: 'Фракция Народной партии внесла пакет законопроектов по реформированию медицины.', image: '/images/marquee-3.jpg', media: 'Казахстанская правда' },
-  { id: 4,  date: '26.06.2026', tag: 'Информагентства',  source: 'Информагентства', title: 'Новый съезд — новые цели: партия обновила устав', excerpt: 'На внеочередном съезде делегаты приняли обновлённый устав партии.', image: '/images/marquee-4.jpg', media: 'КазИнформ' },
-  { id: 5,  date: '25.06.2026', tag: 'Радио',            source: 'Радио',           title: 'Эфир с лидером: НПК об экономической повестке', excerpt: 'Председатель НПК выступил в прямом эфире радиостанции Европа Плюс Казахстан.', image: '/images/marquee-5.jpg', media: 'Европа Плюс Казахстан' },
-  { id: 6,  date: '24.06.2026', tag: 'Интернет-СМИ',     source: 'Интернет-СМИ',    title: 'Рейтинг НПК вырос на 12 пунктов по итогам съезда', excerpt: 'Социологические данные показывают резкий рост доверия к партии.', image: '/images/candidate-1.jpg', media: 'Zakon.kz' },
-  { id: 7,  date: '23.06.2026', tag: 'Телевидение',      source: 'Телевидение',     title: 'Программа НПК — практика, а не слова', excerpt: 'Аналитический материал телеканала о реализованных инициативах партии.', image: '/images/candidate-2.jpg', media: 'QazaqTV' },
-  { id: 8,  date: '22.06.2026', tag: 'Газеты',            source: 'Газеты',          title: 'Фракция НПК защищает права простых казахстанцев', excerpt: 'Депутаты от Народной партии активно работают с обращениями граждан в Мажилисе.', image: '/images/candidate-3.jpg', media: 'Егемен Қазақстан' },
-  { id: 9,  date: '21.06.2026', tag: 'Информагентства',  source: 'Информагентства', title: 'НПК открыла новые региональные представительства', excerpt: 'Партия расширяет присутствие в регионах Казахстана.', image: '/images/marquee-1.jpg', media: 'BNews.kz' },
-  { id: 10, date: '20.06.2026', tag: 'Интернет-СМИ',     source: 'Интернет-СМИ',    title: 'Эксперты: позиции НПК укрепятся к выборам 2027 года', excerpt: 'Политологи прогнозируют рост влияния партии на парламентских выборах.', image: '/images/marquee-2.jpg', media: 'Forbes Kazakhstan' },
-  { id: 11, date: '19.06.2026', tag: 'Радио',            source: 'Радио',           title: 'Народная партия о жилищном вопросе', excerpt: 'Развёрнутое интервью с депутатом фракции о программе доступного жилья.', image: '/images/news-1.jpg', media: 'Радио NS' },
-  { id: 12, date: '17.06.2026', tag: 'Газеты',            source: 'Газеты',          title: 'НПК наращивает работу с молодёжью', excerpt: 'Партия запустила новые молодёжные проекты и открыла клубы в вузах.', image: '/images/news-2.jpg', media: 'Литер' },
+const FALLBACK_SMI: PublicMediaPublication[] = [
+  { id: '1', date: '2026-06-29', sourceType: 'Телевидение', mediaName: 'Хабар 24', title: 'НПК назвала главным приоритетом повышение благосостояния граждан', excerpt: 'Председатель партии в интервью Хабар 24 рассказал о ключевых целях нового политсезона.', imageUrl: '/images/marquee-1.jpg', url: null, sortOrder: 0 },
+  { id: '2', date: '2026-06-27', sourceType: 'Интернет-СМИ', mediaName: 'Tengrinews.kz', title: 'Народная партия — новый лидер казахстанской политики', excerpt: 'Эксперты оценивают перспективы Народной партии после смены руководства.', imageUrl: '/images/marquee-2.jpg', url: null, sortOrder: 1 },
+  { id: '3', date: '2026-06-26', sourceType: 'Газеты', mediaName: 'Казахстанская правда', title: 'НПК предложила системные реформы в здравоохранении', excerpt: 'Фракция Народной партии внесла пакет законопроектов по реформированию медицины.', imageUrl: '/images/marquee-3.jpg', url: null, sortOrder: 2 },
 ];
 
 const SOURCES: Source[] = ['Все', 'Телевидение', 'Радио', 'Интернет-СМИ', 'Газеты', 'Информагентства'];
@@ -124,31 +116,37 @@ function Sidebar({
 }
 
 /* ─── Card ─────────────────────────────────────────────────────────── */
-function SmiCard({ item }: { item: typeof ALL_SMI[0] }) {
+function SmiCard({ item }: { item: PublicMediaPublication }) {
   const [hovered, setHovered] = useState(false);
   return (
-    <article
+    <a
+      href={item.url ?? undefined}
+      target={item.url ? '_blank' : undefined}
+      rel={item.url ? 'noopener' : undefined}
+      onClick={(e) => { if (!item.url) e.preventDefault(); }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{ display: 'flex', flexDirection: 'row', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.07)', overflow: 'hidden', cursor: 'pointer', transition: 'border-color .2s', borderColor: hovered ? 'rgba(255,255,255,.18)' : 'rgba(255,255,255,.07)' }}
+      style={{ display: 'flex', flexDirection: 'row', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.07)', overflow: 'hidden', cursor: item.url ? 'pointer' : 'default', transition: 'border-color .2s', borderColor: hovered ? 'rgba(255,255,255,.18)' : 'rgba(255,255,255,.07)', textDecoration: 'none' }}
     >
-      <div style={{ flexShrink: 0, width: 240, height: 135, overflow: 'hidden', position: 'relative' }}>
-        <img
-          src={item.image}
-          alt={item.title}
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform .5s', transform: hovered ? 'scale(1.05)' : 'scale(1)' }}
-        />
+      <div style={{ flexShrink: 0, width: 240, height: 135, overflow: 'hidden', position: 'relative', background: '#151515' }}>
+        {item.imageUrl && (
+          <img
+            src={item.imageUrl}
+            alt={item.title}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform .5s', transform: hovered ? 'scale(1.05)' : 'scale(1)' }}
+          />
+        )}
         <span style={{ position: 'absolute', top: 10, left: 10, padding: '3px 8px', background: '#db1f26', fontSize: 10, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: '#fff' }}>
-          {item.tag}
+          {item.sourceType}
         </span>
       </div>
       <div style={{ padding: '20px 22px', flex: 1, display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', fontWeight: 600 }}>{item.date}</span>
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', fontWeight: 600 }}>{new Date(item.date).toLocaleDateString('ru-RU')}</span>
           <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,.2)', display: 'block' }} />
-          <span style={{ fontSize: 11, color: '#db1f26', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>{item.source}</span>
+          <span style={{ fontSize: 11, color: '#db1f26', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>{item.sourceType}</span>
           <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,.2)', display: 'block' }} />
-          <span style={{ fontSize: 11, color: 'rgba(255,255,255,.5)', fontWeight: 600 }}>{item.media}</span>
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,.5)', fontWeight: 600 }}>{item.mediaName}</span>
         </div>
         <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#fff', lineHeight: 1.35 }}>{item.title}</h3>
         <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,.5)', lineHeight: 1.6, flex: 1 }}>{item.excerpt}</p>
@@ -156,7 +154,7 @@ function SmiCard({ item }: { item: typeof ALL_SMI[0] }) {
           Читать →
         </span>
       </div>
-    </article>
+    </a>
   );
 }
 
@@ -191,17 +189,25 @@ export function SmiPage() {
   const [date, setDate] = useState('');
   const [source, setSource] = useState<Source>('Все');
   const [page, setPage] = useState(1);
+  const [items, setItems] = useState<PublicMediaPublication[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchMediaPublications()
+      .then((data) => { if (!cancelled) setItems(data.length > 0 ? data : FALLBACK_SMI); })
+      .catch(() => { if (!cancelled) setItems(FALLBACK_SMI); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   const reset = () => { setKeyword(''); setDate(''); setSource('Все'); setPage(1); };
 
-  const filtered = ALL_SMI.filter(n => {
+  const filtered = items.filter(n => {
     const kw = keyword.toLowerCase();
-    if (kw && !n.title.toLowerCase().includes(kw) && !n.excerpt.toLowerCase().includes(kw) && !n.media.toLowerCase().includes(kw)) return false;
-    if (source !== 'Все' && n.source !== source) return false;
-    if (date) {
-      const [d, m, y] = n.date.split('.');
-      if (`${y}-${m}-${d}` !== date) return false;
-    }
+    if (kw && !n.title.toLowerCase().includes(kw) && !(n.excerpt ?? '').toLowerCase().includes(kw) && !n.mediaName.toLowerCase().includes(kw)) return false;
+    if (source !== 'Все' && n.sourceType !== source) return false;
+    if (date && n.date.slice(0, 10) !== date) return false;
     return true;
   });
 
@@ -242,7 +248,9 @@ export function SmiPage() {
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 clamp(16px,4vw,40px) 80px', display: 'grid', gridTemplateColumns: '1fr 280px', gap: 40, alignItems: 'start' }}>
 
         <div>
-          {paginated.length > 0 ? (
+          {loading ? (
+            <div style={{ padding: '60px 0', textAlign: 'center', color: 'rgba(255,255,255,.4)' }}>Загрузка...</div>
+          ) : paginated.length > 0 ? (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 2 }}>
               {paginated.map(item => <SmiCard key={item.id} item={item} />)}
             </div>

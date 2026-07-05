@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import { ScrollReveal } from '@/components/ScrollReveal';
+import { fetchMediaProjects, type PublicMediaProject } from '@/lib/api';
 
 const SOCIALS = [
   { name: 'YouTube',   url: 'https://www.youtube.com/channel/UCYq_KOlsxp8H2r3GIq6hWtA', count: '139 000', countNum: 139000 },
@@ -8,16 +10,10 @@ const SOCIALS = [
   { name: 'Telegram',  url: 'https://t.me/halykparty',                                   count: '313',     countNum: 313 },
 ];
 
-const PROJECTS = [
-  { tag: 'Информационная программа', title: '«Ақпар»',
-    desc: 'Главные события страны и мира — коротко, честно и по делу. Информационный пульс партии.',
-    url: 'https://www.youtube.com/channel/UCYq_KOlsxp8H2r3GIq6hWtA' },
-  { tag: 'Парламентская жизнь', title: '«Фракция покажет»',
-    desc: 'Как депутаты фракции отстаивают интересы народа в Парламенте — без бюрократического тумана.',
-    url: 'https://www.youtube.com/channel/UCYq_KOlsxp8H2r3GIq6hWtA' },
-  { tag: 'Репортажи с мест', title: '«Регионы Аймақтар»',
-    desc: 'Реальная жизнь регионов Казахстана: проблемы, люди и решения — от аула до мегаполиса.',
-    url: 'https://www.youtube.com/channel/UCYq_KOlsxp8H2r3GIq6hWtA' },
+const FALLBACK_PROJECTS: PublicMediaProject[] = [
+  { id: '1', tag: 'Информационная программа', title: '«Ақпар»', description: 'Главные события страны и мира — коротко, честно и по делу. Информационный пульс партии.', url: 'https://www.youtube.com/channel/UCYq_KOlsxp8H2r3GIq6hWtA', imageUrl: null, sortOrder: 0 },
+  { id: '2', tag: 'Парламентская жизнь', title: '«Фракция покажет»', description: 'Как депутаты фракции отстаивают интересы народа в Парламенте — без бюрократического тумана.', url: 'https://www.youtube.com/channel/UCYq_KOlsxp8H2r3GIq6hWtA', imageUrl: null, sortOrder: 1 },
+  { id: '3', tag: 'Репортажи с мест', title: '«Регионы Аймақтар»', description: 'Реальная жизнь регионов Казахстана: проблемы, люди и решения — от аула до мегаполиса.', url: 'https://www.youtube.com/channel/UCYq_KOlsxp8H2r3GIq6hWtA', imageUrl: null, sortOrder: 2 },
 ];
 
 const TICKER = ['Ақпар', 'Фракция покажет', 'Регионы Аймақтар', 'Прямой эфир', 'Народное медиа'];
@@ -25,6 +21,17 @@ const TICKER = ['Ақпар', 'Фракция покажет', 'Регионы �
 export function MediaPage() {
   const tickerText = TICKER.join(' • ') + ' • ';
   const total = '270 000+';
+  const [projects, setProjects] = useState<PublicMediaProject[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchMediaProjects()
+      .then((data) => { if (!cancelled) setProjects(data.length > 0 ? data : FALLBACK_PROJECTS); })
+      .catch(() => { if (!cancelled) setProjects(FALLBACK_PROJECTS); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <div style={{ background: '#050505', color: '#fff', minHeight: '100vh', overflowX: 'hidden' }}>
@@ -98,17 +105,23 @@ export function MediaPage() {
         <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: '#db1f26' }}>Медиапроекты</div>
         <h2 style={{ margin: '16px 0 0', fontSize: 'clamp(28px,4.4vw,54px)', fontWeight: 800, lineHeight: 1.02, letterSpacing: '-.025em', maxWidth: '22ch' }}>Программы, которые смотрит страна</h2>
         <div style={{ marginTop: 'clamp(28px,3.6vw,48px)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: 'clamp(14px,1.8vw,22px)' }}>
-          {PROJECTS.map((p, i) => (
-            <ScrollReveal key={p.title} delay={i * 0.1}>
+          {loading ? (
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,.4)' }}>Загрузка...</div>
+          ) : projects.map((p, i) => (
+            <ScrollReveal key={p.id} delay={i * 0.1}>
               <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRadius: 'clamp(24px,2.6vw,36px)', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.09)' }}>
-                <div style={{ width: '100%', height: 210, background: 'rgba(255,255,255,.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,.3)', fontSize: 14, fontWeight: 600 }}>Кадр из программы</div>
+                <div style={{ width: '100%', height: 210, background: p.imageUrl ? `center/cover no-repeat url(${p.imageUrl})` : 'rgba(255,255,255,.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,.3)', fontSize: 14, fontWeight: 600 }}>
+                  {!p.imageUrl && 'Кадр из программы'}
+                </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 'clamp(22px,2.6vw,30px)', flex: 1 }}>
                   <div>
                     <span style={{ padding: '5px 12px', background: 'rgba(219,31,38,.12)', border: '1px solid rgba(219,31,38,.35)', fontSize: 11.5, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: '#ff5a60' }}>{p.tag}</span>
                   </div>
                   <h3 style={{ margin: 0, fontSize: 'clamp(21px,2.2vw,27px)', fontWeight: 800, letterSpacing: '-.015em' }}>{p.title}</h3>
-                  <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.55, color: 'rgba(255,255,255,.62)', flex: 1 }}>{p.desc}</p>
-                  <a href={p.url} target="_blank" rel="noopener" style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 22px', border: '1.5px solid rgba(255,255,255,.24)', color: '#fff', textDecoration: 'none', fontSize: 14, fontWeight: 700, marginTop: 6 }}>▶ Смотреть на YouTube</a>
+                  <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.55, color: 'rgba(255,255,255,.62)', flex: 1 }}>{p.description}</p>
+                  {p.url && (
+                    <a href={p.url} target="_blank" rel="noopener" style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 22px', border: '1.5px solid rgba(255,255,255,.24)', color: '#fff', textDecoration: 'none', fontSize: 14, fontWeight: 700, marginTop: 6 }}>▶ Смотреть на YouTube</a>
+                  )}
                 </div>
               </div>
             </ScrollReveal>

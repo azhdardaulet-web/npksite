@@ -1,31 +1,51 @@
+import { useEffect, useState } from 'react';
 import { Download } from 'lucide-react';
 import { SectionHeader } from '@/components/SectionHeader';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { DarkActionButton } from '@/components/DarkActionButton';
+import { fetchDocuments, type PublicDocument } from '@/lib/api';
 
-const materials = [
-  { title: 'Логотип НПК (PNG, SVG)', size: '2.4 MB' },
-  { title: 'Предвыборная программа 2026 (PDF)', size: '4.8 MB' },
-  { title: 'Пресс-релиз: запуск кампании (PDF)', size: '1.2 MB' },
-  { title: 'Биографии кандидатов (PDF)', size: '3.1 MB' },
-  { title: 'Фото кандидатов (ZIP)', size: '18.5 MB' },
-  { title: 'Брендбук партии (PDF)', size: '8.2 MB' },
+const FALLBACK: PublicDocument[] = [
+  { id: '1', title: 'Логотип НПК (PNG, SVG)', description: null, type: 'press_kit', fileUrl: '#', fileName: 'logo.zip', fileSize: 2_400_000, year: null },
+  { id: '2', title: 'Предвыборная программа 2026 (PDF)', description: null, type: 'press_kit', fileUrl: '#', fileName: 'program.pdf', fileSize: 4_800_000, year: 2026 },
+  { id: '3', title: 'Пресс-релиз: запуск кампании (PDF)', description: null, type: 'press_kit', fileUrl: '#', fileName: 'release.pdf', fileSize: 1_200_000, year: 2026 },
+  { id: '4', title: 'Биографии кандидатов (PDF)', description: null, type: 'press_kit', fileUrl: '#', fileName: 'bios.pdf', fileSize: 3_100_000, year: null },
+  { id: '5', title: 'Фото кандидатов (ZIP)', description: null, type: 'press_kit', fileUrl: '#', fileName: 'photos.zip', fileSize: 18_500_000, year: null },
+  { id: '6', title: 'Брендбук партии (PDF)', description: null, type: 'press_kit', fileUrl: '#', fileName: 'brandbook.pdf', fileSize: 8_200_000, year: null },
 ];
 
+function formatSize(bytes: number) {
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export function PressKitPage() {
+  const [materials, setMaterials] = useState<PublicDocument[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchDocuments('press_kit')
+      .then((data) => { if (!cancelled) setMaterials(data.length > 0 ? data : FALLBACK); })
+      .catch(() => { if (!cancelled) setMaterials(FALLBACK); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <div className="pt-[104px] pb-16">
       <div className="max-w-[1280px] mx-auto px-4 md:px-10">
         <SectionHeader light="Пресс-" bold="кит" subtitle="Материалы для журналистов и СМИ" />
         <div className="space-y-3">
-          {materials.map((item, index) => (
-            <ScrollReveal key={item.title} delay={index * 0.05}>
+          {loading ? (
+            <p className="text-body text-fog text-center py-8">Загрузка...</p>
+          ) : materials.map((item, index) => (
+            <ScrollReveal key={item.id} delay={index * 0.05}>
               <div className="bg-cinder rounded-card p-5 border border-white/[0.08] flex items-center justify-between">
                 <div>
                   <h4 className="text-body-lg font-medium text-white">{item.title}</h4>
-                  <p className="text-label text-steel">{item.size}</p>
+                  <p className="text-label text-steel">{formatSize(item.fileSize)}</p>
                 </div>
-                <DarkActionButton className="flex items-center gap-2">
+                <DarkActionButton className="flex items-center gap-2" onClick={() => window.open(item.fileUrl, '_blank', 'noopener')}>
                   <Download size={16} />
                   Скачать
                 </DarkActionButton>
