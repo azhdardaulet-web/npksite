@@ -116,56 +116,6 @@ cmsPagesRouter.get('/:slug', ...requireContent, async (req: Request, res: Respon
   }
 });
 
-// ─── CMS: GET /cms/api/v1/pages/:slug/content ────────────────────────────────
-
-cmsPagesRouter.get('/:slug/content', ...requireContent, async (req: Request, res: Response): Promise<void> => {
-  const slug = String(req.params['slug']);
-  try {
-    const setting = await prisma.setting.findUnique({ where: { key: `page_content__${slug}` } });
-    if (!setting) {
-      res.json({ fields: {}, galleries: {}, documents: {} });
-      return;
-    }
-    res.json(JSON.parse(setting.value));
-  } catch (err) {
-    handleError(err, res);
-  }
-});
-
-// ─── CMS: PUT /cms/api/v1/pages/:slug/content ────────────────────────────────
-
-cmsPagesRouter.put('/:slug/content', ...requireContent, async (req: Request, res: Response): Promise<void> => {
-  const slug = String(req.params['slug']);
-  try {
-    const content = req.body as { fields: Record<string, unknown>; galleries: Record<string, unknown>; documents: Record<string, unknown> };
-    const value = JSON.stringify(content);
-    await prisma.setting.upsert({
-      where: { key: `page_content__${slug}` },
-      create: { key: `page_content__${slug}`, value },
-      update: { value },
-    });
-    res.json({ ok: true });
-  } catch (err) {
-    handleError(err, res);
-  }
-});
-
-// ─── Public: GET /api/v1/pages/:slug/content ─────────────────────────────────
-
-publicPagesRouter.get('/:slug/content', async (req: Request, res: Response): Promise<void> => {
-  const slug = String(req.params['slug']);
-  try {
-    const setting = await prisma.setting.findUnique({ where: { key: `page_content__${slug}` } });
-    if (!setting) {
-      res.json({ fields: {}, galleries: {}, documents: {} });
-      return;
-    }
-    res.json(JSON.parse(setting.value));
-  } catch (err) {
-    handleError(err, res);
-  }
-});
-
 // ─── CMS: PUT /cms/api/v1/pages/:slug ────────────────────────────────────────
 
 cmsPagesRouter.put('/:slug', ...requireContent, async (req: Request, res: Response): Promise<void> => {

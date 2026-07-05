@@ -3,6 +3,31 @@ import { prisma } from '../../lib/prisma';
 import { authenticateToken, requireRole } from '../../middleware/auth';
 
 export const cmsSettingsRouter = Router();
+export const publicSettingsRouter = Router();
+
+// Ключи, безопасные для публичного показа на сайте (счётчики, соцсети).
+// notify_email и tg_delay_minutes — служебные, наружу не отдаются.
+const PUBLIC_SETTING_KEYS = [
+  'social_youtube',
+  'social_instagram',
+  'social_tiktok',
+  'social_facebook',
+  'social_telegram',
+  'homepage_members_count',
+  'homepage_branches_count',
+  'homepage_appeals_resolved',
+];
+
+// GET /api/v1/settings — только публично разрешённые ключи
+publicSettingsRouter.get('/', async (_req, res, next) => {
+  try {
+    const settings = await prisma.setting.findMany({ where: { key: { in: PUBLIC_SETTING_KEYS } } });
+    const result = Object.fromEntries(settings.map((s) => [s.key, s.value]));
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
 
 // GET /cms/api/v1/settings
 cmsSettingsRouter.get('/', authenticateToken, requireRole('ADMIN'), async (_req, res, next) => {

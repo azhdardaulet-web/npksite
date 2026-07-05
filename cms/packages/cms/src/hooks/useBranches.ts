@@ -2,7 +2,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 
-export interface Office {
+export interface Branch {
   id: string;
   cityRu: string;
   cityKz: string;
@@ -11,12 +11,15 @@ export interface Office {
   phone: string;
   email: string;
   department: string | null;
+  chairman: string | null;
+  lng: number | null;
+  lat: number | null;
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface OfficeInput {
+export interface BranchInput {
   cityRu: string;
   cityKz: string;
   addressRu: string;
@@ -24,44 +27,48 @@ export interface OfficeInput {
   phone: string;
   email: string;
   department?: string | null;
+  chairman?: string | null;
+  lng?: number | null;
+  lat?: number | null;
   sortOrder?: number;
 }
 
-const QK = 'offices';
+const QK = 'branches';
 
-export function useOffices() {
+export function useBranches() {
   const { accessToken } = useAuthStore();
-  return useQuery<Office[]>({
+  return useQuery<Branch[]>({
     queryKey: [QK],
     queryFn: async () => {
-      const res = await api.get('/cms/api/v1/offices');
+      const res = await api.get('/cms/api/v1/branches');
       return res.data;
     },
+    enabled: !!accessToken,
   });
 }
 
-export function useCreateOffice() {
+export function useCreateBranch() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: OfficeInput) =>
-      api.post('/cms/api/v1/offices', data).then((r) => r.data),
+    mutationFn: (data: BranchInput) =>
+      api.post('/cms/api/v1/branches', data).then((r) => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [QK] }),
   });
 }
 
-export function useUpdateOffice(id: string) {
+export function useUpdateBranch(id: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<OfficeInput>) =>
-      api.put(`/cms/api/v1/offices/${id}`, data).then((r) => r.data),
+    mutationFn: (data: Partial<BranchInput>) =>
+      api.put(`/cms/api/v1/branches/${id}`, data).then((r) => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [QK] }),
   });
 }
 
-export function useDeleteOffice() {
+export function useDeleteBranch() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => api.delete(`/cms/api/v1/offices/${id}`),
+    mutationFn: (id: string) => api.delete(`/cms/api/v1/branches/${id}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: [QK] }),
   });
 }

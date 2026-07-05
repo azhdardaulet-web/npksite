@@ -14,6 +14,8 @@ interface AuthUser {
   email: string;
   name: string;
   role: Role;
+  branchId: string | null;
+  section: string | null;
 }
 
 interface LoginResult {
@@ -48,7 +50,14 @@ export async function login(
 
   return {
     accessToken,
-    user: { id: user.id, email: user.email, name: user.name, role: user.role as Role },
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role as Role,
+      branchId: user.branchId,
+      section: user.section,
+    },
   };
 }
 

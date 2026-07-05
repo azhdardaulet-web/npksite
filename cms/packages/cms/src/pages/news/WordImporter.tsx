@@ -5,19 +5,18 @@ import {
   ArrowLeft, Loader2, AlertCircle, Eye, EyeOff, RefreshCw, HardDrive, LogIn,
 } from 'lucide-react';
 import JSZip from 'jszip';
-import { useCreateNews, usePublishNews, type NewsType, type NewsCategory } from '@/hooks/useNews';
+import { useCreateNews, usePublishNews, type NewsFormat } from '@/hooks/useNews';
 import { useAuthStore } from '@/store/authStore';
 
 // ─── Local storage helpers ────────────────────────────────────────────────────
 
-const LOCAL_NEWS_KEY = 'darrail_local_news';
+const LOCAL_NEWS_KEY = 'npk_local_news';
 
 export interface LocalNewsItem {
   id: string;
   orderNum: number;
   slug: string;
-  type: NewsType;
-  category: NewsCategory;
+  format: NewsFormat;
   imageUrl: string;
   publishedAt: string;
   status: 'LOCAL';
@@ -67,8 +66,7 @@ interface ParsedArticle {
   kz: LangData;
   publishedAt: string;
   selected: boolean;
-  type: NewsType;
-  category: NewsCategory;
+  format: NewsFormat;
   imageUrl: string;
 }
 
@@ -243,8 +241,7 @@ function parseArticles(lines: string[]): ParsedArticle[] {
       kz,
       publishedAt: '',
       selected: true,
-      type: 'article',
-      category: 'corporate',
+      format: 'article',
       imageUrl: '',
     });
   }
@@ -256,19 +253,12 @@ function parseArticles(lines: string[]): ParsedArticle[] {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const TYPE_OPTIONS: { value: NewsType; label: string }[] = [
-  { value: 'press', label: 'Пресс-релиз' },
-  { value: 'article', label: 'Статья' },
-  { value: 'media_mention', label: 'СМИ о нас' },
-];
-
-const CATEGORY_OPTIONS: { value: NewsCategory; label: string }[] = [
-  { value: 'corporate', label: 'Корпоративные' },
-  { value: 'industry', label: 'Отрасль' },
-  { value: 'safety', label: 'Безопасность' },
-  { value: 'hr', label: 'Персонал' },
-  { value: 'esg', label: 'ESG' },
-  { value: 'financial', label: 'Финансы' },
+const FORMAT_OPTIONS: { value: NewsFormat; label: string }[] = [
+  { value: 'news', label: 'Новости' },
+  { value: 'party_release', label: 'Релизы партии' },
+  { value: 'article', label: 'Статьи' },
+  { value: 'analytics', label: 'Аналитика' },
+  { value: 'interview', label: 'Интервью' },
 ];
 
 function formatDate(iso: string) {
@@ -297,8 +287,7 @@ export default function WordImporter() {
 
   // Batch settings
   const [batchDate, setBatchDate] = useState('');
-  const [batchType, setBatchType] = useState<NewsType>('article');
-  const [batchCategory, setBatchCategory] = useState<NewsCategory>('corporate');
+  const [batchFormat, setBatchFormat] = useState<NewsFormat>('article');
   const [batchImage, setBatchImage] = useState('');
   const [publishImmediately, setPublishImmediately] = useState(true);
 
@@ -336,8 +325,7 @@ export default function WordImporter() {
   const applyBatchSettings = () => {
     setArticles(prev => prev.map(a => ({
       ...a,
-      type: batchType,
-      category: batchCategory,
+      format: batchFormat,
       imageUrl: batchImage,
       publishedAt: batchDate || a.publishedAt,
     })));
@@ -403,8 +391,7 @@ export default function WordImporter() {
           id: `local_${article.orderNum}_${Date.now()}`,
           orderNum: article.orderNum,
           slug: article.ru.slug || article.kz.slug || `article-${article.orderNum}`,
-          type: article.type,
-          category: article.category,
+          format: article.format,
           imageUrl: article.imageUrl || batchImage,
           publishedAt: article.publishedAt || new Date().toISOString().split('T')[0],
           status: 'LOCAL' as const,
@@ -450,8 +437,7 @@ export default function WordImporter() {
           const imageUrl = article.imageUrl || batchImage;
           const isValidUrl = /^https?:\/\/.+/.test(imageUrl);
           const created = await createMut.mutateAsync({
-            type: article.type,
-            category: article.category,
+            format: article.format,
             ...(isValidUrl && { imageUrl }),
             translations,
           });
@@ -537,7 +523,7 @@ export default function WordImporter() {
                     <p className="text-xs text-[#89837E] mt-1">или нажмите для выбора</p>
                   </div>
                   <p className="text-[10px] text-[#89837E] bg-[#F2EBE3] px-3 py-1 rounded-full">
-                    Формат: DAR Rail — Статьи для сайта
+                    Формат: НПК — Статьи для сайта
                   </p>
                 </div>
               )}
@@ -754,27 +740,14 @@ export default function WordImporter() {
 
             <div>
               <label className="text-[11px] font-bold text-[#383233] uppercase tracking-wider block mb-1">
-                Тип
+                Формат
               </label>
               <select
-                value={batchType}
-                onChange={e => setBatchType(e.target.value as NewsType)}
+                value={batchFormat}
+                onChange={e => setBatchFormat(e.target.value as NewsFormat)}
                 className="w-full px-3 py-2 bg-[#F9F8F6] border border-[#DFDFDF] rounded-lg text-sm text-[#383233] focus:outline-none focus:border-[#D64338] transition-colors"
               >
-                {TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-[11px] font-bold text-[#383233] uppercase tracking-wider block mb-1">
-                Категория
-              </label>
-              <select
-                value={batchCategory}
-                onChange={e => setBatchCategory(e.target.value as NewsCategory)}
-                className="w-full px-3 py-2 bg-[#F9F8F6] border border-[#DFDFDF] rounded-lg text-sm text-[#383233] focus:outline-none focus:border-[#D64338] transition-colors"
-              >
-                {CATEGORY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                {FORMAT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </div>
 
@@ -841,7 +814,7 @@ export default function WordImporter() {
             <span className="w-8">#</span>
             <span className="flex-1">Заголовок (RU)</span>
             <span className="w-40">Дата</span>
-            <span className="w-32">Тип</span>
+            <span className="w-32">Формат</span>
             <span className="w-8" />
           </div>
 
@@ -881,11 +854,11 @@ export default function WordImporter() {
                   </div>
                   <div className="w-32 shrink-0">
                     <select
-                      value={article.category}
-                      onChange={e => updateArticle(article.orderNum, 'category', e.target.value as NewsCategory)}
+                      value={article.format}
+                      onChange={e => updateArticle(article.orderNum, 'format', e.target.value as NewsFormat)}
                       className="w-full px-2 py-1.5 bg-[#F9F8F6] border border-[#DFDFDF] rounded-lg text-xs text-[#383233] focus:outline-none focus:border-[#D64338] transition-colors"
                     >
-                      {CATEGORY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      {FORMAT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   </div>
                   <button

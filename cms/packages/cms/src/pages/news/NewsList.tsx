@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Pencil, Trash2, Eye, Archive, RotateCcw, ChevronLeft, ChevronRight, FileUp, HardDrive, RefreshCw, ImageOff, Link2, Star } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, Archive, RotateCcw, ChevronLeft, ChevronRight, FileUp, HardDrive, RefreshCw, ImageOff, Link2, Star, Send } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import {
   useNews,
@@ -17,19 +17,12 @@ import { getLocalNews, type LocalNewsItem } from './WordImporter';
 
 // ─── Labels / colours ─────────────────────────────────────────────────────────
 
-const TYPE_LABELS: Record<string, string> = {
-  press: 'Пресс-релиз',
-  article: 'Статья',
-  media_mention: 'СМИ о нас',
-};
-
-const CATEGORY_LABELS: Record<string, string> = {
-  corporate: 'Корпоративные',
-  industry: 'Отрасль',
-  safety: 'Безопасность',
-  hr: 'Персонал',
-  esg: 'ESG',
-  financial: 'Финансы',
+const FORMAT_LABELS: Record<string, string> = {
+  news: 'Новости',
+  party_release: 'Релизы партии',
+  article: 'Статьи',
+  analytics: 'Аналитика',
+  interview: 'Интервью',
 };
 
 const STATUS_LABEL: Record<NewsStatus, string> = {
@@ -46,7 +39,7 @@ const STATUS_COLOR: Record<NewsStatus, string> = {
   SCHEDULED: 'bg-blue-100 text-blue-700',
 };
 
-const LANG_DISPLAY: Record<string, string> = { ru: 'РУ', kz: 'ҚЗ', en: 'EN', zh: '中' };
+const LANG_DISPLAY: Record<string, string> = { ru: 'РУ', kz: 'ҚЗ' };
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -57,8 +50,7 @@ export default function NewsList() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [statusFilter, setStatusFilter] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('');
+  const [formatFilter, setFormatFilter] = useState('');
   const [langFilter, setLangFilter] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
@@ -71,12 +63,11 @@ export default function NewsList() {
   }, [searchInput]);
 
   // Reset page on filter change
-  useEffect(() => { setPage(1); setSelectedIds(new Set()); }, [statusFilter, typeFilter, categoryFilter, langFilter, pageSize]);
+  useEffect(() => { setPage(1); setSelectedIds(new Set()); }, [statusFilter, formatFilter, langFilter, pageSize]);
 
   const filters = {
     ...(statusFilter && { status: statusFilter }),
-    ...(typeFilter && { type: typeFilter }),
-    ...(categoryFilter && { category: categoryFilter }),
+    ...(formatFilter && { format: formatFilter }),
     ...(search && { q: search }),
   };
 
@@ -101,11 +92,10 @@ export default function NewsList() {
     for (const item of localNews) {
       try {
         const created = await createMut.mutateAsync({
-          type: item.type,
-          category: item.category,
+          format: item.format,
           imageUrl: item.imageUrl,
           translations: item.translations.map(t => ({
-            lang: t.lang as 'ru' | 'kz' | 'en' | 'zh',
+            lang: t.lang as 'ru' | 'kz',
             title: t.title,
             content: t.content,
             excerpt: t.excerpt,
@@ -118,15 +108,9 @@ export default function NewsList() {
         remaining.push(item);
       }
     }
-    localStorage.setItem('darrail_local_news', JSON.stringify(remaining));
+    localStorage.setItem('npk_local_news', JSON.stringify(remaining));
     setLocalNews(remaining);
     setSyncingLocal(false);
-  };
-
-  const handleDeleteLocal = (id: string) => {
-    const updated = localNews.filter(i => i.id !== id);
-    localStorage.setItem('darrail_local_news', JSON.stringify(updated));
-    setLocalNews(updated);
   };
 
   const handleDelete = (item: NewsListItem) => {
@@ -189,7 +173,7 @@ export default function NewsList() {
               onClick={() => navigate('/dashboard')}
               className="text-sm text-gray-500 hover:text-gray-700"
             >
-              ← DAR Rail CMS
+              ← НПК CMS
             </button>
             <span className="text-gray-300">/</span>
             <h1 className="text-base font-semibold text-gray-900">Новости</h1>
@@ -288,8 +272,6 @@ export default function NewsList() {
             { value: '', label: 'Все языки' },
             { value: 'ru', label: 'РУ' },
             { value: 'kz', label: 'ҚЗ' },
-            { value: 'en', label: 'EN' },
-            { value: 'zh', label: '中文' },
           ].map((tab) => (
             <button
               key={tab.value}
@@ -321,27 +303,17 @@ export default function NewsList() {
             <option value="SCHEDULED">Запланировано</option>
             <option value="ARCHIVED">Архив</option>
           </SelectField>
-          <SelectField value={typeFilter} onChange={setTypeFilter}>
-            <option value="">Все типы</option>
-            <option value="press">Пресс-релиз</option>
-            <option value="article">Статья</option>
-            <option value="media_mention">СМИ о нас</option>
+          <SelectField value={formatFilter} onChange={setFormatFilter}>
+            <option value="">Все форматы</option>
+            {Object.entries(FORMAT_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
           </SelectField>
-          <SelectField value={categoryFilter} onChange={setCategoryFilter}>
-            <option value="">Все категории</option>
-            <option value="corporate">Корпоративные</option>
-            <option value="industry">Отрасль</option>
-            <option value="safety">Безопасность</option>
-            <option value="hr">Персонал</option>
-            <option value="esg">ESG</option>
-            <option value="financial">Финансы</option>
-          </SelectField>
-          {(statusFilter || typeFilter || categoryFilter || langFilter || search) && (
+          {(statusFilter || formatFilter || langFilter || search) && (
             <button
               onClick={() => {
                 setStatusFilter('');
-                setTypeFilter('');
-                setCategoryFilter('');
+                setFormatFilter('');
                 setLangFilter('');
                 setSearchInput('');
               }}
@@ -391,9 +363,10 @@ export default function NewsList() {
                     </th>
                     <th className="text-left font-medium text-gray-500 px-4 py-3 w-12">Фото</th>
                     <th className="text-left font-medium text-gray-500 px-4 py-3">Заголовок / URL</th>
-                    <th className="text-left font-medium text-gray-500 px-4 py-3 w-28">Тип</th>
+                    <th className="text-left font-medium text-gray-500 px-4 py-3 w-28">Формат</th>
                     <th className="text-left font-medium text-gray-500 px-4 py-3 w-24">Статус</th>
                     <th className="text-center font-medium text-gray-500 px-3 py-3 w-24">На главной</th>
+                    <th className="text-center font-medium text-gray-500 px-3 py-3 w-20">Telegram</th>
                     <th className="text-left font-medium text-gray-500 px-4 py-3 w-24">Дата</th>
                     <th className="px-4 py-3 w-28">Действия</th>
                   </tr>
@@ -401,7 +374,7 @@ export default function NewsList() {
                 <tbody className="divide-y divide-gray-100">
                   {data?.data.length === 0 && (
                     <tr>
-                      <td colSpan={8} className="text-center text-gray-400 py-12">
+                      <td colSpan={9} className="text-center text-gray-400 py-12">
                         Новостей не найдено
                       </td>
                     </tr>
@@ -469,7 +442,7 @@ export default function NewsList() {
                             </div>
                           )}
                           <div className="flex gap-1 mt-1">
-                            {(['ru', 'kz', 'en', 'zh'] as const).map((lang) => (
+                            {(['ru', 'kz'] as const).map((lang) => (
                               <span
                                 key={lang}
                                 className={`text-xs px-1.5 py-0.5 rounded font-medium ${
@@ -484,7 +457,7 @@ export default function NewsList() {
                           </div>
                         </td>
                         <td className="px-4 py-3 text-gray-600 text-xs">
-                          {TYPE_LABELS[item.type] ?? item.type}
+                          {FORMAT_LABELS[item.format] ?? item.format}
                         </td>
                         <td className="px-4 py-3">
                           <span
@@ -508,6 +481,18 @@ export default function NewsList() {
                             <Star size={11} className={item.isFeatured ? 'fill-amber-500' : ''} />
                             {item.isFeatured ? 'Вкл' : 'Выкл'}
                           </button>
+                        </td>
+                        {/* Telegram status */}
+                        <td className="px-3 py-3 text-center">
+                          {item.tgSkip ? (
+                            <span className="text-xs text-gray-400">Отключено</span>
+                          ) : item.tgPosted ? (
+                            <span className="inline-flex items-center gap-1 text-xs text-blue-600" title="Опубликовано в Telegram">
+                              <Send size={11} /> ✓
+                            </span>
+                          ) : (
+                            <span className="text-xs text-gray-400">—</span>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-gray-500 text-xs">{dateStr}</td>
                         <td className="px-4 py-3">

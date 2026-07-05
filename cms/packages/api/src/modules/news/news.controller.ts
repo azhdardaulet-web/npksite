@@ -38,7 +38,7 @@ async function optionalAuth(req: Request, _res: Response, next: NextFunction): P
       const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
       const user = await prisma.user.findUnique({
         where: { id: decoded.userId },
-        select: { id: true, email: true, name: true, role: true, status: true, branchId: true },
+        select: { id: true, email: true, name: true, role: true, status: true, branchId: true, section: true },
       });
       if (user && user.status !== 'BLOCKED') {
         req.user = {
@@ -47,6 +47,7 @@ async function optionalAuth(req: Request, _res: Response, next: NextFunction): P
           name: user.name,
           role: user.role as Role,
           branchId: user.branchId,
+          section: user.section,
         };
       }
     } catch {

@@ -15,7 +15,15 @@ import { documentsRouter, publicDocumentsRouter } from './modules/documents/docu
 import { joinRequestsRouter, cmsJoinRequestsRouter } from './modules/join-requests/join-requests.controller';
 import { appealsRouter, appealTopicsRouter, cmsAppealsRouter } from './modules/appeals/appeals.controller';
 import { shopSubscribersRouter } from './modules/shop-subscribers/shop-subscribers.controller';
-import { cmsSettingsRouter } from './modules/settings/settings.controller';
+import { cmsSettingsRouter, publicSettingsRouter } from './modules/settings/settings.controller';
+import { publicCandidatesRouter, cmsCandidatesRouter } from './modules/candidates/candidates.controller';
+import { publicHistoryRouter, cmsHistoryRouter } from './modules/history/history.controller';
+import { publicProgramRouter, cmsProgramRouter } from './modules/program/program.controller';
+import { publicMediaProjectsRouter, cmsMediaProjectsRouter } from './modules/media-projects/media-projects.controller';
+import { publicMediaPublicationsRouter, cmsMediaPublicationsRouter } from './modules/media-publications/media-publications.controller';
+import { publicTestimonialsRouter, cmsTestimonialsRouter } from './modules/testimonials/testimonials.controller';
+import { publicMenuItemsRouter, cmsMenuItemsRouter } from './modules/menu-items/menu-items.controller';
+import { publicFaqRouter, cmsFaqRouter } from './modules/faq/faq.controller';
 import { logger } from './lib/logger';
 import { ensureBucketExists } from './lib/minio';
 
@@ -99,6 +107,15 @@ app.use('/api/v1/join-requests', joinRequestsRouter);
 app.use('/api/v1/appeals', appealsRouter);
 app.use('/api/v1/appeal-topics', appealTopicsRouter);
 app.use('/api/v1/shop-subscribers', shopSubscribersRouter);
+app.use('/api/v1/settings', publicSettingsRouter);
+app.use('/api/v1/candidates', publicCandidatesRouter);
+app.use('/api/v1/history-events', publicHistoryRouter);
+app.use('/api/v1/program-blocks', publicProgramRouter);
+app.use('/api/v1/media-projects', publicMediaProjectsRouter);
+app.use('/api/v1/media-publications', publicMediaPublicationsRouter);
+app.use('/api/v1/testimonials', publicTestimonialsRouter);
+app.use('/api/v1/menu-items', publicMenuItemsRouter);
+app.use('/api/v1/faq', publicFaqRouter);
 
 // ─── CMS API routes (require auth — enforced per-router) ──────────────────────
 app.use('/cms/api/v1/users', usersRouter);
@@ -111,6 +128,14 @@ app.use('/cms/api/v1/documents', documentsRouter);
 app.use('/cms/api/v1/join-requests', cmsJoinRequestsRouter);
 app.use('/cms/api/v1/appeals', cmsAppealsRouter);
 app.use('/cms/api/v1/settings', cmsSettingsRouter);
+app.use('/cms/api/v1/candidates', cmsCandidatesRouter);
+app.use('/cms/api/v1/history-events', cmsHistoryRouter);
+app.use('/cms/api/v1/program-blocks', cmsProgramRouter);
+app.use('/cms/api/v1/media-projects', cmsMediaProjectsRouter);
+app.use('/cms/api/v1/media-publications', cmsMediaPublicationsRouter);
+app.use('/cms/api/v1/testimonials', cmsTestimonialsRouter);
+app.use('/cms/api/v1/menu-items', cmsMenuItemsRouter);
+app.use('/cms/api/v1/faq', cmsFaqRouter);
 
 // ─── 404 handler ──────────────────────────────────────────────────────────────
 app.use((_req, res) => {

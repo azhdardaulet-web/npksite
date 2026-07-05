@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ChevronDown, ChevronUp, ImageIcon, Loader2, Sparkles, Copy, Check, Home } from 'lucide-react';
+import { ChevronDown, ChevronUp, ImageIcon, Loader2, Copy, Check, Send, X } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useNewsItem, useCreateNews, useUpdateNews, usePublishNews } from '@/hooks/useNews';
 import { RichTextEditor } from '@/components/RichTextEditor';
@@ -21,37 +21,28 @@ const translationSchema = z.object({
 });
 
 const newsFormSchema = z.object({
-  type: z.enum(['press', 'article', 'media_mention']),
-  category: z.enum(['corporate', 'industry', 'safety', 'hr', 'esg', 'financial']),
+  format: z.enum(['news', 'party_release', 'article', 'analytics', 'interview']),
   imageUrl: z.string().default(''),
+  tgSkip: z.boolean().default(false),
   ru: translationSchema,
   kz: translationSchema,
-  en: translationSchema,
-  zh: translationSchema,
 });
 
 type NewsFormValues = z.infer<typeof newsFormSchema>;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const LANGS = ['ru', 'kz', 'en', 'zh'] as const;
+const LANGS = ['ru', 'kz'] as const;
 type Lang = typeof LANGS[number];
 
-const LANG_LABELS: Record<Lang, string> = { ru: 'РУ', kz: 'ҚЗ', en: 'ENG', zh: '中文' };
+const LANG_LABELS: Record<Lang, string> = { ru: 'РУ', kz: 'ҚЗ' };
 
-const TYPE_OPTIONS = [
-  { value: 'press', label: 'Пресс-релиз' },
-  { value: 'article', label: 'Статья' },
-  { value: 'media_mention', label: 'СМИ о нас' },
-];
-
-const CATEGORY_OPTIONS = [
-  { value: 'corporate', label: 'Корпоративные' },
-  { value: 'industry', label: 'Отрасль' },
-  { value: 'safety', label: 'Безопасность' },
-  { value: 'hr', label: 'Персонал' },
-  { value: 'esg', label: 'ESG' },
-  { value: 'financial', label: 'Финансы' },
+const FORMAT_OPTIONS = [
+  { value: 'news', label: 'Новости' },
+  { value: 'party_release', label: 'Релизы партии' },
+  { value: 'article', label: 'Статьи' },
+  { value: 'analytics', label: 'Аналитика' },
+  { value: 'interview', label: 'Интервью' },
 ];
 
 const emptyTranslation = { title: '', content: '', excerpt: '', seoTitle: '', seoDescription: '', ogImageUrl: '' };
@@ -68,9 +59,9 @@ export default function NewsEditor() {
   const [seoOpen, setSeoOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
-  const [generatingLang, setGeneratingLang] = useState<Lang | null>(null);
   const [publishDate, setPublishDate] = useState('');
-  const [showOnHomepage, setShowOnHomepage] = useState(false);
+  const [tagInput, setTagInput] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
   const [slugCopied, setSlugCopied] = useState(false);
   const slugRef = useRef<HTMLInputElement>(null);
 
@@ -92,13 +83,11 @@ export default function NewsEditor() {
   } = useForm<NewsFormValues>({
     resolver: zodResolver(newsFormSchema),
     defaultValues: {
-      type: 'article',
-      category: 'corporate',
+      format: 'news',
       imageUrl: '',
+      tgSkip: false,
       ru: emptyTranslation,
       kz: emptyTranslation,
-      en: emptyTranslation,
-      zh: emptyTranslation,
     },
   });
 
@@ -118,14 +107,13 @@ export default function NewsEditor() {
       };
     };
     reset({
-      type: existing.type,
-      category: existing.category,
+      format: existing.format,
       imageUrl: existing.imageUrl ?? '',
+      tgSkip: existing.tgSkip,
       ru: t('ru'),
       kz: t('kz'),
-      en: t('en'),
-      zh: t('zh'),
     });
+    setTags(existing.tags ?? []);
   }, [existing, reset]);
 
   const buildPayload = (values: NewsFormValues) => {
@@ -146,9 +134,10 @@ export default function NewsEditor() {
     }
 
     return {
-      type: values.type,
-      category: values.category,
+      format: values.format,
       imageUrl: values.imageUrl || undefined,
+      tags,
+      tgSkip: values.tgSkip,
       translations,
     };
   };
@@ -204,93 +193,10 @@ export default function NewsEditor() {
     return v.title.trim().length > 0;
   };
 
-  const LANG_NAMES: Record<Lang, string> = { ru: 'русский', kz: 'казахский', en: 'английский', zh: 'китайский' };
-
-  const handleGenerate = async (targetLang: Lang) => {
-    const provider = localStorage.getItem('cms_ai_provider');
-    const apiKey = localStorage.getItem('cms_ai_key');
-    const model = localStorage.getItem('cms_ai_model') ?? 'gpt-4o';
-
-    if (!apiKey) {
-      alert('AI-ключ не настроен. Перейдите в Настройки → Интеграции → ИИ и сохраните API-ключ.');
-      return;
-    }
-
-    const ruValues = watch('ru');
-    if (!ruValues.title.trim()) {
-      alert('Сначала заполните заголовок на русском языке.');
-      return;
-    }
-
-    const prompt = `Ты профессиональный переводчик пресс-релизов для железнодорожной компании DAR Rail (Казахстан).
-Переведи следующий материал на ${LANG_NAMES[targetLang]} язык. Сохрани HTML-теги если они есть.
-Верни JSON строго в формате: {"title":"...","content":"...","excerpt":"..."}
-Не добавляй ничего лишнего — только JSON.
-
-ЗАГОЛОВОК: ${ruValues.title}
-ТЕКСТ: ${ruValues.content || ''}
-КРАТКОЕ ОПИСАНИЕ: ${ruValues.excerpt || ''}`;
-
-    setGeneratingLang(targetLang);
-    try {
-      let resultJson: { title: string; content: string; excerpt: string } | null = null;
-
-      if (provider === 'openai') {
-        const res = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-          body: JSON.stringify({
-            model,
-            messages: [{ role: 'user', content: prompt }],
-            temperature: 0.3,
-          }),
-        });
-        if (!res.ok) throw new Error(`OpenAI error ${res.status}`);
-        const data = await res.json();
-        resultJson = JSON.parse(data.choices[0].message.content);
-      } else if (provider === 'claude') {
-        const res = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01',
-          },
-          body: JSON.stringify({
-            model,
-            max_tokens: 4096,
-            messages: [{ role: 'user', content: prompt }],
-          }),
-        });
-        if (!res.ok) throw new Error(`Claude error ${res.status}`);
-        const data = await res.json();
-        resultJson = JSON.parse(data.content[0].text);
-      } else if (provider === 'gemini') {
-        const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-          }
-        );
-        if (!res.ok) throw new Error(`Gemini error ${res.status}`);
-        const data = await res.json();
-        const text = data.candidates[0].content.parts[0].text;
-        resultJson = JSON.parse(text.replace(/```json\n?|```/g, '').trim());
-      }
-
-      if (resultJson) {
-        if (resultJson.title) setValue(`${targetLang}.title`, resultJson.title, { shouldDirty: true });
-        if (resultJson.content) setValue(`${targetLang}.content`, resultJson.content, { shouldDirty: true });
-        if (resultJson.excerpt) setValue(`${targetLang}.excerpt`, resultJson.excerpt, { shouldDirty: true });
-      }
-    } catch (err) {
-      const e = err as { message?: string };
-      alert(`Ошибка генерации: ${e.message ?? 'Неизвестная ошибка'}`);
-    } finally {
-      setGeneratingLang(null);
-    }
+  const addTag = () => {
+    const v = tagInput.trim();
+    if (v && !tags.includes(v)) setTags((prev) => [...prev, v]);
+    setTagInput('');
   };
 
   const Label = ({ children }: { children: React.ReactNode }) => (
@@ -314,6 +220,7 @@ export default function NewsEditor() {
   );
 
   const currentImageUrl = watch('imageUrl');
+  const tgSkip = watch('tgSkip');
 
   if (isEdit && loadingExisting) {
     return (
@@ -396,20 +303,6 @@ export default function NewsEditor() {
                   </button>
                 ))}
               </div>
-              {activeTab !== 'ru' && (
-                <button
-                  type="button"
-                  onClick={() => handleGenerate(activeTab)}
-                  disabled={generatingLang === activeTab}
-                  className="flex items-center gap-1.5 mr-3 px-3 py-1.5 text-xs font-medium bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:opacity-60"
-                >
-                  {generatingLang === activeTab
-                    ? <Loader2 size={13} className="animate-spin" />
-                    : <Sparkles size={13} />
-                  }
-                  {generatingLang === activeTab ? 'Генерирую...' : 'Генерировать из РУ'}
-                </button>
-              )}
             </div>
 
             <div className="p-5">
@@ -445,7 +338,7 @@ export default function NewsEditor() {
 
                   {/* Excerpt */}
                   <div>
-                    <Label>Краткое описание (необязательно — автоматически из текста)</Label>
+                    <Label>Краткое описание (лид, до 200 символов — используется в Telegram-посте)</Label>
                     <textarea
                       {...register(`${lang}.excerpt`)}
                       rows={2}
@@ -520,26 +413,29 @@ export default function NewsEditor() {
               )}
             </div>
 
-            {/* Show on homepage toggle */}
+            {/* Telegram toggle */}
             <div className="flex items-center justify-between py-2 border-t border-gray-100">
               <div className="flex items-center gap-2">
-                <Home size={14} className="text-gray-500" />
-                <span className="text-xs font-medium text-gray-700">Показать на главной</span>
+                <Send size={14} className="text-gray-500" />
+                <span className="text-xs font-medium text-gray-700">Не публиковать в Telegram</span>
               </div>
               <button
                 type="button"
-                onClick={() => setShowOnHomepage((v) => !v)}
+                onClick={() => setValue('tgSkip', !tgSkip, { shouldDirty: true })}
                 className={`w-9 h-5 rounded-full transition-colors relative ${
-                  showOnHomepage ? 'bg-red-600' : 'bg-gray-200'
+                  tgSkip ? 'bg-red-600' : 'bg-gray-200'
                 }`}
               >
                 <span
                   className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                    showOnHomepage ? 'translate-x-4' : 'translate-x-0.5'
+                    tgSkip ? 'translate-x-4' : 'translate-x-0.5'
                   }`}
                 />
               </button>
             </div>
+            {isEdit && existing?.tgPosted && (
+              <p className="text-xs text-green-600">✓ Уже опубликовано в Telegram</p>
+            )}
 
             <button
               type="button"
@@ -562,17 +458,17 @@ export default function NewsEditor() {
             </button>
           </div>
 
-          {/* Type & Category */}
+          {/* Format & tags */}
           <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
             <h3 className="text-sm font-semibold text-gray-900">Классификация</h3>
 
             <div>
-              <Label>Тип материала</Label>
+              <Label>Формат материала</Label>
               <select
-                {...register('type')}
+                {...register('format')}
                 className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                {TYPE_OPTIONS.map((o) => (
+                {FORMAT_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>
                     {o.label}
                   </option>
@@ -581,17 +477,32 @@ export default function NewsEditor() {
             </div>
 
             <div>
-              <Label>Категория</Label>
-              <select
-                {...register('category')}
-                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {CATEGORY_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
+              <Label>Теги</Label>
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full"
+                  >
+                    {tag}
+                    <button type="button" onClick={() => setTags((prev) => prev.filter((t) => t !== tag))}>
+                      <X size={11} />
+                    </button>
+                  </span>
                 ))}
-              </select>
+              </div>
+              <input
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addTag();
+                  }
+                }}
+                placeholder="Тег и Enter..."
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
             </div>
           </div>
 

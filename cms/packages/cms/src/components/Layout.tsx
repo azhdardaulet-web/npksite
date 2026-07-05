@@ -16,6 +16,13 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Bell,
+  UserSquare2,
+  History,
+  ListChecks,
+  Clapperboard,
+  Radio,
+  Quote,
+  Menu as MenuIcon,
 } from 'lucide-react';
 import { useAuthStore, Role } from '@/store/authStore';
 import { useNewJoinRequestsCount } from '@/hooks/useJoinRequests';
@@ -73,7 +80,7 @@ const navGroups: NavGroupDef[] = [
           { label: 'Все новости', path: '/news' },
           { label: 'Черновики', path: '/news?status=DRAFT' },
           { label: 'Создать', path: '/news/new' },
-          { label: 'Категории', path: '/news/categories' },
+          { label: 'Импорт из Word', path: '/news/import' },
         ],
       },
     ],
@@ -83,8 +90,15 @@ const navGroups: NavGroupDef[] = [
     items: [
       { label: 'Медиабиблиотека', path: '/media', icon: Image, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'] },
       { label: 'Команда', path: '/team', icon: Users, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'] },
-      { label: 'Филиалы', path: '/offices', icon: Building2, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR', 'BRANCH_EDITOR'] },
+      { label: 'Филиалы', path: '/filialy', icon: Building2, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR', 'BRANCH_EDITOR'] },
       { label: 'Страницы', path: '/pages', icon: Layers, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR', 'FACTION'] },
+      { label: 'Кандидаты', path: '/candidates', icon: UserSquare2, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'] },
+      { label: 'История партии', path: '/history', icon: History, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'] },
+      { label: 'Программа', path: '/program', icon: ListChecks, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'] },
+      { label: 'Медиапроекты', path: '/media-projects', icon: Clapperboard, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'] },
+      { label: 'СМИ о нас', path: '/smi', icon: Radio, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'] },
+      { label: 'Отзывы', path: '/testimonials', icon: Quote, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'] },
+      { label: 'Меню сайта', path: '/menu', icon: MenuIcon, roles: ['ADMIN'] },
     ],
   },
   {
@@ -202,7 +216,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           .filter(item => item.roles.includes(role))
           .map(item =>
             // BRANCH_EDITOR видит только свой филиал — контекстная подпись пункта
-            item.path === '/offices' && role === 'BRANCH_EDITOR'
+            item.path === '/filialy' && role === 'BRANCH_EDITOR'
               ? { ...item, label: 'Мой филиал' }
               : item
           ),

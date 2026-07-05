@@ -13,6 +13,8 @@ export interface AuthUser {
   email: string;
   name: string;
   role: Role;
+  branchId?: string | null;
+  section?: string | null;
 }
 
 interface AuthState {

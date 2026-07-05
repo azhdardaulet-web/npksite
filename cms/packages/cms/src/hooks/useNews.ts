@@ -4,9 +4,8 @@ import { useAuthStore } from '@/store/authStore';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type NewsLang = 'ru' | 'kz' | 'en' | 'zh';
-export type NewsType = 'press' | 'article' | 'media_mention';
-export type NewsCategory = 'corporate' | 'industry' | 'safety' | 'hr' | 'esg' | 'financial';
+export type NewsLang = 'ru' | 'kz';
+export type NewsFormat = 'news' | 'party_release' | 'article' | 'analytics' | 'interview';
 export type NewsStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | 'SCHEDULED';
 
 export interface NewsTranslation {
@@ -31,12 +30,14 @@ export interface NewsAuthor {
 export interface NewsListItem {
   id: string;
   slug: string;
-  type: NewsType;
-  category: NewsCategory;
+  format: NewsFormat;
   status: NewsStatus;
   imageUrl: string | null;
   isFeatured: boolean;
   readingTime: number | null;
+  tags: string[];
+  tgPosted: boolean;
+  tgSkip: boolean;
   publishedAt: string | null;
   scheduledAt: string | null;
   authorId: string;
@@ -60,8 +61,7 @@ export interface NewsListResponse {
 
 export interface NewsFilters {
   status?: string;
-  type?: string;
-  category?: string;
+  format?: string;
   q?: string;
 }
 
@@ -76,16 +76,18 @@ export interface TranslationInput {
 }
 
 export interface CreateNewsInput {
-  type: NewsType;
-  category: NewsCategory;
+  format: NewsFormat;
   imageUrl?: string;
+  tags?: string[];
+  tgSkip?: boolean;
   translations: TranslationInput[];
 }
 
 export interface UpdateNewsInput {
-  type: NewsType;
-  category: NewsCategory;
+  format: NewsFormat;
   imageUrl?: string | null;
+  tags?: string[];
+  tgSkip?: boolean;
   translations: TranslationInput[];
 }
 
@@ -102,20 +104,18 @@ export function useNews(filters: NewsFilters, page = 1, limit = 10) {
       return data;
     },
     enabled: !!accessToken,
-    staleTime: 30_000,
   });
 }
 
-export function useNewsItem(id: string | undefined) {
+export function useNewsItem(id?: string) {
   const { accessToken } = useAuthStore();
   return useQuery<NewsDetail>({
-    queryKey: ['news-item', id],
+    queryKey: ['news', 'item', id],
     queryFn: async () => {
       const { data } = await api.get<NewsDetail>(`/cms/api/v1/news/${id}`);
       return data;
     },
     enabled: !!accessToken && !!id,
-    staleTime: 30_000,
   });
 }
 
@@ -124,10 +124,8 @@ export function useNewsItem(id: string | undefined) {
 export function useCreateNews() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: CreateNewsInput) => {
-      const { data } = await api.post<NewsDetail>('/cms/api/v1/news', input);
-      return data;
-    },
+    mutationFn: (data: CreateNewsInput) =>
+      api.post<NewsDetail>('/cms/api/v1/news', data).then((r) => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['news'] }),
   });
 }
@@ -135,26 +133,17 @@ export function useCreateNews() {
 export function useUpdateNews() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...input }: { id: string } & UpdateNewsInput) => {
-      const { data } = await api.put<NewsDetail>(`/cms/api/v1/news/${id}`, input);
-      return data;
-    },
-    onSuccess: (_data, vars) => {
-      qc.invalidateQueries({ queryKey: ['news'] });
-      qc.invalidateQueries({ queryKey: ['news-item', vars.id] });
-    },
+    mutationFn: ({ id, ...data }: UpdateNewsInput & { id: string }) =>
+      api.put<NewsDetail>(`/cms/api/v1/news/${id}`, data).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['news'] }),
   });
 }
 
 export function usePublishNews() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, scheduledAt }: { id: string; scheduledAt?: string }) => {
-      const { data } = await api.post<NewsDetail>(`/cms/api/v1/news/${id}/publish`, {
-        scheduledAt,
-      });
-      return data;
-    },
+    mutationFn: ({ id, scheduledAt }: { id: string; scheduledAt?: string }) =>
+      api.post<NewsDetail>(`/cms/api/v1/news/${id}/publish`, { scheduledAt }).then((r) => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['news'] }),
   });
 }
@@ -162,10 +151,7 @@ export function usePublishNews() {
 export function useArchiveNews() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { data } = await api.post<NewsDetail>(`/cms/api/v1/news/${id}/archive`);
-      return data;
-    },
+    mutationFn: (id: string) => api.post(`/cms/api/v1/news/${id}/archive`).then((r) => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['news'] }),
   });
 }
@@ -173,20 +159,7 @@ export function useArchiveNews() {
 export function useDraftNews() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { data } = await api.post<NewsDetail>(`/cms/api/v1/news/${id}/draft`);
-      return data;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['news'] }),
-  });
-}
-
-export function useDeleteNews() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      await api.delete(`/cms/api/v1/news/${id}`);
-    },
+    mutationFn: (id: string) => api.post(`/cms/api/v1/news/${id}/draft`).then((r) => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['news'] }),
   });
 }
@@ -194,10 +167,15 @@ export function useDeleteNews() {
 export function useToggleFeatured() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { data } = await api.post<NewsDetail>(`/cms/api/v1/news/${id}/toggle-featured`);
-      return data;
-    },
+    mutationFn: (id: string) => api.post(`/cms/api/v1/news/${id}/toggle-featured`).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['news'] }),
+  });
+}
+
+export function useDeleteNews() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.delete(`/cms/api/v1/news/${id}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['news'] }),
   });
 }

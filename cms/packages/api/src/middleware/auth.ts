@@ -14,6 +14,7 @@ declare global {
         name: string;
         role: Role;
         branchId: string | null;
+        section: string | null;
       };
     }
   }
@@ -51,7 +52,7 @@ export async function authenticateToken(
     // Verify user still exists and is active
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: { id: true, email: true, name: true, role: true, status: true, branchId: true },
+      select: { id: true, email: true, name: true, role: true, status: true, branchId: true, section: true },
     });
 
     if (!user || user.status === 'BLOCKED') {
@@ -65,6 +66,7 @@ export async function authenticateToken(
       name: user.name,
       role: user.role as Role,
       branchId: user.branchId,
+      section: user.section,
     };
 
     next();
