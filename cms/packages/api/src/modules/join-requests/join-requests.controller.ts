@@ -1,8 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
+import * as XLSX from 'xlsx';
 import { prisma } from '../../lib/prisma';
 import { authenticateToken, requireRole } from '../../middleware/auth';
 import { verifyHCaptcha } from '../../lib/hcaptcha';
+import { sendMail } from '../../lib/mailer';
+import { getSetting } from '../../lib/settings';
 import { JoinRequestRoleSchema, GenderSchema, kzPhoneSchema } from '@dar-rail/shared';
 import { Prisma } from '@prisma/client';
 
@@ -47,6 +50,21 @@ joinRequestsRouter.post('/', async (req: Request, res: Response): Promise<void> 
 
     const { hCaptchaToken: _t, ...data } = parsed.data;
     const joinRequest = await prisma.joinRequest.create({ data });
+
+    const notifyEmail = await getSetting('notify_email');
+    if (notifyEmail) {
+      await sendMail({
+        to: notifyEmail,
+        subject: 'Новая заявка на вступление в партию',
+        html: `
+          <p>Поступила новая заявка на вступление (роль: ${joinRequest.role}).</p>
+          <p><b>ФИО:</b> ${joinRequest.fullName}</p>
+          <p><b>Телефон:</b> ${joinRequest.phone}</p>
+          <p><b>Город:</b> ${joinRequest.city ?? '—'}</p>
+        `,
+      });
+    }
+
     res.status(201).json({ message: 'Заявка успешно отправлена', id: joinRequest.id });
   } catch (err) {
     handleError(err, res);
@@ -54,11 +72,10 @@ joinRequestsRouter.post('/', async (req: Request, res: Response): Promise<void> 
 });
 
 // ─── CMS: GET /cms/api/v1/join-requests ───────────────────────────────────────
+// По ТЗ (п. 6.1) заявки на вступление видит только Администратор — остальные
+// роли отвечают за новости/контент/обращения, но не за приём в партию.
 
-const requireCms = [
-  authenticateToken,
-  requireRole('RECEPTION_MANAGER', 'CHIEF_EDITOR', 'ADMIN'),
-];
+const requireCms = [authenticateToken, requireRole('ADMIN')];
 
 const ListQuerySchema = z.object({
   status: z.enum(['NEW', 'PROCESSING', 'ACCEPTED', 'REJECTED']).optional(),
@@ -98,6 +115,70 @@ cmsJoinRequestsRouter.get('/', ...requireCms, async (req: Request, res: Response
     ]);
 
     res.json({ data, total, page, limit, totalPages: Math.ceil(total / limit) });
+  } catch (err) {
+    handleError(err, res);
+  }
+});
+
+const ROLE_LABEL: Record<string, string> = {
+  member: 'Член партии',
+  volunteer: 'Волонтёр',
+  observer: 'Наблюдатель',
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  NEW: 'Новая',
+  PROCESSING: 'В обработке',
+  ACCEPTED: 'Принята',
+  REJECTED: 'Отклонена',
+};
+
+cmsJoinRequestsRouter.get('/export', ...requireCms, async (req: Request, res: Response): Promise<void> => {
+  const parsed = ListQuerySchema.omit({ page: true, limit: true }).safeParse(req.query);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'Некорректные параметры', details: parsed.error.flatten() });
+    return;
+  }
+
+  try {
+    const { status, role, q } = parsed.data;
+    const where: Prisma.JoinRequestWhereInput = {
+      ...(status ? { status } : {}),
+      ...(role ? { role } : {}),
+      ...(q
+        ? {
+            OR: [
+              { fullName: { contains: q, mode: 'insensitive' as const } },
+              { phone: { contains: q, mode: 'insensitive' as const } },
+            ],
+          }
+        : {}),
+    };
+
+    const requests = await prisma.joinRequest.findMany({ where, orderBy: { createdAt: 'desc' } });
+
+    const rows = requests.map((r) => ({
+      'Дата': r.createdAt.toLocaleString('ru-RU'),
+      'ФИО': r.fullName,
+      'Роль': ROLE_LABEL[r.role] ?? r.role,
+      'Телефон': r.phone,
+      'Email': r.email ?? '',
+      'Город': r.city ?? '',
+      'Статус': STATUS_LABEL[r.status] ?? r.status,
+      'Телефон подтверждён': r.phoneVerified ? 'Да' : 'Нет',
+    }));
+
+    const sheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, sheet, 'Заявки');
+    const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
+
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+    res.setHeader('Content-Disposition', 'attachment; filename="zayavki.xlsx"');
+    res.send(buffer);
   } catch (err) {
     handleError(err, res);
   }

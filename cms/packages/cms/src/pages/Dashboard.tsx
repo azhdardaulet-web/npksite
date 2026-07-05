@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import {
-  Newspaper, Image, ShoppingCart, ClipboardList,
-  Handshake, Users, Building2, Layers, Briefcase,
-  TrendingUp, TrendingDown, FileText, UserCheck,
+  Newspaper, Image, ClipboardList, MessageSquareText,
+  Users, Building2, Layers,
+  TrendingUp,
 } from 'lucide-react';
 
 const kpiCards = [
@@ -15,7 +15,7 @@ const kpiCards = [
     iconColor: 'text-blue-500',
   },
   {
-    label: 'Опубликовано в мае',
+    label: 'Опубликовано в этом месяце',
     value: '0',
     trend: null,
     icon: TrendingUp,
@@ -31,34 +31,30 @@ const kpiCards = [
     iconColor: 'text-orange-500',
   },
   {
-    label: 'Новых резюме',
+    label: 'Новых обращений',
     value: '0',
     trend: null,
-    icon: UserCheck,
+    icon: MessageSquareText,
     iconBg: 'bg-red-50',
     iconColor: 'text-brand-red',
   },
 ];
 
 const quickLinks = [
+  { title: 'Заявки', path: '/zayavki', icon: ClipboardList, desc: 'Заявки на вступление' },
+  { title: 'Обращения', path: '/obrashcheniya', icon: MessageSquareText, desc: 'Обращения граждан' },
   { title: 'Новости', path: '/news', icon: Newspaper, desc: 'Пресс-релизы и статьи' },
   { title: 'Медиабиблиотека', path: '/media', icon: Image, desc: 'Фото и файлы' },
-  { title: 'План закупок', path: '/purchases', icon: ShoppingCart, desc: 'Лоты и импорт Excel' },
-  { title: 'Заявки поставщиков', path: '/supplier-forms', icon: ClipboardList, desc: 'Анкеты партнёров' },
-  { title: 'Резюме', path: '/resumes', icon: UserCheck, desc: 'Входящие отклики' },
-  { title: 'Вакансии', path: '/vacancies', icon: FileText, desc: 'Открытые позиции' },
-  { title: 'Партнёры', path: '/partners', icon: Handshake, desc: 'Логотипы и ссылки' },
-  { title: 'Клиенты', path: '/clients', icon: Briefcase, desc: 'Логотипы клиентов на главной' },
-  { title: 'Команда сайта', path: '/team', icon: Users, desc: 'Сотрудники' },
-  { title: 'Офисы', path: '/offices', icon: Building2, desc: 'Адреса и контакты' },
+  { title: 'Команда', path: '/team', icon: Users, desc: 'Руководство и медиакоманда' },
+  { title: 'Филиалы', path: '/offices', icon: Building2, desc: 'Адреса и контакты' },
   { title: 'Страницы сайта', path: '/pages', icon: Layers, desc: 'Блоки и контент' },
 ];
 
 const recentActivity = [
   { action: 'Новость создана', detail: 'Итоги квартала 2026', time: 'только что', icon: Newspaper },
   { action: 'Файл загружен', detail: 'photo_press_2026.jpg', time: '5 мин назад', icon: Image },
-  { action: 'Заявка поставщика', detail: 'ТОО "ЛогистикПро"', time: '23 мин назад', icon: ClipboardList },
-  { action: 'Новое резюме', detail: 'Специалист по PR', time: '1 час назад', icon: UserCheck },
+  { action: 'Новая заявка на вступление', detail: 'Иванов Иван Иванович', time: '23 мин назад', icon: ClipboardList },
+  { action: 'Новое обращение', detail: 'NPK-2026-00001', time: '1 час назад', icon: MessageSquareText },
 ];
 
 export default function Dashboard() {
@@ -66,7 +62,7 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-brand-dark">Dashboard</h1>
-        <p className="text-brand-gray text-sm mt-0.5">Добро пожаловать в DAR Rail CMS</p>
+        <p className="text-brand-gray text-sm mt-0.5">Добро пожаловать в CMS НПК</p>
       </div>
 
       {/* KPI Cards */}

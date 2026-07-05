@@ -1,38 +1,65 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Newspaper,
   Image,
-  ShoppingCart,
-  FileText,
   Users,
   Layers,
   Settings,
   LogOut,
   ChevronDown,
   ChevronRight,
-  Briefcase,
-  UserCheck,
   ClipboardList,
+  MessageSquareText,
+  Building2,
   PanelLeftClose,
   PanelLeftOpen,
   Bell,
 } from 'lucide-react';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore, Role } from '@/store/authStore';
+import { useNewJoinRequestsCount } from '@/hooks/useJoinRequests';
 
 interface NavItem {
   label: string;
   path?: string;
   icon: React.ElementType;
+  roles: Role[];
   children?: { label: string; path: string }[];
 }
 
-const navGroups: { title: string; items: NavItem[] }[] = [
+interface NavGroupDef {
+  title: string;
+  items: NavItem[];
+}
+
+const ALL_ROLES: Role[] = [
+  'ADMIN',
+  'CHIEF_EDITOR',
+  'SECTION_EDITOR',
+  'FACTION',
+  'BRANCH_EDITOR',
+  'RECEPTION_MANAGER',
+];
+
+// Видимость разделов по ролям НПК — см. docs/PLAN.md, Промпт 2.1.
+const navGroups: NavGroupDef[] = [
   {
     title: '',
     items: [
-      { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+      { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ALL_ROLES },
+    ],
+  },
+  {
+    title: 'CRM',
+    items: [
+      { label: 'Заявки', path: '/zayavki', icon: ClipboardList, roles: ['ADMIN'] },
+      {
+        label: 'Обращения',
+        path: '/obrashcheniya',
+        icon: MessageSquareText,
+        roles: ['ADMIN', 'RECEPTION_MANAGER'],
+      },
     ],
   },
   {
@@ -41,6 +68,7 @@ const navGroups: { title: string; items: NavItem[] }[] = [
       {
         label: 'Новости',
         icon: Newspaper,
+        roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'],
         children: [
           { label: 'Все новости', path: '/news' },
           { label: 'Черновики', path: '/news?status=DRAFT' },
@@ -48,94 +76,38 @@ const navGroups: { title: string; items: NavItem[] }[] = [
           { label: 'Категории', path: '/news/categories' },
         ],
       },
-      { label: 'Медиабиблиотека', path: '/media', icon: Image },
     ],
   },
   {
-    title: 'Закупки и поставщики',
+    title: 'Контент',
     items: [
-      {
-        label: 'План закупок',
-        icon: ShoppingCart,
-        children: [
-          { label: 'Все позиции', path: '/purchases' },
-        ],
-      },
-      {
-        label: 'Заявки поставщиков',
-        icon: ClipboardList,
-        children: [
-          { label: 'Новые', path: '/supplier-forms?status=NEW' },
-          { label: 'В обработке', path: '/supplier-forms?status=IN_PROGRESS' },
-          { label: 'Обработанные', path: '/supplier-forms?status=DONE' },
-        ],
-      },
-      { label: 'Документы', path: '/documents', icon: FileText },
-    ],
-  },
-  {
-    title: 'Кадры (HR)',
-    items: [
-      {
-        label: 'Резюме',
-        icon: UserCheck,
-        children: [
-          { label: 'Входящие', path: '/resumes?status=NEW' },
-          { label: 'На рассмотрении', path: '/resumes?status=REVIEWING' },
-          { label: 'Архив', path: '/resumes?status=REJECTED' },
-        ],
-      },
-      {
-        label: 'Вакансии',
-        icon: Briefcase,
-        children: [
-          { label: 'Активные', path: '/vacancies?status=ACTIVE' },
-          { label: 'Закрытые', path: '/vacancies?status=CLOSED' },
-        ],
-      },
-    ],
-  },
-  {
-    title: 'Клиенты',
-    items: [
-      {
-        label: 'Анкеты удовлетворённости',
-        icon: ClipboardList,
-        children: [
-          { label: 'Все анкеты', path: '/surveys' },
-          { label: 'Перевозки', path: '/surveys?type=transportation' },
-          { label: 'Экспедирование', path: '/surveys?type=forwarding' },
-        ],
-      },
-    ],
-  },
-  {
-    title: 'Сайт',
-    items: [
-      {
-        label: 'Страницы',
-        icon: Layers,
-        children: [
-          { label: 'Главная', path: '/pages/home' },
-          { label: 'О компании', path: '/pages/about' },
-          { label: 'Услуги', path: '/pages/services' },
-          { label: 'ESG', path: '/pages/esg' },
-          { label: 'Контакты', path: '/pages/contacts' },
-          { label: '↳ Офисы и руководство', path: '/offices' },
-        ],
-      },
+      { label: 'Медиабиблиотека', path: '/media', icon: Image, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'] },
+      { label: 'Команда', path: '/team', icon: Users, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'] },
+      { label: 'Филиалы', path: '/offices', icon: Building2, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR', 'BRANCH_EDITOR'] },
+      { label: 'Страницы', path: '/pages', icon: Layers, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR', 'FACTION'] },
     ],
   },
   {
     title: 'Система',
     items: [
-      { label: 'Пользователи', path: '/users', icon: Users },
-      { label: 'Настройки', path: '/settings', icon: Settings },
+      { label: 'Пользователи', path: '/users', icon: Users, roles: ['ADMIN'] },
+      { label: 'Настройки', path: '/settings', icon: Settings, roles: ['ADMIN'] },
     ],
   },
 ];
 
-function NavGroup({ group, collapsed }: { group: typeof navGroups[0]; collapsed: boolean }) {
+// Бейдж со счётчиком новых заявок (status=NEW) рядом с пунктом «Заявки».
+function NewJoinRequestsBadge() {
+  const { data: count } = useNewJoinRequestsCount();
+  if (!count) return null;
+  return (
+    <span className="ml-auto shrink-0 bg-brand-red text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+      {count}
+    </span>
+  );
+}
+
+function NavGroup({ group, collapsed }: { group: NavGroupDef; collapsed: boolean }) {
   const location = useLocation();
   const [openItems, setOpenItems] = useState<string[]>([]);
 
@@ -207,6 +179,7 @@ function NavGroup({ group, collapsed }: { group: typeof navGroups[0]; collapsed:
           >
             <Icon size={18} className="shrink-0" />
             {!collapsed && <span>{item.label}</span>}
+            {!collapsed && item.path === '/zayavki' && <NewJoinRequestsBadge />}
           </Link>
         );
       })}
@@ -217,6 +190,25 @@ function NavGroup({ group, collapsed }: { group: typeof navGroups[0]; collapsed:
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const { user, logout } = useAuthStore();
+  const role = user?.role ?? 'ADMIN';
+
+  // Фильтруем разделы/пункты по роли текущего пользователя и убираем группы,
+  // в которых после фильтрации не осталось видимых пунктов.
+  const visibleGroups = useMemo(() => {
+    return navGroups
+      .map(group => ({
+        ...group,
+        items: group.items
+          .filter(item => item.roles.includes(role))
+          .map(item =>
+            // BRANCH_EDITOR видит только свой филиал — контекстная подпись пункта
+            item.path === '/offices' && role === 'BRANCH_EDITOR'
+              ? { ...item, label: 'Мой филиал' }
+              : item
+          ),
+      }))
+      .filter(group => group.items.length > 0);
+  }, [role]);
 
   return (
     <div className="flex h-screen bg-brand-cream overflow-hidden">
@@ -228,7 +220,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
           {!collapsed && (
             <div>
-              <span className="text-white font-bold text-lg tracking-tight">DAR Rail</span>
+              <span className="text-white font-bold text-lg tracking-tight">НПК</span>
               <p className="text-gray-400 text-[10px] mt-0.5">Система управления</p>
             </div>
           )}
@@ -242,7 +234,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto py-3 scrollbar-thin">
-          {navGroups.map(group => (
+          {visibleGroups.map(group => (
             <NavGroup key={group.title} group={group} collapsed={collapsed} />
           ))}
         </nav>

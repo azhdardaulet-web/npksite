@@ -190,7 +190,6 @@ export function RichTextEditor({
                 <button
                   key={t.label}
                   type="button"
-                  onMouseDown={(e) => e.preventDefault()}
                   onMouseDown={(e) => { e.preventDefault(); t.action(editor); setTypeDropOpen(false); }}
                   className="w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
                 >
@@ -221,7 +220,6 @@ export function RichTextEditor({
                   key={value}
                   type="button"
                   title={title}
-                  onMouseDown={(e) => e.preventDefault()}
                   onMouseDown={(e) => { e.preventDefault(); editor.chain().setTextAlign(value).run(); setAlignDropOpen(false); }}
                   className={`flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg ${
                     editor.isActive({ textAlign: value }) ? 'bg-gray-100 font-medium' : ''
@@ -260,7 +258,6 @@ export function RichTextEditor({
                     key={c}
                     type="button"
                     title={c}
-                    onMouseDown={(e) => e.preventDefault()}
                     onMouseDown={(e) => { e.preventDefault(); applyColor(c); }}
                     className="w-7 h-7 rounded border border-gray-200 hover:scale-110 transition-transform"
                     style={{ backgroundColor: c }}

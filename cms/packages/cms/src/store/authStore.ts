@@ -1,10 +1,18 @@
 import { create } from 'zustand';
 
+export type Role =
+  | 'ADMIN'
+  | 'CHIEF_EDITOR'
+  | 'SECTION_EDITOR'
+  | 'FACTION'
+  | 'BRANCH_EDITOR'
+  | 'RECEPTION_MANAGER';
+
 export interface AuthUser {
   id: string;
   email: string;
   name: string;
-  role: 'ADMIN' | 'NEWS_EDITOR' | 'PROCUREMENT_MANAGER' | 'CONTENT_MANAGER';
+  role: Role;
 }
 
 interface AuthState {

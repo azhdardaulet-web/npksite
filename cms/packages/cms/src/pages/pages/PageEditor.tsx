@@ -6,7 +6,7 @@ import {
 import { useMediaPicker } from '@/components/MediaLibrary/MediaPicker';
 import { usePageContent, useSavePageContent } from '@/hooks/usePageContent';
 
-type Lang = 'ru' | 'kz' | 'en' | 'zh';
+type Lang = 'ru' | 'kz';
 type FieldType = 'text' | 'textarea' | 'image' | 'images' | 'documents';
 
 interface Field {
@@ -609,7 +609,7 @@ function initPageValues(page: PageDef): FieldValues {
   const v: FieldValues = {};
   for (const s of page.sections) {
     for (const f of s.fields) {
-      v[f.key] = { ru: '', kz: '', en: '', zh: '' };
+      v[f.key] = { ru: '', kz: '' };
     }
   }
   return v;
@@ -1188,7 +1188,7 @@ export default function PageEditor() {
           </div>
           <div className="flex items-center gap-3">
             <div className="flex bg-[#F2EBE3] rounded-lg p-1 gap-0.5">
-              {(['ru', 'kz', 'en', 'zh'] as Lang[]).map(l => (
+              {(['ru', 'kz'] as Lang[]).map(l => (
                 <button
                   key={l}
                   onClick={() => setLang(l)}
@@ -1196,7 +1196,7 @@ export default function PageEditor() {
                     lang === l ? 'bg-[#383233] text-white' : 'text-[#383233] hover:bg-white'
                   }`}
                 >
-                  {l === 'zh' ? '中文' : l.toUpperCase()}
+                  {l.toUpperCase()}
                 </button>
               ))}
             </div>

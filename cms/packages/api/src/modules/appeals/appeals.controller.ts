@@ -3,8 +3,17 @@ import { z } from 'zod';
 import { prisma } from '../../lib/prisma';
 import { authenticateToken, requireRole } from '../../middleware/auth';
 import { verifyHCaptcha } from '../../lib/hcaptcha';
+import { sendMail } from '../../lib/mailer';
+import { getSetting } from '../../lib/settings';
 import { kzPhoneSchema } from '@dar-rail/shared';
 import { Prisma } from '@prisma/client';
+
+const APPEAL_STATUS_LABEL: Record<string, string> = {
+  NEW: 'Новое',
+  IN_PROGRESS: 'В обработке',
+  RESOLVED: 'Решено',
+  REJECTED: 'Отклонено',
+};
 
 export const appealsRouter = Router();
 export const appealTopicsRouter = Router();
@@ -56,6 +65,22 @@ appealsRouter.post('/', async (req: Request, res: Response): Promise<void> => {
     const appealNumber = await generateAppealNumber();
 
     const appeal = await prisma.appeal.create({ data: { ...data, appealNumber } });
+
+    const notifyEmail = await getSetting('notify_email');
+    if (notifyEmail) {
+      await sendMail({
+        to: notifyEmail,
+        subject: `Новое обращение ${appeal.appealNumber}`,
+        html: `
+          <p>Поступило новое обращение в общественную приёмную.</p>
+          <p><b>Номер:</b> ${appeal.appealNumber}</p>
+          <p><b>ФИО:</b> ${appeal.fullName}</p>
+          <p><b>Телефон:</b> ${appeal.phone}</p>
+          <p><b>Текст:</b> ${appeal.message}</p>
+        `,
+      });
+    }
+
     res.status(201).json({ message: 'Обращение принято', appealNumber: appeal.appealNumber, id: appeal.id });
   } catch (err) {
     handleError(err, res);
@@ -151,6 +176,19 @@ cmsAppealsRouter.put('/:id', ...requireCms, async (req: Request, res: Response):
       where: { id: String(req.params['id']) },
       data: parsed.data,
     });
+
+    if (parsed.data.status && appeal.email) {
+      await sendMail({
+        to: appeal.email,
+        subject: `Ваше обращение ${appeal.appealNumber}: статус изменён`,
+        html: `
+          <p>Здравствуйте, ${appeal.fullName}!</p>
+          <p>Статус вашего обращения <b>${appeal.appealNumber}</b> изменён на:
+             <b>${APPEAL_STATUS_LABEL[appeal.status] ?? appeal.status}</b>.</p>
+        `,
+      });
+    }
+
     res.json(appeal);
   } catch (err) {
     handleError(err, res);

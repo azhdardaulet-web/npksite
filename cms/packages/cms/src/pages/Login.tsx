@@ -73,7 +73,7 @@ export default function Login() {
             className="text-4xl font-bold tracking-tight"
             style={{ color: '#C0392B' }}
           >
-            DAR Rail
+            НПК
           </h1>
           <p className="mt-2 text-gray-400 text-sm">Система управления контентом</p>
         </div>
@@ -109,7 +109,7 @@ export default function Login() {
                     ? 'border-red-400 focus:ring-red-300'
                     : 'border-gray-300 focus:ring-red-300 focus:border-red-400',
                 ].join(' ')}
-                placeholder="admin@darrail.com"
+                placeholder="admin@npk.kz"
               />
               {errors.email && (
                 <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>
