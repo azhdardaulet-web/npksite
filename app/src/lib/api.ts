@@ -180,3 +180,21 @@ export interface PublicCandidate {
 export function fetchCandidates(lang = 'ru') {
   return api.get<PublicCandidate[]>('/api/v1/candidates', { lang });
 }
+
+// ─── Команда (/rukovodstvo, /narodnoe-media) ───────────────────────────────────
+
+export type TeamGroup = 'LEADERSHIP' | 'MEDIA_TEAM';
+
+export interface PublicTeamMember {
+  id: string;
+  photoUrl: string | null;
+  group: TeamGroup;
+  sortOrder: number;
+  name: string;
+  position: string;
+  bio: string | null;
+}
+
+export function fetchTeam(group?: TeamGroup, lang = 'ru') {
+  return api.get<PublicTeamMember[]>('/api/v1/team', { group, lang });
+}

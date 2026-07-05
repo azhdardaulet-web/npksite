@@ -38,19 +38,29 @@ const requireContent = [
 
 teamRouter.get('/', async (req: Request, res: Response): Promise<void> => {
   const lang = (typeof req.query.lang === 'string' ? req.query.lang : undefined) ?? 'ru';
+  const group = typeof req.query.group === 'string' ? req.query.group : undefined;
 
   try {
     const members = await prisma.teamMember.findMany({
+      where: group ? { group: group as 'LEADERSHIP' | 'MEDIA_TEAM' } : undefined,
       orderBy: { sortOrder: 'asc' },
       include: { translations: true },
     });
 
     const result = members.map((m) => {
-      const translation =
-        m.translations.find((t) => t.lang === lang) ??
-        m.translations.find((t) => t.lang === 'ru') ??
+      const t =
+        m.translations.find((tr) => tr.lang === lang) ??
+        m.translations.find((tr) => tr.lang === 'ru') ??
         null;
-      return { id: m.id, photoUrl: m.photoUrl, sortOrder: m.sortOrder, translation };
+      return {
+        id: m.id,
+        photoUrl: m.photoUrl,
+        group: m.group,
+        sortOrder: m.sortOrder,
+        name: t?.name ?? '',
+        position: t?.position ?? '',
+        bio: t?.bio ?? null,
+      };
     });
 
     res.json(result);
