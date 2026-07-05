@@ -198,3 +198,36 @@ export interface PublicTeamMember {
 export function fetchTeam(group?: TeamGroup, lang = 'ru') {
   return api.get<PublicTeamMember[]>('/api/v1/team', { group, lang });
 }
+
+// ─── История партии (/o-partii/istoriya) ───────────────────────────────────────
+
+export interface PublicHistoryEvent {
+  id: string;
+  year: number;
+  imageUrl: string | null;
+  sortOrder: number;
+  title: string;
+  text: string;
+}
+
+export function fetchHistoryEvents(lang = 'ru') {
+  return api.get<PublicHistoryEvent[]>('/api/v1/history-events', { lang });
+}
+
+// ─── Программа партии (/programma) ─────────────────────────────────────────────
+
+export interface PublicProgramBlock {
+  id: string;
+  n: number;
+  keyword: string;
+  imageUrl: string | null;
+  sortOrder: number;
+  title: string;
+  lead1: string | null;
+  lead2: string | null;
+  points: string[];
+}
+
+export function fetchProgramBlocks(lang = 'ru') {
+  return api.get<PublicProgramBlock[]>('/api/v1/program-blocks', { lang });
+}

@@ -1,44 +1,15 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from '@/components/ui/breadcrumb';
+import { fetchHistoryEvents, type PublicHistoryEvent } from '@/lib/api';
 
-const sections = [
-  {
-    year: 2011,
-    title: 'VI внеочередной съезд КНПК',
-    text: '26 ноября 2011 года состоялся VI внеочередной съезд Коммунистической народной партии Казахстана, на котором были утверждены 23 кандидата от партии на выборы депутатов мажилиса парламента 2012 года, в том числе лидер партии Владислав Косарев и кандидат в президенты на выборах 2011 года Жамбыл Ахметбеков.',
-    image: '/images/history/2011.jpg',
-  },
-  {
-    year: 2016,
-    title: 'Проход в парламент',
-    text: 'КНПК по результатам выборов-2016 прошла в парламент. Предвыборную борьбу в партии оценили как честную и справедливую. Доступ к СМИ, по мнению коммунистов, был свободным для всех партий. Каких-либо нарушений наблюдатели от НПК не зафиксировали.',
-    image: '/images/history/2016.jpg',
-  },
-  {
-    year: 2020,
-    title: 'Переименование в Народную партию',
-    text: 'На прошедшем 11 ноября 2020 года XV Внеочередном съезде КНПК было принято решение о переименовании Коммунистической Народной партии Казахстана в Народную партию Казахстана со внесением соответствующих изменений в устав и программу партии. Данное решение было обосновано желанием расширить электоральную поддержку партии перед выборами в Мажилис Парламента Республики Казахстан, которые прошли 10 января 2021 года.',
-    image: '/images/history/2020.jpg',
-  },
-  {
-    year: 2021,
-    title: 'XVII Съезд и фракция в Мажилисе',
-    text: 'В Нур-Султане состоялся XVII Внеочередной Съезд Народной партии Казахстана. В ходе него партийцы подвели итоги прошедших выборов 2021 года депутатов Мажилиса Парламента РК и маслихатов, а также избрали представителей в парламентскую фракцию партии. В число депутатов вошли Айкын Конуров, Жамбыл Ахметбеков, Ирина Смирнова, Александр Милютин, Сергей Решетников, Айбек Паяев, Газиз Кулахметов, Ерлан Смайлов, Файзолла Каменов и Айжан Скакова.',
-    image: '/images/history/2021.jpg',
-  },
-  {
-    year: 2022,
-    title: 'Новое руководство партии',
-    text: '28 марта 2022 года на XIX внеочередном съезде партии председателем НПК был избран Ермухамет Ертысбаев. Прежний руководитель, глава парламентской фракции НПК, депутат Мажилиса Айкын Конуров стал первым заместителем председателя.',
-    image: '/images/history/2022.jpg',
-  },
-  {
-    year: 2026,
-    title: 'Съезд партии, новый председатель',
-    text: 'Председатель Народной партии Казахстана Ермухамет Ертысбаев снял с себа руководящие полномочия. Новым главой НПК избран Нурсултан Шоканов. Такое решение принял внеочередной Съезд партии, состоявшийся 27 июня.',
-    image: '/images/history/2026.jpg',
-  },
+const FALLBACK_SECTIONS: PublicHistoryEvent[] = [
+  { id: '1', year: 2011, title: 'VI внеочередной съезд КНПК', text: '26 ноября 2011 года состоялся VI внеочередной съезд Коммунистической народной партии Казахстана, на котором были утверждены 23 кандидата от партии на выборы депутатов мажилиса парламента 2012 года, в том числе лидер партии Владислав Косарев и кандидат в президенты на выборах 2011 года Жамбыл Ахметбеков.', imageUrl: '/images/history/2011.jpg', sortOrder: 0 },
+  { id: '2', year: 2016, title: 'Проход в парламент', text: 'КНПК по результатам выборов-2016 прошла в парламент. Предвыборную борьбу в партии оценили как честную и справедливую. Доступ к СМИ, по мнению коммунистов, был свободным для всех партий. Каких-либо нарушений наблюдатели от НПК не зафиксировали.', imageUrl: '/images/history/2016.jpg', sortOrder: 1 },
+  { id: '3', year: 2020, title: 'Переименование в Народную партию', text: 'На прошедшем 11 ноября 2020 года XV Внеочередном съезде КНПК было принято решение о переименовании Коммунистической Народной партии Казахстана в Народную партию Казахстана со внесением соответствующих изменений в устав и программу партии.', imageUrl: '/images/history/2020.jpg', sortOrder: 2 },
+  { id: '4', year: 2021, title: 'XVII Съезд и фракция в Мажилисе', text: 'В Нур-Султане состоялся XVII Внеочередной Съезд Народной партии Казахстана. В ходе него партийцы подвели итоги прошедших выборов 2021 года депутатов Мажилиса Парламента РК и маслихатов, а также избрали представителей в парламентскую фракцию партии.', imageUrl: '/images/history/2021.jpg', sortOrder: 3 },
+  { id: '5', year: 2022, title: 'Новое руководство партии', text: '28 марта 2022 года на XIX внеочередном съезде партии председателем НПК был избран Ермухамет Ертысбаев. Прежний руководитель, глава парламентской фракции НПК, депутат Мажилиса Айкын Конуров стал первым заместителем председателя.', imageUrl: '/images/history/2022.jpg', sortOrder: 4 },
+  { id: '6', year: 2026, title: 'Съезд партии, новый председатель', text: 'Председатель Народной партии Казахстана Ермухамет Ертысбаев снял с себа руководящие полномочия. Новым главой НПК избран Нурсултан Шоканов. Такое решение принял внеочередной Съезд партии, состоявшийся 27 июня.', imageUrl: '/images/history/2026.jpg', sortOrder: 5 },
 ];
 
 function useAnimatedYear(targetYear: number, duration = 350) {
@@ -72,14 +43,25 @@ function useAnimatedYear(targetYear: number, duration = 350) {
 }
 
 export function HistoryPage() {
+  const [sections, setSections] = useState<PublicHistoryEvent[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const mainRef = useRef<HTMLDivElement>(null);
 
-  const activeYear = sections[activeIndex].year;
+  useEffect(() => {
+    let cancelled = false;
+    fetchHistoryEvents()
+      .then((data) => { if (!cancelled) setSections(data.length > 0 ? data : FALLBACK_SECTIONS); })
+      .catch(() => { if (!cancelled) setSections(FALLBACK_SECTIONS); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  const activeYear = sections[activeIndex]?.year ?? 0;
   const animatedYear = useAnimatedYear(activeYear, 400);
-  const activeTitle = sections[activeIndex].title;
+  const activeTitle = sections[activeIndex]?.title ?? '';
 
   const scrollToSection = useCallback((index: number) => {
     const el = sectionRefs.current[index];
@@ -90,6 +72,7 @@ export function HistoryPage() {
   }, []);
 
   useEffect(() => {
+    if (sections.length === 0) return;
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -107,9 +90,10 @@ export function HistoryPage() {
     });
 
     return () => observer.disconnect();
-  }, []);
+  }, [sections]);
 
   useEffect(() => {
+    if (sections.length === 0) return;
     const handleScroll = () => {
       const first = sectionRefs.current[0];
       const last = sectionRefs.current[sectionRefs.current.length - 1];
@@ -126,7 +110,15 @@ export function HistoryPage() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [sections]);
+
+  if (loading) {
+    return (
+      <div style={{ background: '#050505', color: '#fff', minHeight: '100vh', paddingTop: 160, textAlign: 'center' }}>
+        <p style={{ color: 'rgba(255,255,255,.4)' }}>Загрузка...</p>
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: '#050505', color: '#fff' }}>
@@ -188,46 +180,12 @@ export function HistoryPage() {
               alignItems: 'center',
               gap: '60px',
             }}>
-              <span style={{
-                width: '5px',
-                height: '5px',
-                borderRadius: '50%',
-                background: '#db1f26',
-                opacity: 0.5,
-              }} />
-              2011 — VI СЪЕЗД КНПК
-              <span style={{
-                width: '5px',
-                height: '5px',
-                borderRadius: '50%',
-                background: '#db1f26',
-                opacity: 0.5,
-              }} />
-              2016 — ПАРЛАМЕНТ
-              <span style={{
-                width: '5px',
-                height: '5px',
-                borderRadius: '50%',
-                background: '#db1f26',
-                opacity: 0.5,
-              }} />
-              2020 — НАРОДНАЯ ПАРТИЯ
-              <span style={{
-                width: '5px',
-                height: '5px',
-                borderRadius: '50%',
-                background: '#db1f26',
-                opacity: 0.5,
-              }} />
-              2022 — НОВОЕ РУКОВОДСТВО
-              <span style={{
-                width: '5px',
-                height: '5px',
-                borderRadius: '50%',
-                background: '#db1f26',
-                opacity: 0.5,
-              }} />
-              2026 — НОВЫЙ ПРЕДСЕДАТЕЛЬ
+              {sections.map((s) => (
+                <span key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '60px' }}>
+                  <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#db1f26', opacity: 0.5 }} />
+                  {s.year} — {s.title}
+                </span>
+              ))}
             </span>
           ))}
         </div>
@@ -258,7 +216,7 @@ export function HistoryPage() {
           }}>
             {sections.map((s, i) => (
               <button
-                key={s.year}
+                key={s.id}
                 onClick={() => scrollToSection(i)}
                 style={{
                   fontSize: '14px',
@@ -344,7 +302,7 @@ export function HistoryPage() {
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {sections.map((s, i) => (
             <div
-              key={s.year}
+              key={s.id}
               ref={(el) => { sectionRefs.current[i] = el; }}
               style={{
                 minHeight: '70vh',
@@ -372,26 +330,28 @@ export function HistoryPage() {
               }}>
                 {s.text}
               </p>
-              <div style={{
-                borderRadius: '32px',
-                overflow: 'hidden',
-                maxWidth: '720px',
-                background: '#111',
-              }}>
-                <img
-                  src={s.image}
-                  alt={s.title}
-                  loading="lazy"
-                  style={{
-                    width: '100%',
-                    height: 'auto',
-                    display: 'block',
-                    transition: 'transform 0.6s ease',
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.02)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
-                />
-              </div>
+              {s.imageUrl && (
+                <div style={{
+                  borderRadius: '32px',
+                  overflow: 'hidden',
+                  maxWidth: '720px',
+                  background: '#111',
+                }}>
+                  <img
+                    src={s.imageUrl}
+                    alt={s.title}
+                    loading="lazy"
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                      display: 'block',
+                      transition: 'transform 0.6s ease',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.02)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+                  />
+                </div>
+              )}
             </div>
           ))}
 
