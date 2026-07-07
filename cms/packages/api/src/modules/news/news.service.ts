@@ -11,6 +11,7 @@ export interface TranslationInput {
   excerpt?: string;
   seoTitle?: string;
   seoDescription?: string;
+  seoKeywords?: string;
   ogImageUrl?: string;
 }
 
@@ -19,6 +20,8 @@ export interface CreateNewsInput {
   imageUrl?: string;
   tags?: string[];
   tgSkip?: boolean;
+  isFeatured?: boolean;
+  slug?: string;
   translations: TranslationInput[];
 }
 
@@ -27,12 +30,15 @@ export interface UpdateNewsInput {
   imageUrl?: string | null;
   tags?: string[];
   tgSkip?: boolean;
+  isFeatured?: boolean;
+  slug?: string;
   translations: TranslationInput[];
 }
 
 export interface NewsFilters {
   status?: NewsStatus;
   format?: NewsFormat;
+  isFeatured?: boolean;
   q?: string;
   page?: number;
   limit?: number;
@@ -92,7 +98,7 @@ export function autoExcerpt(html: string, maxLen = 300): string {
 
 export async function createNews(data: CreateNewsInput, authorId: string) {
   const ruTranslation = data.translations.find((t) => t.lang === 'ru') ?? data.translations[0];
-  const slug = await generateSlug(ruTranslation.title);
+  const slug = await generateSlug(data.slug || ruTranslation.title);
   const readingTime = calcReadingTime(ruTranslation.content);
 
   return prisma.news.create({
@@ -103,6 +109,7 @@ export async function createNews(data: CreateNewsInput, authorId: string) {
       imageUrl: data.imageUrl ?? null,
       tags: data.tags ?? [],
       tgSkip: data.tgSkip ?? false,
+      isFeatured: data.isFeatured ?? true,
       readingTime,
       authorId,
       translations: {
@@ -113,6 +120,7 @@ export async function createNews(data: CreateNewsInput, authorId: string) {
           excerpt: t.excerpt ?? autoExcerpt(t.content),
           seoTitle: t.seoTitle ?? null,
           seoDescription: t.seoDescription ?? null,
+          seoKeywords: t.seoKeywords ?? null,
           ogImageUrl: t.ogImageUrl ?? null,
         })),
       },
@@ -136,7 +144,12 @@ export async function updateNews(id: string, data: UpdateNewsInput) {
 
   const ruExisting = news.translations.find((t) => t.lang === 'ru');
   const titleChanged = ruExisting?.title !== ruT.title;
-  const slug = titleChanged ? await generateSlug(ruT.title, id) : news.slug;
+  const slugChanged = data.slug && data.slug !== news.slug;
+  const slug = slugChanged
+    ? await generateSlug(data.slug!, id)
+    : titleChanged
+      ? await generateSlug(ruT.title, id)
+      : news.slug;
 
   return prisma.news.update({
     where: { id },
@@ -146,6 +159,7 @@ export async function updateNews(id: string, data: UpdateNewsInput) {
       imageUrl: data.imageUrl ?? null,
       ...(data.tags !== undefined ? { tags: data.tags } : {}),
       ...(data.tgSkip !== undefined ? { tgSkip: data.tgSkip } : {}),
+      ...(data.isFeatured !== undefined ? { isFeatured: data.isFeatured } : {}),
       readingTime,
       translations: {
         upsert: data.translations.map((t) => ({
@@ -157,6 +171,7 @@ export async function updateNews(id: string, data: UpdateNewsInput) {
             excerpt: t.excerpt ?? autoExcerpt(t.content),
             seoTitle: t.seoTitle ?? null,
             seoDescription: t.seoDescription ?? null,
+            seoKeywords: t.seoKeywords ?? null,
             ogImageUrl: t.ogImageUrl ?? null,
           },
           update: {
@@ -165,6 +180,7 @@ export async function updateNews(id: string, data: UpdateNewsInput) {
             excerpt: t.excerpt ?? autoExcerpt(t.content),
             seoTitle: t.seoTitle ?? null,
             seoDescription: t.seoDescription ?? null,
+            seoKeywords: t.seoKeywords ?? null,
             ogImageUrl: t.ogImageUrl ?? null,
           },
         })),
@@ -230,6 +246,7 @@ export async function findAll(filters: NewsFilters) {
   const where: Prisma.NewsWhereInput = {};
   if (filters.status) where.status = filters.status;
   if (filters.format) where.format = filters.format;
+  if (filters.isFeatured !== undefined) where.isFeatured = filters.isFeatured;
   if (filters.q) {
     where.translations = {
       some: { title: { contains: filters.q, mode: 'insensitive' } },

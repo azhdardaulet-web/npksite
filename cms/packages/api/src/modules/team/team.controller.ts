@@ -15,6 +15,7 @@ const TranslationSchema = z.object({
 
 const TeamMemberInputSchema = z.object({
   photoUrl: z.string().url().optional().nullable(),
+  group: z.enum(['LEADERSHIP', 'MEDIA_TEAM', 'FACTION']).optional(),
   sortOrder: z.number().int().min(0).optional(),
   translations: z.array(TranslationSchema).min(1),
 });
@@ -99,6 +100,7 @@ teamRouter.post('/', ...requireContent, async (req: Request, res: Response): Pro
     const member = await prisma.teamMember.create({
       data: {
         photoUrl: parsed.data.photoUrl ?? null,
+        group: parsed.data.group ?? 'LEADERSHIP',
         sortOrder: parsed.data.sortOrder ?? nextOrder,
         translations: {
           create: parsed.data.translations.map((t) => ({

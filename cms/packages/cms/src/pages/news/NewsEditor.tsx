@@ -3,11 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ChevronDown, ChevronUp, ImageIcon, Loader2, Copy, Check, Send, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, ImageIcon, Loader2, Copy, Check, Send, X, Star } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useNewsItem, useCreateNews, useUpdateNews, usePublishNews } from '@/hooks/useNews';
 import { RichTextEditor } from '@/components/RichTextEditor';
 import { useMediaPicker } from '@/components/MediaLibrary/MediaPicker';
+import { WordImportPanel } from './WordImportPanel';
+import type { ParsedArticle } from '@/lib/docxImport';
 
 // ─── Form schema ──────────────────────────────────────────────────────────────
 
@@ -17,6 +19,7 @@ const translationSchema = z.object({
   excerpt: z.string().max(1000).default(''),
   seoTitle: z.string().max(200).default(''),
   seoDescription: z.string().max(500).default(''),
+  seoKeywords: z.string().max(500).default(''),
   ogImageUrl: z.string().max(500).default(''),
 });
 
@@ -24,6 +27,8 @@ const newsFormSchema = z.object({
   format: z.enum(['news', 'party_release', 'article', 'analytics', 'interview']),
   imageUrl: z.string().default(''),
   tgSkip: z.boolean().default(false),
+  isFeatured: z.boolean().default(true),
+  slug: z.string().max(200).default(''),
   ru: translationSchema,
   kz: translationSchema,
 });
@@ -45,7 +50,7 @@ const FORMAT_OPTIONS = [
   { value: 'interview', label: 'Интервью' },
 ];
 
-const emptyTranslation = { title: '', content: '', excerpt: '', seoTitle: '', seoDescription: '', ogImageUrl: '' };
+const emptyTranslation = { title: '', content: '', excerpt: '', seoTitle: '', seoDescription: '', seoKeywords: '', ogImageUrl: '' };
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -86,6 +91,8 @@ export default function NewsEditor() {
       format: 'news',
       imageUrl: '',
       tgSkip: false,
+      isFeatured: true,
+      slug: '',
       ru: emptyTranslation,
       kz: emptyTranslation,
     },
@@ -103,6 +110,7 @@ export default function NewsEditor() {
         excerpt: found.excerpt ?? '',
         seoTitle: found.seoTitle ?? '',
         seoDescription: found.seoDescription ?? '',
+        seoKeywords: found.seoKeywords ?? '',
         ogImageUrl: found.ogImageUrl ?? '',
       };
     };
@@ -110,6 +118,8 @@ export default function NewsEditor() {
       format: existing.format,
       imageUrl: existing.imageUrl ?? '',
       tgSkip: existing.tgSkip,
+      isFeatured: existing.isFeatured,
+      slug: existing.slug ?? '',
       ru: t('ru'),
       kz: t('kz'),
     });
@@ -126,6 +136,7 @@ export default function NewsEditor() {
         excerpt: values[lang].excerpt || undefined,
         seoTitle: values[lang].seoTitle || undefined,
         seoDescription: values[lang].seoDescription || undefined,
+        seoKeywords: values[lang].seoKeywords || undefined,
         ogImageUrl: values[lang].ogImageUrl || undefined,
       }));
 
@@ -138,6 +149,8 @@ export default function NewsEditor() {
       imageUrl: values.imageUrl || undefined,
       tags,
       tgSkip: values.tgSkip,
+      isFeatured: values.isFeatured,
+      slug: values.slug || undefined,
       translations,
     };
   };
@@ -221,6 +234,25 @@ export default function NewsEditor() {
 
   const currentImageUrl = watch('imageUrl');
   const tgSkip = watch('tgSkip');
+  const isFeatured = watch('isFeatured');
+
+  // Заполняет форму данными, распознанными из .docx (компактный импорт одной статьи).
+  const handleWordImport = (article: ParsedArticle) => {
+    if (article.ru.title) {
+      setValue('ru.title', article.ru.title, { shouldDirty: true });
+      setValue('ru.content', article.ru.content.split('\n\n').map((p) => `<p>${p}</p>`).join(''), { shouldDirty: true });
+      if (article.ru.seoTitle) setValue('ru.seoTitle', article.ru.seoTitle, { shouldDirty: true });
+      if (article.ru.seoDescription) setValue('ru.seoDescription', article.ru.seoDescription, { shouldDirty: true });
+      if (article.ru.slug) setValue('slug', article.ru.slug, { shouldDirty: true });
+      setActiveTab('ru');
+    }
+    if (article.kz.title) {
+      setValue('kz.title', article.kz.title, { shouldDirty: true });
+      setValue('kz.content', article.kz.content.split('\n\n').map((p) => `<p>${p}</p>`).join(''), { shouldDirty: true });
+      if (article.kz.seoTitle) setValue('kz.seoTitle', article.kz.seoTitle, { shouldDirty: true });
+      if (article.kz.seoDescription) setValue('kz.seoDescription', article.kz.seoDescription, { shouldDirty: true });
+    }
+  };
 
   if (isEdit && loadingExisting) {
     return (
@@ -359,6 +391,15 @@ export default function NewsEditor() {
                     </button>
                     {seoOpen && (
                       <div className="p-3 space-y-3 bg-white">
+                        {lang === 'ru' && (
+                          <div>
+                            <Label>Уникальная ссылка (URL статьи)</Label>
+                            <TextInput name="slug" placeholder="unikalnaya-ssylka-stati" />
+                            <p className="text-[11px] text-gray-400 mt-1">
+                              Необязательно — если оставить пустым, ссылка сформируется из заголовка автоматически
+                            </p>
+                          </div>
+                        )}
                         <div>
                           <Label>SEO заголовок (до 200 символов)</Label>
                           <TextInput name={`${lang}.seoTitle`} placeholder="SEO Title..." />
@@ -371,6 +412,10 @@ export default function NewsEditor() {
                             placeholder="Meta Description..."
                             className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
+                        </div>
+                        <div>
+                          <Label>Meta ключевые слова</Label>
+                          <TextInput name={`${lang}.seoKeywords`} placeholder="партия, новости, казахстан..." />
                         </div>
                         <div>
                           <Label>OG Image URL</Label>
@@ -387,6 +432,9 @@ export default function NewsEditor() {
 
         {/* Sidebar */}
         <div className="space-y-4">
+          {/* Word import */}
+          <WordImportPanel onImported={handleWordImport} />
+
           {/* Publish actions */}
           <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
             <h3 className="text-sm font-semibold text-gray-900">Публикация</h3>
@@ -413,29 +461,56 @@ export default function NewsEditor() {
               )}
             </div>
 
-            {/* Telegram toggle */}
+            {/* Telegram toggle — включён = будет продублировано в канал при публикации */}
             <div className="flex items-center justify-between py-2 border-t border-gray-100">
               <div className="flex items-center gap-2">
                 <Send size={14} className="text-gray-500" />
-                <span className="text-xs font-medium text-gray-700">Не публиковать в Telegram</span>
+                <span className="text-xs font-medium text-gray-700">Дублировать в телеграм</span>
               </div>
               <button
                 type="button"
+                aria-pressed={!tgSkip}
                 onClick={() => setValue('tgSkip', !tgSkip, { shouldDirty: true })}
                 className={`w-9 h-5 rounded-full transition-colors relative ${
-                  tgSkip ? 'bg-red-600' : 'bg-gray-200'
+                  !tgSkip ? 'bg-green-600' : 'bg-gray-200'
                 }`}
               >
                 <span
-                  className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                    tgSkip ? 'translate-x-4' : 'translate-x-0.5'
+                  className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform flex items-center justify-center ${
+                    !tgSkip ? 'translate-x-4' : 'translate-x-0.5'
                   }`}
-                />
+                >
+                  {!tgSkip && <Check size={10} className="text-green-600" />}
+                </span>
               </button>
             </div>
             {isEdit && existing?.tgPosted && (
               <p className="text-xs text-green-600">✓ Уже опубликовано в Telegram</p>
             )}
+
+            {/* Показать на главной */}
+            <div className="flex items-center justify-between py-2 border-t border-gray-100">
+              <div className="flex items-center gap-2">
+                <Star size={14} className="text-gray-500" />
+                <span className="text-xs font-medium text-gray-700">Показать на главной странице</span>
+              </div>
+              <button
+                type="button"
+                aria-pressed={isFeatured}
+                onClick={() => setValue('isFeatured', !isFeatured, { shouldDirty: true })}
+                className={`w-9 h-5 rounded-full transition-colors relative ${
+                  isFeatured ? 'bg-green-600' : 'bg-gray-200'
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform flex items-center justify-center ${
+                    isFeatured ? 'translate-x-4' : 'translate-x-0.5'
+                  }`}
+                >
+                  {isFeatured && <Check size={10} className="text-green-600" />}
+                </span>
+              </button>
+            </div>
 
             <button
               type="button"

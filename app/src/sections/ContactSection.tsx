@@ -1,29 +1,31 @@
 import { Mail, Phone, MapPin } from 'lucide-react';
 import { TextReveal } from '@/components/TextReveal';
 import { ScrollReveal } from '@/components/ScrollReveal';
+import { useHomeBlocks } from '@/hooks/useHomeBlocks';
 
-const contacts = [
-  {
-    icon: Mail,
-    label: 'Почта',
-    value: 'info@halykpartiyasy.kz',
-    href: 'mailto:info@halykpartiyasy.kz',
-  },
-  {
-    icon: Phone,
-    label: 'Телефон',
-    value: '+7 700 088 19 17',
-    href: 'tel:+77000881917',
-  },
-  {
-    icon: MapPin,
-    label: 'Офис',
-    value: 'Астана, ул. Желтоксан, 16, Казахстан',
-    href: 'https://maps.google.com/?q=Астана+Желтоксан+16',
-  },
+const ICONS = [Mail, Phone, MapPin];
+
+const FALLBACK_CONTACTS = [
+  { labelRu: 'Почта', value: 'info@halykpartiyasy.kz', href: 'mailto:info@halykpartiyasy.kz' },
+  { labelRu: 'Телефон', value: '+7 700 088 19 17', href: 'tel:+77000881917' },
+  { labelRu: 'Офис', value: 'Астана, ул. Желтоксан, 16, Казахстан', href: 'https://maps.google.com/?q=Астана+Желтоксан+16' },
 ];
 
+interface ContactItem { labelRu?: string; value?: string; href?: string; }
+interface ContactsBlock { headingRu?: string; textRu?: string; items?: ContactItem[]; }
+
 export function ContactSection() {
+  const { getBlock } = useHomeBlocks();
+  const cms = getBlock<ContactsBlock>('contacts_block');
+  const heading = cms?.headingRu?.trim() || 'Свяжитесь с нами';
+  const subtitle = cms?.textRu?.trim() || 'Напишите письмо, позвоните или посетите офис партии.';
+  const contacts = (cms?.items?.length ? cms.items : FALLBACK_CONTACTS).map((c, i) => ({
+    icon: ICONS[i] ?? Mail,
+    label: c.labelRu || FALLBACK_CONTACTS[i]?.labelRu || '',
+    value: c.value || '',
+    href: c.href || '#',
+  }));
+
   return (
     <section className="bg-coal py-20 md:py-28 overflow-hidden">
       <div className="max-w-[1280px] mx-auto px-4 md:px-10">
@@ -35,10 +37,10 @@ export function ContactSection() {
               tag="h2"
               className="font-formular text-heading-md md:text-heading-lg text-white mb-4"
             >
-              Свяжитесь с нами
+              {heading}
             </TextReveal>
             <p className="text-body-lg font-light text-fog mb-10 max-w-[480px]">
-              Напишите письмо, позвоните или посетите офис партии.
+              {subtitle}
             </p>
 
             <div className="flex flex-col gap-8">

@@ -6,12 +6,29 @@ import { testimonials as fallbackTestimonials } from '@/lib/data';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { TextReveal } from '@/components/TextReveal';
 import { fetchAppealTopics, fetchTestimonials, submitAppeal, ApiError, type AppealTopic, type PublicTestimonial } from '@/lib/api';
+import { useHomeBlocks } from '@/hooks/useHomeBlocks';
 
 const FALLBACK_TOPICS = ['Общий вопрос', 'Социальная помощь', 'ЖКХ и инфраструктура', 'Образование', 'Медицина', 'Труд и занятость', 'Другое'];
 const FALLBACK_TESTIMONIALS: PublicTestimonial[] = fallbackTestimonials.map((t) => ({ id: String(t.id), quote: t.quote, author: t.author }));
 const KZ_PHONE_RE = /^\+7\s?7\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/;
 
+interface ReceptionBlock {
+  headingRu?: string; textRu?: string;
+  whatsappNumber?: string; whatsappLabelRu?: string;
+  counterValue?: string; counterLabelRu?: string;
+}
+
 export function ReceptionSection() {
+  const { getBlock } = useHomeBlocks();
+  const cms = getBlock<ReceptionBlock>('reception');
+  const heading = cms?.headingRu?.trim() || 'Онлайн приёмная';
+  const subtitle = cms?.textRu?.trim() || 'Ваш голос услышан. Ваша проблема не останется без ответа.';
+  const whatsappNumber = cms?.whatsappNumber?.trim() || '+7 700 088 19 17';
+  const whatsappLabel = cms?.whatsappLabelRu?.trim() || 'Написать напрямую';
+  const counterValue = parseInt(cms?.counterValue ?? '', 10) || 847;
+  const counterLabel = cms?.counterLabelRu?.trim() || 'обращений решено';
+  const whatsappHref = `https://wa.me/${whatsappNumber.replace(/[^\d]/g, '')}`;
+
   const [formData, setFormData] = useState({ name: '', phone: '', topic: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -75,9 +92,9 @@ export function ReceptionSection() {
         <div className="mb-12">
           <p className="text-label text-red font-medium mb-3 uppercase tracking-wider">Приёмная</p>
           <TextReveal tag="h2" className="font-formular text-heading-md md:text-heading-lg text-white">
-            Онлайн приёмная
+            {heading}
           </TextReveal>
-          <p className="text-body-lg font-light text-fog mt-3">Ваш голос услышан. Ваша проблема не останется без ответа.</p>
+          <p className="text-body-lg font-light text-fog mt-3">{subtitle}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -123,20 +140,20 @@ export function ReceptionSection() {
           {/* RIGHT: Info */}
           <div className="space-y-5">
             <ScrollReveal direction="right" delay={0.1}>
-              <a href="https://wa.me/77000881917" target="_blank" rel="noopener noreferrer"
+              <a href={whatsappHref} target="_blank" rel="noopener noreferrer"
                 className="block bg-[rgba(37,211,102,0.08)] border border-[rgba(37,211,102,0.2)] rounded-[16px] p-5 md:p-6 transition-all hover:bg-[rgba(37,211,102,0.14)]">
                 <div className="flex items-center gap-3 mb-2">
                   <MessageCircle size={24} className="text-[#25d166]" />
-                  <span className="text-[20px] font-bold text-white">+7 700 088 19 17</span>
+                  <span className="text-[20px] font-bold text-white">{whatsappNumber}</span>
                 </div>
-                <p className="text-body text-steel">Написать напрямую</p>
+                <p className="text-body text-steel">{whatsappLabel}</p>
               </a>
             </ScrollReveal>
 
             <ScrollReveal direction="right" delay={0.2}>
               <div ref={counterRef} className="bg-red/[0.08] border border-red/25 rounded-[16px] p-5 md:p-6">
-                <CountUp target={847} triggered={triggered} className="text-[40px] font-bold text-red" />
-                <p className="text-body text-fog mt-1">обращений решено</p>
+                <CountUp target={counterValue} triggered={triggered} className="text-[40px] font-bold text-red" />
+                <p className="text-body text-fog mt-1">{counterLabel}</p>
               </div>
             </ScrollReveal>
 

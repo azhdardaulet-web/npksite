@@ -62,6 +62,7 @@ async function optionalAuth(req: Request, _res: Response, next: NextFunction): P
 const ListQuerySchema = z.object({
   status: NewsStatusSchema.optional(),
   format: NewsFormatSchema.optional(),
+  isFeatured: z.coerce.boolean().optional(),
   q: z.string().max(100).optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
@@ -74,6 +75,7 @@ const TranslationInputSchema = z.object({
   excerpt: z.string().max(1000).optional(),
   seoTitle: z.string().max(200).optional(),
   seoDescription: z.string().max(500).optional(),
+  seoKeywords: z.string().max(500).optional(),
   ogImageUrl: z.string().url().optional().or(z.literal('')),
 });
 
@@ -82,6 +84,8 @@ const CreateBodySchema = z.object({
   imageUrl: z.string().url().optional().or(z.literal('')),
   tags: z.array(z.string()).optional(),
   tgSkip: z.boolean().optional(),
+  isFeatured: z.boolean().optional(),
+  slug: z.string().max(200).optional().or(z.literal('')),
   translations: z.array(TranslationInputSchema).min(1, 'Добавьте хотя бы один перевод'),
 });
 
@@ -100,10 +104,10 @@ publicNewsRouter.get('/', async (req: Request, res: Response) => {
   }
 
   const lang = LangSchema.catch('ru').parse(req.query.lang);
-  const { format, q, page, limit } = parsed.data;
+  const { format, isFeatured, q, page, limit } = parsed.data;
 
   try {
-    const result = await findAll({ status: 'PUBLISHED', format, q, page, limit });
+    const result = await findAll({ status: 'PUBLISHED', format, isFeatured, q, page, limit });
     const data = result.data.map((item) => {
       const t =
         item.translations.find((tr) => tr.lang === lang) ??
@@ -172,6 +176,8 @@ cmsNewsRouter.post('/', async (req: Request, res: Response) => {
         imageUrl: data.imageUrl || undefined,
         tags: data.tags,
         tgSkip: data.tgSkip,
+        isFeatured: data.isFeatured,
+        slug: data.slug || undefined,
         translations: data.translations.map((t) => ({
           lang: t.lang,
           title: t.title,
@@ -179,6 +185,7 @@ cmsNewsRouter.post('/', async (req: Request, res: Response) => {
           excerpt: t.excerpt,
           seoTitle: t.seoTitle,
           seoDescription: t.seoDescription,
+          seoKeywords: t.seoKeywords,
           ogImageUrl: t.ogImageUrl || undefined,
         })),
       },
@@ -204,6 +211,8 @@ cmsNewsRouter.put('/:id', async (req: Request, res: Response) => {
       imageUrl: data.imageUrl || null,
       tags: data.tags,
       tgSkip: data.tgSkip,
+      isFeatured: data.isFeatured,
+      slug: data.slug || undefined,
       translations: data.translations.map((t) => ({
         lang: t.lang,
         title: t.title,
@@ -211,6 +220,7 @@ cmsNewsRouter.put('/:id', async (req: Request, res: Response) => {
         excerpt: t.excerpt,
         seoTitle: t.seoTitle,
         seoDescription: t.seoDescription,
+        seoKeywords: t.seoKeywords,
         ogImageUrl: t.ogImageUrl || undefined,
       })),
     });

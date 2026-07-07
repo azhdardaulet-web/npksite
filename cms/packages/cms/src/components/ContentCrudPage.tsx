@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil, Trash2, Loader2, ChevronUp, ChevronDown } from 'lucide-react';
 import { api } from '@/lib/api';
@@ -57,6 +58,16 @@ export function ContentCrudPage<TItem extends { id: string; sortOrder?: number }
     setFormState(config.emptyForm);
     setModal({ open: true });
   };
+
+  // Пункт меню «Создать» ведёт на этот же экран с ?create=1 — открываем
+  // модалку создания сразу, не заставляя пользователя искать кнопку.
+  const location = useLocation();
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get('create') === '1') {
+      openCreate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search]);
 
   const openEdit = (item: TItem) => {
     setFormState(config.parseItem(item));

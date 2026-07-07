@@ -4,9 +4,9 @@ import {
   Upload, FileText, CheckCircle2, XCircle,
   ArrowLeft, Loader2, AlertCircle, Eye, EyeOff, RefreshCw, HardDrive, LogIn,
 } from 'lucide-react';
-import JSZip from 'jszip';
 import { useCreateNews, usePublishNews, type NewsFormat } from '@/hooks/useNews';
 import { useAuthStore } from '@/store/authStore';
+import { extractTextFromDocx, parseArticles, type ParsedArticle } from '@/lib/docxImport';
 
 // ─── Local storage helpers ────────────────────────────────────────────────────
 
@@ -52,24 +52,6 @@ function addLocalNews(items: LocalNewsItem[]) {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface LangData {
-  title: string;
-  content: string;
-  seoTitle: string;
-  seoDescription: string;
-  slug: string;
-}
-
-interface ParsedArticle {
-  orderNum: number;
-  ru: LangData;
-  kz: LangData;
-  publishedAt: string;
-  selected: boolean;
-  format: NewsFormat;
-  imageUrl: string;
-}
-
 type ImportStatus = 'idle' | 'uploading' | 'parsed' | 'importing' | 'done';
 
 interface ImportResult {
@@ -77,178 +59,6 @@ interface ImportResult {
   title: string;
   success: boolean;
   error?: string;
-}
-
-// ─── Docx parser ──────────────────────────────────────────────────────────────
-
-async function extractTextFromDocx(file: File): Promise<string[]> {
-  const zip = new JSZip();
-  const loaded = await zip.loadAsync(file);
-  const docXml = await loaded.file('word/document.xml')!.async('string');
-
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(docXml, 'application/xml');
-
-  const paragraphs: string[] = [];
-  const pNodes = doc.getElementsByTagNameNS('*', 'p');
-
-  for (let i = 0; i < pNodes.length; i++) {
-    const tNodes = pNodes[i].getElementsByTagNameNS('*', 't');
-    let line = '';
-    for (let j = 0; j < tNodes.length; j++) {
-      line += tNodes[j].textContent ?? '';
-    }
-    const trimmed = line.trim();
-    if (trimmed) paragraphs.push(trimmed);
-  }
-
-  return paragraphs;
-}
-
-// Label-only markers (value on the next line)
-const LABEL_MARKERS: [RegExp, 'slug' | 'seoTitle' | 'seoDescription' | 'skip'][] = [
-  [/^URL:\s*$/, 'slug'],
-  [/^SEO Заголовок:\s*$/, 'seoTitle'],
-  [/^Meta Описание:\s*$/, 'seoDescription'],
-  [/^Meta Сипаттама:\s*$/, 'seoDescription'],
-  [/^Meta Description:\s*$/, 'seoDescription'],
-  [/^Порядковый номер:\s*$/, 'skip'],
-  [/^Meta Ключевые слова:\s*$/, 'skip'],
-  [/^Meta Кілт сөздер:\s*$/, 'skip'],
-  [/^Meta Keywords:\s*$/, 'skip'],
-];
-
-// Inline label+value (value on same line after colon)
-const INLINE_MARKERS: [RegExp, 'slug' | 'seoTitle' | 'seoDescription'][] = [
-  [/^URL:\s+(.+)/, 'slug'],
-  [/^SEO Заголовок:\s+(.+)/, 'seoTitle'],
-  [/^Meta Описание:\s+(.+)/i, 'seoDescription'],
-  [/^Meta Сипаттама:\s+(.+)/i, 'seoDescription'],
-  [/^Meta Description:\s+(.+)/i, 'seoDescription'],
-];
-
-// Lines that are purely metadata and should never appear in body
-const META_LINE = /^(URL|SEO Заголовок|Meta Описание|Meta Сипаттама|Meta Description|Порядковый номер|Meta Ключевые|Meta Кілт|Meta Keywords)/i;
-
-function parseLangSection(lines: string[]): LangData {
-  let title = '';
-  let slug = '';
-  let seoTitle = '';
-  let seoDescription = '';
-  const bodyLines: string[] = [];
-  let titleSet = false;
-
-  // State machine: what the NEXT line's value should be assigned to
-  type NextField = 'slug' | 'seoTitle' | 'seoDescription' | 'skip' | null;
-  let nextField: NextField = null;
-
-  for (const line of lines) {
-    // If previous line was a label-only marker, this line is the value
-    if (nextField !== null) {
-      if (nextField === 'slug') slug = line;
-      else if (nextField === 'seoTitle') seoTitle = line;
-      else if (nextField === 'seoDescription') seoDescription = line;
-      // 'skip' → discard
-      nextField = null;
-      continue;
-    }
-
-    // Check label-only markers (e.g. "URL:\n" "dar-rail-...\n")
-    let foundLabel = false;
-    for (const [regex, field] of LABEL_MARKERS) {
-      if (regex.test(line)) { nextField = field; foundLabel = true; break; }
-    }
-    if (foundLabel) continue;
-
-    // Check inline markers (e.g. "URL: dar-rail-...")
-    let foundInline = false;
-    for (const [regex, field] of INLINE_MARKERS) {
-      const m = line.match(regex);
-      if (m) {
-        if (field === 'slug') slug = m[1].trim();
-        else if (field === 'seoTitle') seoTitle = m[1].trim();
-        else if (field === 'seoDescription') seoDescription = m[1].trim();
-        foundInline = true;
-        break;
-      }
-    }
-    if (foundInline) continue;
-
-    // Skip meta lines (keywords, order numbers, bare number after "Порядковый номер:")
-    if (META_LINE.test(line)) continue;
-
-    // Body / title
-    if (!titleSet) {
-      title = line;
-      titleSet = true;
-    } else {
-      bodyLines.push(line);
-    }
-  }
-
-  const content = bodyLines.join('\n\n');
-  return { title, content, seoTitle, seoDescription, slug };
-}
-
-function parseArticles(lines: string[]): ParsedArticle[] {
-  const SEPARATOR = /^─{10,}$/;
-  const articles: ParsedArticle[] = [];
-
-  // Split into sections by separator
-  const sections: string[][] = [];
-  let current: string[] = [];
-  for (const line of lines) {
-    if (SEPARATOR.test(line)) {
-      if (current.length) { sections.push(current); current = []; }
-    } else {
-      current.push(line);
-    }
-  }
-  if (current.length) sections.push(current);
-
-  for (const section of sections) {
-    // Find "Статья #N"
-    const articleLine = section.find(l => /^Статья\s*#\d+/.test(l));
-    if (!articleLine) continue;
-
-    const orderNum = parseInt(articleLine.match(/(\d+)/)?.[1] ?? '0');
-    if (!orderNum) continue;
-
-    // Find language boundaries
-    const ruIdx = section.findIndex(l => /🇷🇺|РУССКИЙ/.test(l));
-    const kzIdx = section.findIndex(l => /🇰🇿|ҚАЗАҚША|КАЗАХСКИЙ/.test(l));
-
-    let ruLines: string[] = [];
-    let kzLines: string[] = [];
-
-    if (ruIdx >= 0 && kzIdx > ruIdx) {
-      ruLines = section.slice(ruIdx + 1, kzIdx);
-      kzLines = section.slice(kzIdx + 1);
-    } else if (ruIdx >= 0) {
-      ruLines = section.slice(ruIdx + 1);
-    } else if (kzIdx >= 0) {
-      kzLines = section.slice(kzIdx + 1);
-    }
-
-    const ru = parseLangSection(ruLines);
-    const kz = parseLangSection(kzLines);
-
-    if (!ru.title && !kz.title) continue;
-
-    articles.push({
-      orderNum,
-      ru,
-      kz,
-      publishedAt: '',
-      selected: true,
-      format: 'article',
-      imageUrl: '',
-    });
-  }
-
-  // Sort by order number
-  articles.sort((a, b) => a.orderNum - b.orderNum);
-  return articles;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

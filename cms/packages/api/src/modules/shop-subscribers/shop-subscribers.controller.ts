@@ -2,8 +2,10 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../../lib/prisma';
 import { verifyHCaptcha } from '../../lib/hcaptcha';
+import { authenticateToken, requireRole } from '../../middleware/auth';
 
 export const shopSubscribersRouter = Router();
+export const cmsShopSubscribersRouter = Router();
 
 function handleError(err: unknown, res: Response): void {
   const e = err as { message?: string; status?: number };
@@ -41,3 +43,19 @@ shopSubscribersRouter.post('/', async (req: Request, res: Response): Promise<voi
     handleError(err, res);
   }
 });
+
+// ─── CMS: GET /cms/api/v1/shop-subscribers ─────────────────────────────────────
+
+cmsShopSubscribersRouter.get(
+  '/',
+  authenticateToken,
+  requireRole('ADMIN'),
+  async (_req: Request, res: Response): Promise<void> => {
+    try {
+      const subscribers = await prisma.shopSubscriber.findMany({ orderBy: { createdAt: 'desc' } });
+      res.json(subscribers);
+    } catch (err) {
+      handleError(err, res);
+    }
+  }
+);

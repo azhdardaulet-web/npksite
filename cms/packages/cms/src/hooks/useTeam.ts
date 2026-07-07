@@ -11,9 +11,12 @@ export interface TeamTranslation {
   bio: string | null;
 }
 
+export type TeamMemberGroup = 'LEADERSHIP' | 'MEDIA_TEAM' | 'FACTION';
+
 export interface TeamMember {
   id: string;
   photoUrl: string | null;
+  group: TeamMemberGroup;
   sortOrder: number;
   translations: TeamTranslation[];
   createdAt: string;
@@ -22,6 +25,7 @@ export interface TeamMember {
 
 export interface TeamMemberInput {
   photoUrl?: string | null;
+  group?: TeamMemberGroup;
   sortOrder?: number;
   translations: Array<{
     lang: string;
@@ -38,9 +42,12 @@ export function useTeam() {
   return useQuery<TeamMember[]>({
     queryKey: [QK],
     queryFn: async () => {
-      const res = await api.get('/cms/api/v1/team');
+      // /cms/api/v1/team/cms — вложенный CMS-роут с полными переводами
+      // (обычный /cms/api/v1/team отдаёт публично-плоский формат для сайта).
+      const res = await api.get('/cms/api/v1/team/cms');
       return res.data;
     },
+    enabled: !!accessToken,
   });
 }
 

@@ -25,6 +25,7 @@ import {
   useReorderTeam,
   TeamMember,
   TeamMemberInput,
+  TeamMemberGroup,
 } from '@/hooks/useTeam';
 
 const LANGS = [
@@ -265,10 +266,23 @@ function MemberModal({
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-export default function TeamPage() {
+export default function TeamPage({
+  group,
+  title = 'Команда',
+  embedded = false,
+}: {
+  group?: TeamMemberGroup;
+  title?: string;
+  embedded?: boolean;
+} = {}) {
   const navigate = useNavigate();
   const { logout } = useAuthStore();
-  const { data: members = [], isLoading } = useTeam();
+  const { data: allMembers = [], isLoading } = useTeam();
+  // По умолчанию (страница «Команда») скрываем депутатов фракции — они
+  // управляются отдельно на «Фракция → Депутаты» (group=FACTION).
+  const members = group
+    ? allMembers.filter((m) => m.group === group)
+    : allMembers.filter((m) => m.group !== 'FACTION');
   const [items, setItems] = useState<TeamMember[]>([]);
   const [modal, setModal] = useState<{ open: boolean; editing?: TeamMember }>({ open: false });
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -309,7 +323,8 @@ export default function TeamPage() {
 
   function handleSave(data: TeamMemberInput) {
     const mut = modal.editing ? updateMut : createMut;
-    (mut as typeof createMut).mutate(data as TeamMemberInput, {
+    const payload: TeamMemberInput = modal.editing ? data : { ...data, group: group ?? 'LEADERSHIP' };
+    (mut as typeof createMut).mutate(payload, {
       onSuccess: () => {
         setModal({ open: false });
         setItems([]);
@@ -318,33 +333,44 @@ export default function TeamPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="text-gray-500 hover:text-gray-700 flex items-center gap-1 text-sm"
-            >
-              <ChevronLeft size={16} /> Назад
-            </button>
-            <h1 className="text-lg font-semibold text-gray-900">Команда</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => { setEditingId(null); setModal({ open: true }); }}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
-            >
-              <Plus size={16} /> Добавить
-            </button>
-            <button onClick={logout} className="text-sm text-red-600 hover:text-red-800">
-              Выйти
-            </button>
-          </div>
+    <div className={embedded ? '' : 'min-h-screen bg-gray-100'}>
+      {embedded ? (
+        <div className="flex items-center justify-end mb-4">
+          <button
+            onClick={() => { setEditingId(null); setModal({ open: true }); }}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
+          >
+            <Plus size={16} /> Добавить
+          </button>
         </div>
-      </header>
+      ) : (
+        <header className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="text-gray-500 hover:text-gray-700 flex items-center gap-1 text-sm"
+              >
+                <ChevronLeft size={16} /> Назад
+              </button>
+              <h1 className="text-lg font-semibold text-gray-900">{title}</h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => { setEditingId(null); setModal({ open: true }); }}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
+              >
+                <Plus size={16} /> Добавить
+              </button>
+              <button onClick={logout} className="text-sm text-red-600 hover:text-red-800">
+                Выйти
+              </button>
+            </div>
+          </div>
+        </header>
+      )}
 
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main className={embedded ? '' : 'max-w-4xl mx-auto px-6 py-8'}>
         {isLoading ? (
           <div className="space-y-2">
             {[...Array(4)].map((_, i) => (

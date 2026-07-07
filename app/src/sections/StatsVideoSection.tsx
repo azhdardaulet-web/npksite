@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useHomeBlocks } from '@/hooks/useHomeBlocks';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -8,6 +9,9 @@ export function StatsVideoSection() {
   const pinRef = useRef<HTMLDivElement>(null);
   const videoWrapRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  const { getBlock } = useHomeBlocks();
+  const videoUrl = getBlock<{ videoUrl?: string }>('video')?.videoUrl?.trim() || '/stats-video.mp4';
 
   // Force play on mobile — iOS Safari sometimes ignores autoPlay attribute
   useEffect(() => {
@@ -72,7 +76,8 @@ export function StatsVideoSection() {
         {/* Mobile: natural 16:9 block. Desktop: filled via JS above. */}
         <video
           ref={videoRef}
-          src="/stats-video.mp4"
+          key={videoUrl}
+          src={videoUrl}
           autoPlay
           loop
           muted

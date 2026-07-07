@@ -8,6 +8,14 @@
       "port": 3000,
       "autoPort": false,
       "cwd": "/Users/dauletazhdar/Documents/DA digital/НПК/npksite/app"
+    },
+    {
+      "name": "npksite-cms-admin",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "--port", "5190"],
+      "port": 5190,
+      "autoPort": false,
+      "cwd": "/Users/dauletazhdar/Documents/DA digital/НПК/npksite/cms/packages/cms"
     }
   ]
 }

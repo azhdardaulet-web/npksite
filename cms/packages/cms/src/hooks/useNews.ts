@@ -17,6 +17,7 @@ export interface NewsTranslation {
   content: string;
   seoTitle: string | null;
   seoDescription: string | null;
+  seoKeywords: string | null;
   ogImageUrl: string | null;
   createdAt: string;
   updatedAt: string;
@@ -72,6 +73,7 @@ export interface TranslationInput {
   excerpt?: string;
   seoTitle?: string;
   seoDescription?: string;
+  seoKeywords?: string;
   ogImageUrl?: string;
 }
 
@@ -80,6 +82,8 @@ export interface CreateNewsInput {
   imageUrl?: string;
   tags?: string[];
   tgSkip?: boolean;
+  isFeatured?: boolean;
+  slug?: string;
   translations: TranslationInput[];
 }
 
@@ -88,6 +92,8 @@ export interface UpdateNewsInput {
   imageUrl?: string | null;
   tags?: string[];
   tgSkip?: boolean;
+  isFeatured?: boolean;
+  slug?: string;
   translations: TranslationInput[];
 }
 

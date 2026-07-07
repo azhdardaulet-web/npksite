@@ -62,7 +62,7 @@ async function main() {
   }
 
   // ─── Default pages ───────────────────────────────────────────────────────
-  const pageSlugs = ['home', 'about', 'faction', 'contacts', 'footer'];
+  const pageSlugs = ['home', 'about', 'faction', 'press-center', 'contacts', 'footer'];
   for (const slug of pageSlugs) {
     const existingPage = await prisma.page.findUnique({ where: { slug } });
     if (!existingPage) {
@@ -569,6 +569,286 @@ async function main() {
     console.log(`✅ Document (deputy_request, реальные с halykpartiyasy.kz) seeded: ${createdDeputyRequestsCount}`);
   } else {
     console.log('ℹ️  Document (deputy_request) уже заполнены');
+  }
+
+  // Блоки главной страницы (app/src/sections/HeroSection.tsx, TickerSection.tsx,
+  // TrustCountersSection.tsx, StatsVideoSection.tsx → Page(slug=home).blocks) —
+  // ровно то же самое, что сейчас захардкожено на сайте, чтобы при переключении
+  // на CMS-редактор секций ничего визуально не поменялось. Казахских переводов
+  // в исходном хардкоде не было — оставляем пустыми, заполнит редактор.
+  const homePage = await prisma.page.findUnique({ where: { slug: 'home' } });
+  if (homePage) {
+    const existingBlocks = await prisma.pageBlock.count({ where: { pageId: homePage.id } });
+    if (existingBlocks === 0) {
+      await prisma.pageBlock.createMany({
+        data: [
+          {
+            pageId: homePage.id,
+            type: 'home_hero',
+            sortOrder: 0,
+            content: {
+              titleRu: 'Казахстан справедливых\nвозможностей начинается',
+              titleKz: '',
+              wordsRu: ['С ВЫБОРА', 'С НПК', 'СЕГОДНЯ'],
+              wordsKz: [],
+              subtitleRu: 'Народная партия — партия людей труда. Мы за справедливый шанс для каждого гражданина Казахстана.',
+              subtitleKz: '',
+              cta1LabelRu: 'Вступить в партию', cta1LabelKz: '', cta1Href: '/vstupit',
+              cta2LabelRu: 'Программа партии', cta2LabelKz: '', cta2Href: '/programma',
+              videoUrl: '/herosectionanimation.webm',
+            },
+          },
+          {
+            pageId: homePage.id,
+            type: 'ticker',
+            sortOrder: 1,
+            content: {
+              phrasesRu: [
+                'Человек труда',
+                'Государство, которое держит слово',
+                'Один закон для всех',
+                'Экономика для людей',
+                'Жильё для работающей семьи',
+                'Образование и социальные лифты',
+                'Сильные регионы — сильный Казахстан',
+                'Экономика будущего',
+                'Здоровье и семья',
+              ],
+              phrasesKz: [],
+            },
+          },
+          {
+            pageId: homePage.id,
+            type: 'stats',
+            sortOrder: 2,
+            content: {
+              headingRu: 'Народная партия в цифрах и фактах',
+              headingKz: '',
+              introRu: 'Три десятилетия служения. Сотни тысяч голосов. Двадцать регионов. Тринадцать кандидатов, готовых вернуть власть народу.',
+              introKz: '',
+              items: [
+                { value: '30', suffix: '+', labelRu: 'Лет на политической арене', labelKz: '' },
+                { value: '200', suffix: 'тыс+', labelRu: 'единомышленников', labelKz: '' },
+                { value: '20', suffix: '', labelRu: 'Региональных отделений', labelKz: '' },
+              ],
+            },
+          },
+          {
+            pageId: homePage.id,
+            type: 'video',
+            sortOrder: 3,
+            content: { videoUrl: '/stats-video.mp4' },
+          },
+        ],
+      });
+      console.log('✅ Page(home) blocks seeded: 4 (home_hero, ticker, stats, video)');
+    } else {
+      console.log('ℹ️  Page(home) blocks уже заполнены');
+    }
+
+    // Остальные секции главной (Приёмная/Лица партии/Программа/Вступить/Контакты) —
+    // добавлены отдельно, чтобы не пересоздавать уже отредактированные блоки выше.
+    const hasReception = await prisma.pageBlock.count({ where: { pageId: homePage.id, type: 'reception' } });
+    if (hasReception === 0) {
+      await prisma.pageBlock.createMany({
+        data: [
+          {
+            pageId: homePage.id,
+            type: 'reception',
+            sortOrder: 4,
+            content: {
+              headingRu: 'Онлайн приёмная', headingKz: '',
+              textRu: 'Ваш голос услышан. Ваша проблема не останется без ответа.', textKz: '',
+              whatsappNumber: '+7 700 088 19 17', whatsappLabelRu: 'Написать напрямую', whatsappLabelKz: '',
+              counterValue: '847', counterLabelRu: 'обращений решено', counterLabelKz: '',
+            },
+          },
+          {
+            pageId: homePage.id,
+            type: 'candidates_intro',
+            sortOrder: 5,
+            content: {
+              headingRu: 'Лица партии', headingKz: '',
+              textRu: 'Люди, которые уже сделали выбор — быть с народом. Депутаты, общественные деятели и лидеры регионов, которые каждый день работают для страны.', textKz: '',
+            },
+          },
+          {
+            pageId: homePage.id,
+            type: 'program_intro',
+            sortOrder: 6,
+            content: {
+              headingRu: 'Программа, которая касается каждого', headingKz: '',
+              textRu: 'Мы собрали ключевые акценты новой политической программы Народной партии Казахстана: человек труда, справедливые возможности, ответственная власть, экономика для людей, поддержка семьи и будущее детей.', textKz: '',
+            },
+          },
+          {
+            pageId: homePage.id,
+            type: 'join',
+            sortOrder: 7,
+            content: {
+              titleRu: 'Стань частью\nнародной силы', titleKz: '',
+              subtitleRu: 'Казахстан справедливых возможностей начинается с людей, которые готовы за него работать.', subtitleKz: '',
+              imageUrl: '/images/join-bg.jpg',
+            },
+          },
+          {
+            pageId: homePage.id,
+            type: 'contacts_block',
+            sortOrder: 8,
+            content: {
+              headingRu: 'Свяжитесь с нами', headingKz: '',
+              textRu: 'Напишите письмо, позвоните или посетите офис партии.', textKz: '',
+              items: [
+                { labelRu: 'Почта', labelKz: '', value: 'info@halykpartiyasy.kz', href: 'mailto:info@halykpartiyasy.kz' },
+                { labelRu: 'Телефон', labelKz: '', value: '+7 700 088 19 17', href: 'tel:+77000881917' },
+                { labelRu: 'Офис', labelKz: '', value: 'Астана, ул. Желтоксан, 16, Казахстан', href: 'https://maps.google.com/?q=Астана+Желтоксан+16' },
+              ],
+            },
+          },
+        ],
+      });
+      console.log('✅ Page(home) blocks seeded: 5 (reception, candidates_intro, program_intro, join, contacts_block)');
+    } else {
+      console.log('ℹ️  Page(home) доп. блоки (reception и т.д.) уже заполнены');
+    }
+  }
+
+  // Блоки страницы «О партии» (app/src/pages/AboutPage.tsx → Page(slug=about).blocks) —
+  // тот же текст, что сейчас захардкожен, чтобы редактор не поменял сайт визуально.
+  const aboutPage = await prisma.page.findUnique({ where: { slug: 'about' } });
+  if (aboutPage) {
+    const existingAboutBlocks = await prisma.pageBlock.count({ where: { pageId: aboutPage.id } });
+    if (existingAboutBlocks === 0) {
+      await prisma.pageBlock.createMany({
+        data: [
+          {
+            pageId: aboutPage.id,
+            type: 'about_hero',
+            sortOrder: 0,
+            content: {
+              titleRu: 'НАРОД!\nЗЕМЛЯ!\nСПРАВЕДЛИВОСТЬ!',
+              titleKz: '',
+              subtitleRu: 'Общественное объединение Народная партия Казахстана — добровольное объединение граждан, приверженцев социалистической идеологии и левых идей. Деятельность партии направлена на создание «скандинавского» социализма с казахстанской спецификой.',
+              subtitleKz: '',
+              imageUrl: '/images/about/about-hero.jpg',
+              ctaLabelRu: 'Вступить в партию', ctaLabelKz: '', ctaHref: '/vstupit',
+            },
+          },
+          {
+            pageId: aboutPage.id,
+            type: 'ticker',
+            sortOrder: 1,
+            content: {
+              phrasesRu: [
+                'МЫ ЗА НОВЫЙ СПРАВЕДЛИВЫЙ КАЗАХСТАН!',
+                'ПРИХОДИ К НАМ, ЕСЛИ СЧИТАЕШЬ ТАКЖЕ!',
+                'ИЗМЕНИМ ГОСУДАРСТВЕННУЮ СИСТЕМУ ЕСТЕСТВЕННЫМ ПУТЕМ!',
+                'МЫ ОТКРЫТЫ ДЛЯ ВСЕХ!',
+              ],
+              phrasesKz: [],
+            },
+          },
+          {
+            pageId: aboutPage.id,
+            type: 'about_community',
+            sortOrder: 2,
+            content: {
+              headingRu: 'С кем мы и кто выступает в наших рядах', headingKz: '',
+              textRu: 'НПК выражает политическую волю многочисленного среднего класса нашей республики и представителей социально-уязвимых категорий населения. С нами трудящиеся и безработные, пенсионеры и молодежь, бюджетники и предприниматели, многодетные семьи и люди с инвалидностью. Словом, все те, кто стремится к социальной справедливости, к политическому и гендерному равенству, к правовой защите и развитию гражданского общества.',
+              textKz: '',
+              imageUrl: '/images/about/about-people.jpg',
+              imagePosition: 'right',
+            },
+          },
+          {
+            pageId: aboutPage.id,
+            type: 'about_methods',
+            sortOrder: 3,
+            content: {
+              headingRu: 'Методы партии', headingKz: '',
+              textRu: 'Представители НПК принимают самое активное участие в политических процессах, происходящих в Казахстане. Наши партийцы трудятся в представительных и исполнительных органах государственной власти, избираются в органы местного самоуправления, на должности акимов и в состав Парламента, чтобы продвигать партийные инициативы, направленные на отстаивание интересов народа и построение гуманного, цивилизованного социально-ориентированного общества.',
+              textKz: '',
+              imageUrl: '/images/about/about-parliament.jpg',
+              imagePosition: 'left',
+            },
+          },
+          {
+            pageId: aboutPage.id,
+            type: 'about_structure',
+            sortOrder: 4,
+            content: {
+              headingRu: 'Структура партии', headingKz: '',
+              textRu: 'Деятельность НПК осуществляется на всей территории Республики Казахстан. Во всех областях, а также в мегаполисах, функционируют партийные филиалы, представительства и первичные парторганизации (ячейки).',
+              textKz: '',
+              imageUrl: '/images/about/about-astana.jpg',
+              imagePosition: 'right',
+            },
+          },
+          {
+            pageId: aboutPage.id,
+            type: 'about_goal',
+            sortOrder: 5,
+            content: {
+              headingRu: 'Наша цель —\nобщество\nподлинного\nнародовластия', headingKz: '',
+              textRu: 'Целью деятельности НПК является движение к обществу социальной справедливости, широкой духовности, свободы и процветающей экономики на базе научно-технического прогресса. Центром такого общества должен стать человек, наделенный полнотой гражданских прав и имеющий широкие возможности для самореализации.\n\nНаша задача — построить мирным гражданским путем сильное, жизнеспособное, светское, правовое и социальное государство, высшей ценностью которого является жизнь каждого казахстанца, его права и свободы.',
+              textKz: '',
+              imageUrl: '/images/about/about-goal.jpg',
+              imagePosition: 'left',
+            },
+          },
+        ],
+      });
+      console.log('✅ Page(about) blocks seeded: 6 (about_hero, ticker, about_community, about_methods, about_structure, about_goal)');
+    } else {
+      console.log('ℹ️  Page(about) blocks уже заполнены');
+    }
+  }
+
+  // Page(press-center) — страница /narodnoe-media, «О портале «Халық үні Қазақстан»»
+  const pressPage = await prisma.page.findUnique({ where: { slug: 'press-center' } });
+  if (pressPage) {
+    const existingPressBlocks = await prisma.pageBlock.count({ where: { pageId: pressPage.id } });
+    if (existingPressBlocks === 0) {
+      await prisma.pageBlock.createMany({
+        data: [
+          {
+            pageId: pressPage.id,
+            type: 'press_hero',
+            sortOrder: 0,
+            content: {
+              titleRu: 'Народное медиа,\nкоторому верит народ', titleKz: '',
+              subtitleRu: 'Собственная студия, ежедневный эфир и аудитория, которая опережает партийные СМИ страны. Мы освещаем внутреннюю и международную политику, обсуждаем важные социальные вопросы и продвигаем левоцентристские ценности справедливости.',
+              subtitleKz: '',
+              imageUrl: '',
+              ctaLabelRu: 'Подписаться', ctaLabelKz: '', ctaHref: 'https://www.youtube.com/channel/UCYq_KOlsxp8H2r3GIq6hWtA',
+            },
+          },
+          {
+            pageId: pressPage.id,
+            type: 'press_studio',
+            sortOrder: 1,
+            content: {
+              headingRu: 'Как работает народное медиа', headingKz: '',
+              textRu: 'Полный цикл производства — от идеи и съёмки до монтажа и публикации. Собственная студия в сердце партии.',
+              textKz: '',
+            },
+          },
+          {
+            pageId: pressPage.id,
+            type: 'press_cta',
+            sortOrder: 2,
+            content: {
+              headingRu: 'Подпишись на народное медиа', headingKz: '',
+              textRu: 'Подписывайтесь, участвуйте в обсуждениях и будьте в курсе ключевых событий.',
+              textKz: '',
+            },
+          },
+        ],
+      });
+      console.log('✅ Page(press-center) blocks seeded: 3 (press_hero, press_studio, press_cta)');
+    } else {
+      console.log('ℹ️  Page(press-center) blocks уже заполнены');
+    }
   }
 
   // Соцсети (app/src/pages/MediaPage.tsx SOCIALS → Setting, публично читаемые ключи)

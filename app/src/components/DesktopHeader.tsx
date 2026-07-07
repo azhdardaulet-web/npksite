@@ -69,7 +69,7 @@ const NAV: NavItem[] = [
       { label: 'Новости и релизы',                  href: '/novosti' },
       { label: 'СМИ о нас',                         href: '/smi-o-nas' },
       { label: 'Галерея',                            href: '/galereya' },
-      { label: 'О портале «Халық үні Қазақстан»',   href: '/portal' },
+      { label: 'О портале «Халық үні Қазақстан»',   href: '/narodnoe-media' },
       { label: 'Народный подкаст',                   href: '/podcast' },
       { label: 'Видео',                              href: '/media' },
     ],

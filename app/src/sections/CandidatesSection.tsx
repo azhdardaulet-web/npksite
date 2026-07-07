@@ -4,8 +4,16 @@ import { candidates, regionFilterTags } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { TextReveal } from '@/components/TextReveal';
+import { useHomeBlocks } from '@/hooks/useHomeBlocks';
+
+interface CandidatesIntroBlock { headingRu?: string; textRu?: string; }
 
 export function CandidatesSection() {
+  const { getBlock } = useHomeBlocks();
+  const cms = getBlock<CandidatesIntroBlock>('candidates_intro');
+  const heading = cms?.headingRu?.trim() || 'Лица партии';
+  const subtitle = cms?.textRu?.trim() || 'Люди, которые уже сделали выбор — быть с народом. Депутаты, общественные деятели и лидеры регионов, которые каждый день работают для страны.';
+
   const [activeRegion, setActiveRegion] = useState('Все');
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -30,10 +38,10 @@ export function CandidatesSection() {
               tag="h2"
               className="font-formular text-heading-md md:text-heading-lg text-white"
             >
-              Лица партии
+              {heading}
             </TextReveal>
             <p className="text-body-lg font-light text-fog mt-3 max-w-[560px]">
-              Люди, которые уже сделали выбор — быть с народом. Депутаты, общественные деятели и лидеры регионов, которые каждый день работают для страны.
+              {subtitle}
             </p>
           </div>
           <Link

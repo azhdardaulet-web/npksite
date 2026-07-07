@@ -47,8 +47,15 @@ export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } =
 
   useEffect(() => {
     let cancelled = false;
-    fetchNews({ limit: 9 })
-      .then((res) => { if (!cancelled && res.data.length > 0) setNews(res.data); })
+    // На главной показываем только новости с включённым тумблером
+    // «Показать на главной странице» (isFeatured) в CMS. Если таких пока
+    // нет — не молчим белым экраном, а показываем последние опубликованные.
+    fetchNews({ limit: 9, isFeatured: true })
+      .then((res) => {
+        if (cancelled) return;
+        if (res.data.length > 0) { setNews(res.data); return; }
+        return fetchNews({ limit: 9 }).then((all) => { if (!cancelled && all.data.length > 0) setNews(all.data); });
+      })
       .catch(() => { /* остаёмся на демо-данных */ });
     return () => { cancelled = true; };
   }, []);

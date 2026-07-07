@@ -2,7 +2,16 @@ import { Link } from 'react-router-dom';
 import { HardHat, Users, GraduationCap, Handshake, Landmark, TrendingUp, HeartPulse, Globe2 } from 'lucide-react';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from '@/components/ui/breadcrumb';
+import { usePageBlocks } from '@/hooks/usePageBlocks';
 import './AboutPage.css';
+
+interface HeroBlock {
+  titleRu?: string; subtitleRu?: string; imageUrl?: string;
+  ctaLabelRu?: string; ctaHref?: string;
+}
+interface TextImageBlock {
+  headingRu?: string; textRu?: string; imageUrl?: string;
+}
 
 const features = [
   { icon: HardHat, title: 'Трудящиеся', desc: 'Рабочие, бюджетники, предприниматели' },
@@ -62,6 +71,46 @@ const areas = [
 ];
 
 export function AboutPage() {
+  const { getBlock } = usePageBlocks('about');
+
+  const hero = getBlock<HeroBlock>('about_hero');
+  const heroTitleLines = (hero?.titleRu?.trim() || 'НАРОД!\nЗЕМЛЯ!\nСПРАВЕДЛИВОСТЬ!').split('\n');
+  const heroText = hero?.subtitleRu?.trim() || 'Общественное объединение Народная партия Казахстана — добровольное объединение граждан, приверженцев социалистической идеологии и левых идей. Деятельность партии направлена на создание «скандинавского» социализма с казахстанской спецификой.';
+  const heroImage = hero?.imageUrl?.trim() || '/images/about/about-hero.jpg';
+  const heroCtaLabel = hero?.ctaLabelRu?.trim() || 'Вступить в партию';
+  const heroCtaHref = hero?.ctaHref?.trim() || '/vstupit';
+
+  const community = getBlock<TextImageBlock>('about_community');
+  const communityHeading = community?.headingRu?.trim() || 'С кем мы и кто выступает в наших рядах';
+  const communityText = community?.textRu?.trim() || 'НПК выражает политическую волю многочисленного среднего класса нашей республики и представителей социально-уязвимых категорий населения. С нами трудящиеся и безработные, пенсионеры и молодежь, бюджетники и предприниматели, многодетные семьи и люди с инвалидностью. Словом, все те, кто стремится к социальной справедливости, к политическому и гендерному равенству, к правовой защите и развитию гражданского общества.';
+  const communityImage = community?.imageUrl?.trim() || '/images/about/about-people.jpg';
+
+  const methods = getBlock<TextImageBlock>('about_methods');
+  const methodsHeading = methods?.headingRu?.trim() || 'Методы партии';
+  const methodsText = methods?.textRu?.trim() || 'Представители НПК принимают самое активное участие в политических процессах, происходящих в Казахстане. Наши партийцы трудятся в представительных и исполнительных органах государственной власти, избираются в органы местного самоуправления, на должности акимов и в состав Парламента, чтобы продвигать партийные инициативы, направленные на отстаивание интересов народа и построение гуманного, цивилизованного социально-ориентированного общества.';
+  const methodsImage = methods?.imageUrl?.trim() || '/images/about/about-parliament.jpg';
+
+  const structure = getBlock<TextImageBlock>('about_structure');
+  const structureHeading = structure?.headingRu?.trim() || 'Структура партии';
+  const structureText = structure?.textRu?.trim() || 'Деятельность НПК осуществляется на всей территории Республики Казахстан. Во всех областях, а также в мегаполисах, функционируют партийные филиалы, представительства и первичные парторганизации (ячейки).';
+  const structureImage = structure?.imageUrl?.trim() || '/images/about/about-astana.jpg';
+
+  const goal = getBlock<TextImageBlock>('about_goal');
+  const goalHeading = goal?.headingRu?.trim() || 'Наша цель —\nобщество\nподлинного\nнародовластия';
+  const goalTitleLines = goalHeading.split('\n');
+  const goalParagraphs = (goal?.textRu?.trim() || 'Целью деятельности НПК является движение к обществу социальной справедливости, широкой духовности, свободы и процветающей экономики на базе научно-технического прогресса. Центром такого общества должен стать человек, наделенный полнотой гражданских прав и имеющий широкие возможности для самореализации.\n\nНаша задача — построить мирным гражданским путем сильное, жизнеспособное, светское, правовое и социальное государство, высшей ценностью которого является жизнь каждого казахстанца, его права и свободы.').split('\n\n');
+  const goalImage = goal?.imageUrl?.trim() || '/images/about/about-goal.jpg';
+
+  const ticker = getBlock<{ phrasesRu?: string[] }>('ticker');
+  const tickerPhrases = ticker?.phrasesRu?.filter(Boolean).length
+    ? ticker.phrasesRu.filter(Boolean)
+    : [
+        'МЫ ЗА НОВЫЙ СПРАВЕДЛИВЫЙ КАЗАХСТАН!',
+        'ПРИХОДИ К НАМ, ЕСЛИ СЧИТАЕШЬ ТАКЖЕ!',
+        'ИЗМЕНИМ ГОСУДАРСТВЕННУЮ СИСТЕМУ ЕСТЕСТВЕННЫМ ПУТЕМ!',
+        'МЫ ОТКРЫТЫ ДЛЯ ВСЕХ!',
+      ];
+
   return (
     <div className="npo">
 
@@ -87,24 +136,29 @@ export function AboutPage() {
         <div className="npo-hero__content">
           <div className="npo-hero__label">О партии</div>
           <h1 className="npo-hero__title">
-            НАРОД!{' '}<br/>
-            <span className="npo-hero__title--red">ЗЕМЛЯ!</span>{' '}<br/>
-            СПРАВЕДЛИВОСТЬ!
+            {heroTitleLines.length === 3 ? (
+              <>
+                {heroTitleLines[0]}{' '}<br/>
+                <span className="npo-hero__title--red">{heroTitleLines[1]}</span>{' '}<br/>
+                {heroTitleLines[2]}
+              </>
+            ) : (
+              heroTitleLines.map((line, i) => (
+                <span key={i}>{line}{i < heroTitleLines.length - 1 && <br />}</span>
+              ))
+            )}
           </h1>
           <p className="npo-hero__text">
-            Общественное объединение Народная партия Казахстана — добровольное объединение граждан,
-            приверженцев социалистической идеологии и левых идей.
-            Деятельность партии направлена на создание «скандинавского» социализма
-            с казахстанской спецификой.
+            {heroText}
           </p>
-          <Link to="/vstupit" className="npo-hero__cta">
-            Вступить в партию →
+          <Link to={heroCtaHref} className="npo-hero__cta">
+            {heroCtaLabel} →
           </Link>
         </div>
 
         <div className="npo-hero__visual">
           <div className="npo-hero__img">
-            <img src="/images/about/about-hero.jpg" alt="Народная партия Казахстана" />
+            <img src={heroImage} alt="Народная партия Казахстана" />
             <div className="npo-hero__badge">
               <span className="npo-hero__badge-num">20+</span>
               <span className="npo-hero__badge-label">лет<br/>истории</span>
@@ -134,10 +188,11 @@ export function AboutPage() {
         <div className="npo-ticker__track">
           {Array(4).fill(null).map((_, i) => (
             <span key={i} className="npo-ticker__item">
-              <span className="npo-ticker__dot" />МЫ ЗА НОВЫЙ СПРАВЕДЛИВЫЙ КАЗАХСТАН!
-              <span className="npo-ticker__dot" />ПРИХОДИ К НАМ, ЕСЛИ СЧИТАЕШЬ ТАКЖЕ!
-              <span className="npo-ticker__dot" />ИЗМЕНИМ ГОСУДАРСТВЕННУЮ СИСТЕМУ ЕСТЕСТВЕННЫМ ПУТЕМ!
-              <span className="npo-ticker__dot" />МЫ ОТКРЫТЫ ДЛЯ ВСЕХ!
+              {tickerPhrases.map((phrase, j) => (
+                <span key={j} style={{ display: 'inline-flex', alignItems: 'center', gap: 48 }}>
+                  <span className="npo-ticker__dot" />{phrase}
+                </span>
+              ))}
             </span>
           ))}
         </div>
@@ -149,7 +204,7 @@ export function AboutPage() {
           <div className="npo-section__header">
             <span className="npo-section__eyebrow">Сообщество</span>
             <h2 className="npo-section__title">
-              С кем мы и кто выступает в наших рядах
+              {communityHeading}
             </h2>
           </div>
         </ScrollReveal>
@@ -158,11 +213,7 @@ export function AboutPage() {
           <div className="npo-features__list">
             <ScrollReveal>
               <p className="npo-section__text" style={{ marginBottom: 24 }}>
-                НПК выражает политическую волю многочисленного среднего класса нашей республики
-                и представителей социально-уязвимых категорий населения. С нами трудящиеся и безработные,
-                пенсионеры и молодежь, бюджетники и предприниматели, многодетные семьи и люди с инвалидностью.
-                Словом, все те, кто стремится к социальной справедливости, к политическому и гендерному равенству,
-                к правовой защите и развитию гражданского общества.
+                {communityText}
               </p>
             </ScrollReveal>
 
@@ -190,7 +241,7 @@ export function AboutPage() {
 
           <ScrollReveal delay={0.2}>
             <div className="npo-features__img">
-              <img src="/images/about/about-people.jpg" alt="Народ Казахстана" />
+              <img src={communityImage} alt="Народ Казахстана" />
             </div>
           </ScrollReveal>
         </div>
@@ -201,13 +252,9 @@ export function AboutPage() {
         <ScrollReveal>
           <div className="npo-section__header">
             <span className="npo-section__eyebrow">Деятельность</span>
-            <h2 className="npo-section__title">Методы партии</h2>
+            <h2 className="npo-section__title">{methodsHeading}</h2>
             <p className="npo-section__text">
-              Представители НПК принимают самое активное участие в политических процессах, происходящих в Казахстане.
-              Наши партийцы трудятся в представительных и исполнительных органах государственной власти,
-              избираются в органы местного самоуправления, на должности акимов и в состав Парламента,
-              чтобы продвигать партийные инициативы, направленные на отстаивание интересов народа
-              и построение гуманного, цивилизованного социально-ориентированного общества.
+              {methodsText}
             </p>
           </div>
         </ScrollReveal>
@@ -215,7 +262,7 @@ export function AboutPage() {
         <ScrollReveal delay={0.15}>
           <div className="npo-bento2">
             <div className="npo-bento2__img npo-bento2__img--tall">
-              <img src="/images/about/about-parliament.jpg" alt="Парламент" />
+              <img src={methodsImage} alt="Парламент" />
             </div>
             <div className="npo-bento2__card npo-bento2__card--red">
               <h3 className="npo-bento2__title">Политическая фракция</h3>
@@ -246,7 +293,7 @@ export function AboutPage() {
         <ScrollReveal>
           <div className="npo-section__header">
             <span className="npo-section__eyebrow">Организация</span>
-            <h2 className="npo-section__title">Структура партии</h2>
+            <h2 className="npo-section__title">{structureHeading}</h2>
           </div>
         </ScrollReveal>
 
@@ -255,16 +302,14 @@ export function AboutPage() {
             <div className="npo-bento2__card npo-bento2__card--dark">
               <h3 className="npo-bento2__title">Филиалы во всех регионах</h3>
               <p className="npo-bento2__text">
-                Деятельность НПК осуществляется на всей территории Республики Казахстан.
-                Во всех областях, а также в мегаполисах, функционируют партийные филиалы,
-                представительства и первичные парторганизации (ячейки).
+                {structureText}
               </p>
               <Link to="/filialy" className="npo-bento2__cta npo-bento2__cta--red">
                 Карта филиалов →
               </Link>
             </div>
             <div className="npo-bento2__img">
-              <img src="/images/about/about-astana.jpg" alt="Астана" />
+              <img src={structureImage} alt="Астана" />
             </div>
           </div>
         </ScrollReveal>
@@ -293,28 +338,30 @@ export function AboutPage() {
             <div className="npo-goal-split__content">
               <span className="npo-goal-split__eyebrow">Миссия</span>
               <h2 className="npo-goal-split__title">
-                Наша цель —<br />
-                общество<br />
-                <span style={{ color: '#db1f26' }}>подлинного</span><br />
-                народовластия
+                {goalTitleLines.length === 4 ? (
+                  <>
+                    {goalTitleLines[0]}<br />
+                    {goalTitleLines[1]}<br />
+                    <span style={{ color: '#db1f26' }}>{goalTitleLines[2]}</span><br />
+                    {goalTitleLines[3]}
+                  </>
+                ) : (
+                  goalTitleLines.map((line, i) => (
+                    <span key={i}>{line}{i < goalTitleLines.length - 1 && <br />}</span>
+                  ))
+                )}
               </h2>
-              <p className="npo-goal-split__text">
-                Целью деятельности НПК является движение к обществу социальной справедливости,
-                широкой духовности, свободы и процветающей экономики на базе научно-технического прогресса.
-                Центром такого общества должен стать человек, наделенный полнотой гражданских прав
-                и имеющий широкие возможности для самореализации.
-              </p>
-              <p className="npo-goal-split__text">
-                Наша задача — построить мирным гражданским путем сильное, жизнеспособное,
-                светское, правовое и социальное государство, высшей ценностью которого является
-                жизнь каждого казахстанца, его права и свободы.
-              </p>
+              {goalParagraphs.map((p, i) => (
+                <p key={i} className="npo-goal-split__text">
+                  {p}
+                </p>
+              ))}
               <Link to="/vstupit" className="npo-goal-split__cta">
                 Вступить в партию →
               </Link>
             </div>
             <div className="npo-goal-split__img">
-              <img src="/images/about/about-goal.jpg" alt="Единство народа" />
+              <img src={goalImage} alt="Единство народа" />
             </div>
           </div>
         </ScrollReveal>

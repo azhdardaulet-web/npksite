@@ -3,14 +3,21 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { CountUp } from '@/components/CountUp';
 import { TextReveal } from '@/components/TextReveal';
+import { useHomeBlocks } from '@/hooks/useHomeBlocks';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const counters = [
-  { value: '30+', label: 'Лет на политической арене', target: 30, suffix: '+' },
-  { value: '200тыс+', label: 'единомышленников', target: 200, suffix: 'тыс+' },
-  { value: '20', label: 'Региональных отделений', target: 20, suffix: '' },
+const DEFAULT_COUNTERS = [
+  { label: 'Лет на политической арене', target: 30, suffix: '+' },
+  { label: 'единомышленников', target: 200, suffix: 'тыс+' },
+  { label: 'Региональных отделений', target: 20, suffix: '' },
 ];
+
+interface StatsBlock {
+  headingRu?: string;
+  introRu?: string;
+  items?: Array<{ value: string; suffix?: string; labelRu: string }>;
+}
 
 // Scattered collage positions — replicate Figma's Frame 27 layout
 // Each photo is absolutely positioned; positions are % of container width/height
@@ -29,6 +36,14 @@ export function TrustCountersSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const sloganRef = useRef<HTMLDivElement>(null);
   const [triggered, setTriggered] = useState(false);
+
+  const { getBlock } = useHomeBlocks();
+  const cms = getBlock<StatsBlock>('stats');
+  const heading = cms?.headingRu?.trim() || 'Народная партия в цифрах и фактах';
+  const intro = cms?.introRu?.trim() || 'Три десятилетия служения. Сотни тысяч голосов. Двадцать регионов. Тринадцать кандидатов, готовых вернуть власть народу.';
+  const counters = cms?.items?.length
+    ? cms.items.map((it) => ({ label: it.labelRu, target: parseInt(it.value, 10) || 0, suffix: it.suffix ?? '' }))
+    : DEFAULT_COUNTERS;
 
   useEffect(() => {
     const el = sectionRef.current;
@@ -72,14 +87,15 @@ export function TrustCountersSection() {
         {/* Header row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 mb-14 md:mb-16">
           <TextReveal
+            key={heading}
             tag="h2"
             className="text-[32px] md:text-[40px] lg:text-[48px] font-bold text-white leading-[1.1]"
           >
-            Народная партия в цифрах и фактах
+            {heading}
           </TextReveal>
           <div className="flex items-end">
             <p className="text-[18px] md:text-[20px] font-light text-fog leading-relaxed">
-              Три десятилетия служения. Сотни тысяч голосов. Двадцать регионов. Тринадцать кандидатов, готовых вернуть власть народу.
+              {intro}
             </p>
           </div>
         </div>

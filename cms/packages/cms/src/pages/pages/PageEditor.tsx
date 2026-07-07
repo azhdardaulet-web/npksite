@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import {
-  Loader2, Save, Plus, Trash2, ChevronUp, ChevronDown, ImageIcon, FileText,
+  DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent,
+} from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import {
+  Loader2, Save, Plus, Trash2, ImageIcon, FileText, GripVertical, ChevronDown, ChevronRight,
 } from 'lucide-react';
 import { usePages, usePage, useUpdatePage, type PageBlock } from '@/hooks/usePages';
 import { useMediaPicker } from '@/components/MediaLibrary/MediaPicker';
@@ -10,20 +15,84 @@ import { useMediaPicker } from '@/components/MediaLibrary/MediaPicker';
 // Валидные слаги фиксированы в cms/packages/api/src/modules/pages/pages.controller.ts
 
 const SITE_PAGES: Record<string, { label: string; description: string }> = {
-  home: { label: 'Главная', description: 'Дополнительные текстовые блоки главной страницы (кроме новостей — они управляются в разделе «Новости»)' },
+  home: { label: 'Главная', description: 'Все текстовые блоки и изображения главной страницы. Новости, кандидаты, программа партии и филиалы — отдельные разделы CRUD ниже, здесь редактируются только заголовки/подписи/картинки секций' },
   about: { label: 'О партии', description: 'Страница /o-partii — история, миссия, структура' },
   faction: { label: 'Фракция', description: 'Страница /frakciya — работа фракции в Мажилисе' },
+  'press-center': { label: 'Пресс-центр', description: 'Страница /narodnoe-media — «О портале «Халық үні Қазақстан»» (герой, о студии, призыв подписаться). Остальные материалы — в разделах ниже' },
   contacts: { label: 'Контакты', description: 'Страница /kontakty — дополнительная информация, помимо филиалов' },
   footer: { label: 'Футер', description: 'Блоки, отображаемые в подвале сайта на всех страницах' },
 };
 
+// ─── Дерево навигации мини-панели «Страницы» ──────────────────────────────────
+// Узел либо ведёт на редактор блоков этой же страницы (pageSlug), либо на
+// отдельный CRUD-экран (route) — коллекции (новости, кандидаты и т.д.) не
+// превращаем в блоки, а просто делаем их доступными рядом с родительской
+// страницей сайта.
+
+interface PageNavNode {
+  label: string;
+  pageSlug?: keyof typeof SITE_PAGES;
+  route?: string;
+  children?: PageNavNode[];
+}
+
+const PAGE_NAV_TREE: PageNavNode[] = [
+  {
+    label: 'Главная',
+    pageSlug: 'home',
+    children: [{ label: 'Отзывы', route: '/testimonials' }],
+  },
+  {
+    label: 'О партии',
+    pageSlug: 'about',
+    children: [
+      { label: 'История партии', route: '/history' },
+      { label: 'Программа', route: '/program' },
+      { label: 'Кандидаты', route: '/candidates' },
+      { label: 'Руководство и команда', route: '/team' },
+    ],
+  },
+  { label: 'Филиалы', route: '/filialy' },
+  {
+    label: 'Пресс-центр',
+    pageSlug: 'press-center',
+    children: [
+      { label: 'Новости и релизы', route: '/news' },
+      { label: 'СМИ о нас', route: '/smi' },
+      { label: 'Медиапроекты', route: '/media-projects' },
+      { label: 'Медиабиблиотека', route: '/media' },
+      { label: 'Народный подкаст', route: '/podcast' },
+      { label: 'Галерея', route: '/galereya' },
+    ],
+  },
+  { label: 'Контакты', pageSlug: 'contacts' },
+  { label: 'Меню сайта', route: '/menu' },
+  { label: 'Пользователи', route: '/users' },
+];
+
 const BLOCK_TYPES: Record<PageBlock['type'], string> = {
   hero: 'Герой (заголовок + фон)',
+  home_hero: 'Герой главной (заголовок, слова, кнопки, видео)',
   text_image: 'Текст + изображение',
   kpi: 'Показатели (KPI)',
   quote: 'Цитата',
   pdf_list: 'Список документов',
   contacts_block: 'Блок контактов',
+  ticker: 'Бегущая строка',
+  stats: 'Статистика с заголовком',
+  video: 'Видео-секция',
+  about_hero: '«О партии»: герой (заголовок + текст + кнопка)',
+  about_community: '«О партии»: С кем мы',
+  about_methods: '«О партии»: Методы партии',
+  about_structure: '«О партии»: Структура партии',
+  about_goal: '«О партии»: Наша цель',
+  press_hero: '«Пресс-центр»: герой (значок + заголовок + текст + кнопка)',
+  press_studio: '«Пресс-центр»: О студии',
+  press_cta: '«Пресс-центр»: Призыв подписаться',
+  reception: '«Главная»: Онлайн приёмная',
+  candidates_intro: '«Главная»: Лица партии (заголовок)',
+  program_intro: '«Главная»: Программа (заголовок)',
+  join: '«Главная»: Вступить в партию',
 };
 
 type Lang = 'ru' | 'kz';
@@ -58,20 +127,73 @@ interface PdfListContent {
   items: PdfItem[];
 }
 
-interface ContactItem { labelRu: string; labelKz: string; value: string; }
+interface ContactItem { labelRu: string; labelKz: string; value: string; href?: string; }
 interface ContactsBlockContent {
+  headingRu?: string; headingKz?: string;
+  textRu?: string; textKz?: string;
   titleRu?: string; titleKz?: string;
   items: ContactItem[];
+}
+
+interface ReceptionContent {
+  headingRu?: string; headingKz?: string;
+  textRu?: string; textKz?: string;
+  whatsappNumber?: string; whatsappLabelRu?: string; whatsappLabelKz?: string;
+  counterValue?: string; counterLabelRu?: string; counterLabelKz?: string;
+}
+
+interface HomeHeroContent {
+  titleRu?: string; titleKz?: string;
+  wordsRu: string[]; wordsKz: string[];
+  subtitleRu?: string; subtitleKz?: string;
+  cta1LabelRu?: string; cta1LabelKz?: string; cta1Href?: string;
+  cta2LabelRu?: string; cta2LabelKz?: string; cta2Href?: string;
+  videoUrl?: string;
+}
+
+interface TickerContent {
+  phrasesRu: string[];
+  phrasesKz: string[];
+}
+
+interface StatItem { value: string; suffix?: string; labelRu: string; labelKz: string; }
+interface StatsContent {
+  headingRu?: string; headingKz?: string;
+  introRu?: string; introKz?: string;
+  items: StatItem[];
+}
+
+interface VideoContent {
+  videoUrl?: string;
 }
 
 function defaultContent(type: PageBlock['type']): Record<string, unknown> {
   switch (type) {
     case 'hero': return { titleRu: '', titleKz: '', subtitleRu: '', subtitleKz: '', imageUrl: '' } satisfies HeroContent;
+    case 'home_hero': return { titleRu: '', titleKz: '', wordsRu: [], wordsKz: [], subtitleRu: '', subtitleKz: '', videoUrl: '' } satisfies HomeHeroContent;
+    case 'ticker': return { phrasesRu: [], phrasesKz: [] } satisfies TickerContent;
+    case 'stats': return { headingRu: '', headingKz: '', introRu: '', introKz: '', items: [] } satisfies StatsContent;
+    case 'video': return { videoUrl: '' } satisfies VideoContent;
     case 'text_image': return { headingRu: '', headingKz: '', textRu: '', textKz: '', imageUrl: '', imagePosition: 'right' } satisfies TextImageContent;
     case 'kpi': return { items: [] } satisfies KpiContent;
     case 'quote': return { textRu: '', textKz: '', author: '' } satisfies QuoteContent;
     case 'pdf_list': return { titleRu: '', titleKz: '', items: [] } satisfies PdfListContent;
     case 'contacts_block': return { titleRu: '', titleKz: '', items: [] } satisfies ContactsBlockContent;
+    case 'about_hero': return { titleRu: '', titleKz: '', subtitleRu: '', subtitleKz: '', imageUrl: '' } satisfies HeroContent;
+    case 'about_community':
+    case 'about_methods':
+    case 'about_structure':
+    case 'about_goal':
+      return { headingRu: '', headingKz: '', textRu: '', textKz: '', imageUrl: '', imagePosition: 'right' } satisfies TextImageContent;
+    case 'press_hero': return { titleRu: '', titleKz: '', subtitleRu: '', subtitleKz: '', imageUrl: '' } satisfies HeroContent;
+    case 'press_studio':
+    case 'press_cta':
+      return { headingRu: '', headingKz: '', textRu: '', textKz: '' } satisfies TextImageContent;
+    case 'reception': return { headingRu: '', headingKz: '', textRu: '', textKz: '', whatsappNumber: '', whatsappLabelRu: '', whatsappLabelKz: '', counterValue: '', counterLabelRu: '', counterLabelKz: '' } satisfies ReceptionContent;
+    case 'candidates_intro':
+    case 'program_intro':
+      return { headingRu: '', headingKz: '', textRu: '', textKz: '' } satisfies TextImageContent;
+    case 'join': return { titleRu: '', titleKz: '', subtitleRu: '', subtitleKz: '', imageUrl: '' } satisfies HeroContent;
   }
 }
 
@@ -256,27 +378,177 @@ function ContactsBlockEditor({ content, onChange }: { content: ContactsBlockCont
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
-        <TextField label="Заголовок блока (RU)" value={content.titleRu ?? ''} onChange={v => onChange({ ...content, titleRu: v })} />
-        <TextField label="Заголовок блока (KZ)" value={content.titleKz ?? ''} onChange={v => onChange({ ...content, titleKz: v })} />
+        <TextField label="Заголовок блока (RU)" value={content.headingRu ?? content.titleRu ?? ''} onChange={v => onChange({ ...content, headingRu: v })} />
+        <TextField label="Заголовок блока (KZ)" value={content.headingKz ?? content.titleKz ?? ''} onChange={v => onChange({ ...content, headingKz: v })} />
       </div>
+      <TextField label="Подзаголовок (RU)" value={content.textRu ?? ''} onChange={v => onChange({ ...content, textRu: v })} />
       {items.map((item, i) => (
-        <div key={i} className="grid grid-cols-[1fr_1fr_1fr_32px] gap-2 items-start bg-[#F9F8F6] p-2.5 rounded-lg border border-[#DFDFDF]">
+        <div key={i} className="grid grid-cols-[1fr_1fr_1fr_1fr_32px] gap-2 items-start bg-[#F9F8F6] p-2.5 rounded-lg border border-[#DFDFDF]">
           <input value={item.labelRu} onChange={e => update(i, { labelRu: e.target.value })} placeholder="Название (RU)" className="px-2 py-1.5 border border-[#DFDFDF] rounded text-sm bg-white" />
           <input value={item.labelKz} onChange={e => update(i, { labelKz: e.target.value })} placeholder="Название (KZ)" className="px-2 py-1.5 border border-[#DFDFDF] rounded text-sm bg-white" />
-          <input value={item.value} onChange={e => update(i, { value: e.target.value })} placeholder="Email / телефон" className="px-2 py-1.5 border border-[#DFDFDF] rounded text-sm bg-white" />
+          <input value={item.value} onChange={e => update(i, { value: e.target.value })} placeholder="Email / телефон / адрес" className="px-2 py-1.5 border border-[#DFDFDF] rounded text-sm bg-white" />
+          <input value={item.href ?? ''} onChange={e => update(i, { href: e.target.value })} placeholder="Ссылка (mailto:/tel:/https:)" className="px-2 py-1.5 border border-[#DFDFDF] rounded text-sm bg-white" />
           <button onClick={() => onChange({ ...content, items: items.filter((_, idx) => idx !== i) })} className="text-[#89837E] hover:text-red-600 p-1.5">
             <Trash2 size={14} />
           </button>
         </div>
       ))}
       <button
-        onClick={() => onChange({ ...content, items: [...items, { labelRu: '', labelKz: '', value: '' }] })}
+        onClick={() => onChange({ ...content, items: [...items, { labelRu: '', labelKz: '', value: '', href: '' }] })}
         className="w-full flex items-center justify-center gap-2 py-2 border-2 border-dashed border-[#DFDFDF] rounded-lg text-xs text-[#89837E] hover:border-[#D64338] hover:text-[#D64338] transition-colors"
       >
         <Plus size={14} /> Добавить контакт
       </button>
     </div>
   );
+}
+
+function ReceptionEditor({ content, onChange }: { content: ReceptionContent; onChange: (c: ReceptionContent) => void }) {
+  const set = <K extends keyof ReceptionContent>(key: K, val: ReceptionContent[K]) => onChange({ ...content, [key]: val });
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        <TextField label="Заголовок (RU)" value={content.headingRu ?? ''} onChange={v => set('headingRu', v)} />
+        <TextField label="Заголовок (KZ)" value={content.headingKz ?? ''} onChange={v => set('headingKz', v)} />
+      </div>
+      <TextField label="Подзаголовок (RU)" value={content.textRu ?? ''} onChange={v => set('textRu', v)} />
+      <div className="grid grid-cols-2 gap-3">
+        <TextField label="WhatsApp номер (только цифры/+)" value={content.whatsappNumber ?? ''} onChange={v => set('whatsappNumber', v)} placeholder="+7 700 088 19 17" />
+        <TextField label="Подпись под номером (RU)" value={content.whatsappLabelRu ?? ''} onChange={v => set('whatsappLabelRu', v)} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <TextField label="Счётчик (число)" value={content.counterValue ?? ''} onChange={v => set('counterValue', v)} placeholder="847" />
+        <TextField label="Подпись под счётчиком (RU)" value={content.counterLabelRu ?? ''} onChange={v => set('counterLabelRu', v)} />
+      </div>
+    </div>
+  );
+}
+
+// Список строк — по одной на строку (для анимируемых слов, бегущей строки).
+function StringListField({ label, value, onChange, placeholder }: {
+  label: string; value: string[]; onChange: (v: string[]) => void; placeholder?: string;
+}) {
+  return (
+    <div>
+      <label className="block text-[11px] font-bold text-[#89837E] uppercase tracking-wider mb-1">{label}</label>
+      <textarea
+        rows={4}
+        value={value.join('\n')}
+        onChange={e => onChange(e.target.value.split('\n'))}
+        placeholder={placeholder}
+        className="w-full px-3 py-2 bg-[#F9F8F6] border border-[#DFDFDF] rounded-lg text-sm text-[#383233] focus:outline-none focus:border-[#D64338] transition-colors resize-none font-mono"
+      />
+      <p className="text-[10px] text-[#89837E] mt-1">По одной строке на пункт</p>
+    </div>
+  );
+}
+
+function VideoPickerField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  const { open, element } = useMediaPicker();
+  return (
+    <div>
+      <label className="block text-[11px] font-bold text-[#89837E] uppercase tracking-wider mb-1">{label}</label>
+      <div className="flex items-center gap-2">
+        {value ? (
+          <video src={value} className="w-20 h-14 rounded-lg object-cover border border-[#DFDFDF] bg-black" muted />
+        ) : (
+          <div className="w-20 h-14 rounded-lg bg-[#F2EBE3] flex items-center justify-center text-[#89837E] text-[10px]">
+            нет видео
+          </div>
+        )}
+        <input
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          placeholder="/videos/hero-bg.mp4"
+          className="flex-1 px-3 py-2 bg-[#F9F8F6] border border-[#DFDFDF] rounded-lg text-sm text-[#383233] focus:outline-none focus:border-[#D64338] font-mono"
+        />
+        <button type="button" onClick={() => open((url) => onChange(url), 'video/*')} className="px-3 py-2 text-xs bg-[#F2EBE3] text-[#383233] rounded-lg hover:bg-[#DFDFDF] shrink-0">
+          Выбрать
+        </button>
+      </div>
+      {element}
+    </div>
+  );
+}
+
+function HomeHeroEditor({ content, onChange }: { content: HomeHeroContent; onChange: (c: HomeHeroContent) => void }) {
+  const set = <K extends keyof HomeHeroContent>(key: K, val: HomeHeroContent[K]) => onChange({ ...content, [key]: val });
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        <TextField label="Заголовок (RU)" value={content.titleRu ?? ''} onChange={v => set('titleRu', v)} textarea />
+        <TextField label="Заголовок (KZ)" value={content.titleKz ?? ''} onChange={v => set('titleKz', v)} textarea />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <StringListField label="Анимируемые слова (RU)" value={content.wordsRu ?? []} onChange={v => set('wordsRu', v)} placeholder={'С ВЫБОРА\nС НПК\nСЕГОДНЯ'} />
+        <StringListField label="Анимируемые слова (KZ)" value={content.wordsKz ?? []} onChange={v => set('wordsKz', v)} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <TextField label="Подзаголовок (RU)" value={content.subtitleRu ?? ''} onChange={v => set('subtitleRu', v)} textarea />
+        <TextField label="Подзаголовок (KZ)" value={content.subtitleKz ?? ''} onChange={v => set('subtitleKz', v)} textarea />
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        <TextField label="Кнопка 1 (RU)" value={content.cta1LabelRu ?? ''} onChange={v => set('cta1LabelRu', v)} />
+        <TextField label="Кнопка 1 (KZ)" value={content.cta1LabelKz ?? ''} onChange={v => set('cta1LabelKz', v)} />
+        <TextField label="Ссылка кнопки 1" value={content.cta1Href ?? ''} onChange={v => set('cta1Href', v)} placeholder="/vstupit" />
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        <TextField label="Кнопка 2 (RU)" value={content.cta2LabelRu ?? ''} onChange={v => set('cta2LabelRu', v)} />
+        <TextField label="Кнопка 2 (KZ)" value={content.cta2LabelKz ?? ''} onChange={v => set('cta2LabelKz', v)} />
+        <TextField label="Ссылка кнопки 2" value={content.cta2Href ?? ''} onChange={v => set('cta2Href', v)} placeholder="/programma" />
+      </div>
+      <VideoPickerField label="Видео-фон" value={content.videoUrl ?? ''} onChange={v => set('videoUrl', v)} />
+    </div>
+  );
+}
+
+function TickerEditor({ content, onChange }: { content: TickerContent; onChange: (c: TickerContent) => void }) {
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <StringListField label="Фразы бегущей строки (RU)" value={content.phrasesRu ?? []} onChange={v => onChange({ ...content, phrasesRu: v })} />
+      <StringListField label="Фразы бегущей строки (KZ)" value={content.phrasesKz ?? []} onChange={v => onChange({ ...content, phrasesKz: v })} />
+    </div>
+  );
+}
+
+function StatsEditor({ content, onChange }: { content: StatsContent; onChange: (c: StatsContent) => void }) {
+  const items = content.items ?? [];
+  const update = (i: number, patch: Partial<StatItem>) => {
+    onChange({ ...content, items: items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)) });
+  };
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        <TextField label="Заголовок (RU)" value={content.headingRu ?? ''} onChange={v => onChange({ ...content, headingRu: v })} />
+        <TextField label="Заголовок (KZ)" value={content.headingKz ?? ''} onChange={v => onChange({ ...content, headingKz: v })} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <TextField label="Вводный текст (RU)" value={content.introRu ?? ''} onChange={v => onChange({ ...content, introRu: v })} textarea />
+        <TextField label="Вводный текст (KZ)" value={content.introKz ?? ''} onChange={v => onChange({ ...content, introKz: v })} textarea />
+      </div>
+      {items.map((item, i) => (
+        <div key={i} className="grid grid-cols-[80px_70px_1fr_1fr_32px] gap-2 items-start bg-[#F9F8F6] p-2.5 rounded-lg border border-[#DFDFDF]">
+          <input value={item.value} onChange={e => update(i, { value: e.target.value })} placeholder="30" className="px-2 py-1.5 border border-[#DFDFDF] rounded text-sm bg-white" />
+          <input value={item.suffix ?? ''} onChange={e => update(i, { suffix: e.target.value })} placeholder="+" className="px-2 py-1.5 border border-[#DFDFDF] rounded text-sm bg-white" />
+          <input value={item.labelRu} onChange={e => update(i, { labelRu: e.target.value })} placeholder="Подпись (RU)" className="px-2 py-1.5 border border-[#DFDFDF] rounded text-sm bg-white" />
+          <input value={item.labelKz} onChange={e => update(i, { labelKz: e.target.value })} placeholder="Подпись (KZ)" className="px-2 py-1.5 border border-[#DFDFDF] rounded text-sm bg-white" />
+          <button onClick={() => onChange({ ...content, items: items.filter((_, idx) => idx !== i) })} className="text-[#89837E] hover:text-red-600 p-1.5">
+            <Trash2 size={14} />
+          </button>
+        </div>
+      ))}
+      <button
+        onClick={() => onChange({ ...content, items: [...items, { value: '', suffix: '', labelRu: '', labelKz: '' }] })}
+        className="w-full flex items-center justify-center gap-2 py-2 border-2 border-dashed border-[#DFDFDF] rounded-lg text-xs text-[#89837E] hover:border-[#D64338] hover:text-[#D64338] transition-colors"
+      >
+        <Plus size={14} /> Добавить показатель
+      </button>
+    </div>
+  );
+}
+
+function VideoEditor({ content, onChange }: { content: VideoContent; onChange: (c: VideoContent) => void }) {
+  return <VideoPickerField label="Видео" value={content.videoUrl ?? ''} onChange={v => onChange({ ...content, videoUrl: v })} />;
 }
 
 function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (content: Record<string, unknown>) => void }) {
@@ -288,6 +560,25 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (content
     case 'quote': return <QuoteEditor content={block.content as unknown as QuoteContent} onChange={asChange<QuoteContent>(onChange)} />;
     case 'pdf_list': return <PdfListEditor content={block.content as unknown as PdfListContent} onChange={asChange<PdfListContent>(onChange)} />;
     case 'contacts_block': return <ContactsBlockEditor content={block.content as unknown as ContactsBlockContent} onChange={asChange<ContactsBlockContent>(onChange)} />;
+    case 'home_hero': return <HomeHeroEditor content={block.content as unknown as HomeHeroContent} onChange={asChange<HomeHeroContent>(onChange)} />;
+    case 'ticker': return <TickerEditor content={block.content as unknown as TickerContent} onChange={asChange<TickerContent>(onChange)} />;
+    case 'stats': return <StatsEditor content={block.content as unknown as StatsContent} onChange={asChange<StatsContent>(onChange)} />;
+    case 'video': return <VideoEditor content={block.content as unknown as VideoContent} onChange={asChange<VideoContent>(onChange)} />;
+    case 'about_hero': return <HeroEditor content={block.content as unknown as HeroContent} onChange={asChange<HeroContent>(onChange)} />;
+    case 'about_community':
+    case 'about_methods':
+    case 'about_structure':
+    case 'about_goal':
+      return <TextImageEditor content={block.content as unknown as TextImageContent} onChange={asChange<TextImageContent>(onChange)} />;
+    case 'press_hero': return <HeroEditor content={block.content as unknown as HeroContent} onChange={asChange<HeroContent>(onChange)} />;
+    case 'press_studio':
+    case 'press_cta':
+      return <TextImageEditor content={block.content as unknown as TextImageContent} onChange={asChange<TextImageContent>(onChange)} />;
+    case 'reception': return <ReceptionEditor content={block.content as unknown as ReceptionContent} onChange={asChange<ReceptionContent>(onChange)} />;
+    case 'candidates_intro':
+    case 'program_intro':
+      return <TextImageEditor content={block.content as unknown as TextImageContent} onChange={asChange<TextImageContent>(onChange)} />;
+    case 'join': return <HeroEditor content={block.content as unknown as HeroContent} onChange={asChange<HeroContent>(onChange)} />;
   }
 }
 
@@ -299,14 +590,92 @@ interface EditableBlock {
   content: Record<string, unknown>;
 }
 
+// ─── Drag handle wrapper for a block card ─────────────────────────────────────
+
+function SortableBlock({ id, children }: {
+  id: string;
+  children: (drag: { attributes: React.HTMLAttributes<HTMLButtonElement>; listeners?: React.HTMLAttributes<HTMLButtonElement> }) => React.ReactNode;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
+  return (
+    <div ref={setNodeRef} style={style}>
+      {children({ attributes, listeners })}
+    </div>
+  );
+}
+
+// ─── Nested nav item (мини-панель «Страницы») ────────────────────────────────
+
+function PageNavItem({ node, activeSlug, pagesList, onNavigatePage, depth = 0 }: {
+  node: PageNavNode;
+  activeSlug: string;
+  pagesList?: Array<{ slug: string; isPublished: boolean }>;
+  onNavigatePage: (slug: string) => void;
+  depth?: number;
+}) {
+  const [open, setOpen] = useState(true);
+  const isActivePage = !!node.pageSlug && node.pageSlug === activeSlug;
+  const pageMeta = node.pageSlug ? pagesList?.find(p => p.slug === node.pageSlug) : undefined;
+  const hasChildren = !!node.children?.length;
+
+  const rowClass = `w-full flex items-center gap-1.5 text-left px-4 py-2.5 text-sm transition-colors ${
+    isActivePage ? 'bg-[#F2EBE3] text-[#D64338] font-medium border-r-2 border-[#D64338]' : 'text-[#383233] hover:bg-[#F9F8F6]'
+  }`;
+
+  return (
+    <div>
+      <div className="flex items-center" style={{ paddingLeft: depth * 12 }}>
+        {hasChildren && (
+          <button onClick={() => setOpen(v => !v)} className="p-1 text-[#89837E] hover:text-[#383233] shrink-0">
+            {open ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+          </button>
+        )}
+        {node.pageSlug ? (
+          <button onClick={() => onNavigatePage(node.pageSlug!)} className={rowClass}>
+            {node.label}
+            {pageMeta && !pageMeta.isPublished && <span className="ml-2 text-[10px] text-[#89837E]">(скрыто)</span>}
+          </button>
+        ) : (
+          <Link to={node.route!} className={rowClass}>{node.label}</Link>
+        )}
+      </div>
+      {hasChildren && open && (
+        <div className="border-l border-[#EDEAE5] ml-6">
+          {node.children!.map((child) => (
+            <PageNavItem key={child.label} node={child} activeSlug={activeSlug} pagesList={pagesList} onNavigatePage={onNavigatePage} depth={depth + 1} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Мини-панель «Страницы» (используется и в PagesLayout для дочерних CRUD) ──
+
+export function PagesSidebar({ activeSlug }: { activeSlug: string }) {
+  const navigate = useNavigate();
+  const { data: pagesList } = usePages();
+  return (
+    <aside className="w-56 shrink-0 border-r border-[#DFDFDF] bg-white overflow-y-auto">
+      <div className="px-4 py-3 border-b border-[#DFDFDF]">
+        <h2 className="text-sm font-bold text-[#383233]">Страницы сайта</h2>
+      </div>
+      <nav className="py-2">
+        {PAGE_NAV_TREE.map((node) => (
+          <PageNavItem key={node.label} node={node} activeSlug={activeSlug} pagesList={pagesList} onNavigatePage={(s) => navigate(`/pages/${s}`)} />
+        ))}
+      </nav>
+    </aside>
+  );
+}
+
 // ─── Main component ─────────────────────────────────────────────────────────
 
-export default function PageEditor() {
-  const navigate = useNavigate();
+export default function PageEditor({ slugOverride }: { slugOverride?: string } = {}) {
   const { slug: routeSlug } = useParams<{ slug?: string }>();
-  const slug = routeSlug ?? 'home';
+  const slug = slugOverride ?? routeSlug ?? 'home';
 
-  const { data: pagesList } = usePages();
   const { data: page, isLoading } = usePage(slug);
   const updateMut = useUpdatePage(slug);
 
@@ -336,13 +705,16 @@ export default function PageEditor() {
     setBlocks(page.blocks.map((b, i) => ({ key: b.id || `b_${i}`, type: b.type, content: b.content })));
   }, [page]);
 
-  const moveBlock = (index: number, dir: -1 | 1) => {
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
     setBlocks(prev => {
-      const next = [...prev];
-      const target = index + dir;
-      if (target < 0 || target >= next.length) return prev;
-      [next[index], next[target]] = [next[target], next[index]];
-      return next;
+      const oldIndex = prev.findIndex(b => b.key === active.id);
+      const newIndex = prev.findIndex(b => b.key === over.id);
+      if (oldIndex === -1 || newIndex === -1) return prev;
+      return arrayMove(prev, oldIndex, newIndex);
     });
   };
 
@@ -370,34 +742,8 @@ export default function PageEditor() {
   };
 
   return (
-    <div className="flex h-full">
-      {/* Sidebar: page list */}
-      <aside className="w-56 shrink-0 border-r border-[#DFDFDF] bg-white overflow-y-auto">
-        <div className="px-4 py-3 border-b border-[#DFDFDF]">
-          <h2 className="text-sm font-bold text-[#383233]">Страницы сайта</h2>
-        </div>
-        <nav className="py-2">
-          {Object.entries(SITE_PAGES).map(([s, def]) => {
-            const pageMeta = pagesList?.find(p => p.slug === s);
-            return (
-              <button
-                key={s}
-                onClick={() => navigate(`/pages/${s}`)}
-                className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                  slug === s ? 'bg-[#F2EBE3] text-[#D64338] font-medium border-r-2 border-[#D64338]' : 'text-[#383233] hover:bg-[#F9F8F6]'
-                }`}
-              >
-                {def.label}
-                {pageMeta && !pageMeta.isPublished && <span className="ml-2 text-[10px] text-[#89837E]">(скрыто)</span>}
-              </button>
-            );
-          })}
-        </nav>
-      </aside>
-
-      {/* Main editor */}
-      <div className="flex-1 overflow-y-auto">
-        {isLoading ? (
+    <>
+      {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="animate-spin text-[#89837E]" size={28} />
           </div>
@@ -459,32 +805,38 @@ export default function PageEditor() {
             {/* Blocks */}
             <div className="space-y-3">
               <h3 className="text-sm font-bold text-[#383233]">Блоки страницы</h3>
-              {blocks.map((block, i) => (
-                <div key={block.key} className="bg-white rounded-xl border border-[#DFDFDF] overflow-hidden">
-                  <div className="flex items-center justify-between px-4 py-2.5 bg-[#F9F8F6] border-b border-[#DFDFDF]">
-                    <span className="text-xs font-bold text-[#383233] uppercase tracking-wide">
-                      {i + 1}. {BLOCK_TYPES[block.type]}
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => moveBlock(i, -1)} disabled={i === 0} className="p-1.5 text-[#89837E] hover:text-[#383233] disabled:opacity-30">
-                        <ChevronUp size={14} />
-                      </button>
-                      <button onClick={() => moveBlock(i, 1)} disabled={i === blocks.length - 1} className="p-1.5 text-[#89837E] hover:text-[#383233] disabled:opacity-30">
-                        <ChevronDown size={14} />
-                      </button>
-                      <button onClick={() => removeBlock(i)} className="p-1.5 text-[#89837E] hover:text-red-600">
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <BlockEditor
-                      block={{ id: block.key, type: block.type, sortOrder: i, content: block.content }}
-                      onChange={(content) => setBlocks(prev => prev.map((b, idx) => (idx === i ? { ...b, content } : b)))}
-                    />
-                  </div>
-                </div>
-              ))}
+              <p className="text-xs text-[#89837E] -mt-2">Перетащите за ⠿ чтобы изменить порядок секций на странице</p>
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={blocks.map(b => b.key)} strategy={verticalListSortingStrategy}>
+                  {blocks.map((block, i) => (
+                    <SortableBlock key={block.key} id={block.key}>
+                      {({ attributes, listeners }) => (
+                        <div className="bg-white rounded-xl border border-[#DFDFDF] overflow-hidden mb-3">
+                          <div className="flex items-center justify-between px-4 py-2.5 bg-[#F9F8F6] border-b border-[#DFDFDF]">
+                            <div className="flex items-center gap-2">
+                              <button {...attributes} {...listeners} className="text-[#89837E] hover:text-[#383233] cursor-grab active:cursor-grabbing">
+                                <GripVertical size={16} />
+                              </button>
+                              <span className="text-xs font-bold text-[#383233] uppercase tracking-wide">
+                                {i + 1}. {BLOCK_TYPES[block.type]}
+                              </span>
+                            </div>
+                            <button onClick={() => removeBlock(i)} className="p-1.5 text-[#89837E] hover:text-red-600">
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                          <div className="p-4">
+                            <BlockEditor
+                              block={{ id: block.key, type: block.type, sortOrder: i, content: block.content }}
+                              onChange={(content) => setBlocks(prev => prev.map((b, idx) => (idx === i ? { ...b, content } : b)))}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </SortableBlock>
+                  ))}
+                </SortableContext>
+              </DndContext>
 
               {blocks.length === 0 && (
                 <p className="text-sm text-[#89837E] text-center py-6">Блоков пока нет — добавьте первый ниже.</p>
@@ -511,7 +863,6 @@ export default function PageEditor() {
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </>
   );
 }

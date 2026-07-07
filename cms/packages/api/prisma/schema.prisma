@@ -63,6 +63,7 @@ enum Lang {
 enum TeamMemberGroup {
   LEADERSHIP
   MEDIA_TEAM
+  FACTION
 }
 
 // ─── CRM enums ─────────────────────────────────────────────────────────────────
@@ -164,6 +165,7 @@ model NewsTranslation {
   content        String   // Rich text HTML from TipTap
   seoTitle       String?
   seoDescription String?
+  seoKeywords    String?
   ogImageUrl     String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

@@ -3,12 +3,33 @@ import { Link } from 'react-router-dom';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { OutlinedButton } from '@/components/OutlinedButton';
 import { VerticalWordLoop } from '@/components/VerticalWordLoop';
+import { useHomeBlocks } from '@/hooks/useHomeBlocks';
 import gsap from 'gsap';
+
+interface HomeHeroBlock {
+  titleRu?: string;
+  wordsRu?: string[];
+  subtitleRu?: string;
+  cta1LabelRu?: string; cta1Href?: string;
+  cta2LabelRu?: string; cta2Href?: string;
+  videoUrl?: string;
+}
 
 export function HeroSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const accentLineRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
+
+  const { getBlock } = useHomeBlocks();
+  const cms = getBlock<HomeHeroBlock>('home_hero');
+  const titleLines = (cms?.titleRu?.trim() || 'Казахстан справедливых\nвозможностей начинается').split('\n');
+  const words = cms?.wordsRu?.filter(Boolean).length ? cms.wordsRu.filter(Boolean) : ['С ВЫБОРА', 'С НПК', 'СЕГОДНЯ'];
+  const subtitle = cms?.subtitleRu?.trim() || 'Народная партия — партия людей труда. Мы за справедливый шанс для каждого гражданина Казахстана.';
+  const cta1Label = cms?.cta1LabelRu?.trim() || 'Вступить в партию';
+  const cta1Href = cms?.cta1Href?.trim() || '/vstupit';
+  const cta2Label = cms?.cta2LabelRu?.trim() || 'Программа партии';
+  const cta2Href = cms?.cta2Href?.trim() || '/programma';
+  const videoUrl = cms?.videoUrl?.trim() || '/herosectionanimation.webm';
 
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -78,14 +99,15 @@ export function HeroSection() {
 
         {/* Headline — static lines */}
         <h1 className="hero-reveal font-formular text-[32px] sm:text-[42px] md:text-[52px] lg:text-[48px] xl:text-[58px] font-bold text-white leading-[1.08] tracking-tight uppercase mb-1">
-          Казахстан справедливых<br />
-          возможностей начинается
+          {titleLines.map((line, i) => (
+            <span key={i}>{line}{i < titleLines.length - 1 && <br />}</span>
+          ))}
         </h1>
 
         {/* Animated word loop on the last line */}
         <div className="hero-reveal mb-8">
           <VerticalWordLoop
-            words={['С ВЫБОРА', 'С НПК', 'СЕГОДНЯ']}
+            words={words}
             interval={2600}
             className="text-[32px] sm:text-[42px] md:text-[52px] lg:text-[48px] xl:text-[58px] font-bold leading-[1.08] uppercase"
           />
@@ -93,16 +115,16 @@ export function HeroSection() {
 
         {/* Subtitle */}
         <p className="hero-reveal text-[16px] md:text-[18px] font-light text-fog mb-10 max-w-[480px] leading-relaxed">
-          Народная партия — партия людей труда. Мы за справедливый шанс для каждого гражданина Казахстана.
+          {subtitle}
         </p>
 
         {/* CTAs */}
         <div className="hero-reveal flex flex-col sm:flex-row gap-3">
-          <Link to="/vstupit">
-            <PrimaryButton className="sm:w-auto">Вступить в партию</PrimaryButton>
+          <Link to={cta1Href}>
+            <PrimaryButton className="sm:w-auto">{cta1Label}</PrimaryButton>
           </Link>
-          <Link to="/programma">
-            <OutlinedButton className="sm:w-auto">Программа партии</OutlinedButton>
+          <Link to={cta2Href}>
+            <OutlinedButton className="sm:w-auto">{cta2Label}</OutlinedButton>
           </Link>
         </div>
       </div>
@@ -112,7 +134,8 @@ export function HeroSection() {
           WHY:  4:3 video — no object-cover means zero edge cropping, full content visible */}
       <div className="hero-right lg:self-start lg:pt-[104px]">
         <video
-          src="/herosectionanimation.webm"
+          key={videoUrl}
+          src={videoUrl}
           autoPlay
           muted
           loop

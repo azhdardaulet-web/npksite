@@ -8,10 +8,10 @@ import { LangSchema } from '@dar-rail/shared';
 export const publicPagesRouter = Router();
 export const cmsPagesRouter = Router();
 
-const VALID_SLUGS = ['home', 'about', 'faction', 'contacts', 'footer'] as const;
+const VALID_SLUGS = ['home', 'about', 'faction', 'press-center', 'contacts', 'footer'] as const;
 
 const PageBlockInputSchema = z.object({
-  type: z.enum(['hero', 'text_image', 'kpi', 'quote', 'pdf_list', 'contacts_block']),
+  type: z.enum(['hero', 'home_hero', 'text_image', 'kpi', 'quote', 'pdf_list', 'contacts_block', 'ticker', 'stats', 'video', 'about_hero', 'about_community', 'about_methods', 'about_structure', 'about_goal', 'press_hero', 'press_studio', 'press_cta', 'reception', 'candidates_intro', 'program_intro', 'join']),
   sortOrder: z.number().int().min(0),
   content: z.record(z.unknown()),
 });

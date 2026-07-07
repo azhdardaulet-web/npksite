@@ -14,7 +14,8 @@ import { branchesRouter } from './modules/contacts/branches.controller';
 import { documentsRouter, publicDocumentsRouter } from './modules/documents/documents.controller';
 import { joinRequestsRouter, cmsJoinRequestsRouter } from './modules/join-requests/join-requests.controller';
 import { appealsRouter, appealTopicsRouter, cmsAppealsRouter } from './modules/appeals/appeals.controller';
-import { shopSubscribersRouter } from './modules/shop-subscribers/shop-subscribers.controller';
+import { shopSubscribersRouter, cmsShopSubscribersRouter } from './modules/shop-subscribers/shop-subscribers.controller';
+import { cmsDeputyRequestsRouter } from './modules/deputy-requests/deputy-requests.controller';
 import { cmsSettingsRouter, publicSettingsRouter } from './modules/settings/settings.controller';
 import { publicCandidatesRouter, cmsCandidatesRouter } from './modules/candidates/candidates.controller';
 import { publicHistoryRouter, cmsHistoryRouter } from './modules/history/history.controller';
@@ -136,6 +137,8 @@ app.use('/cms/api/v1/media-publications', cmsMediaPublicationsRouter);
 app.use('/cms/api/v1/testimonials', cmsTestimonialsRouter);
 app.use('/cms/api/v1/menu-items', cmsMenuItemsRouter);
 app.use('/cms/api/v1/faq', cmsFaqRouter);
+app.use('/cms/api/v1/shop-subscribers', cmsShopSubscribersRouter);
+app.use('/cms/api/v1/deputy-requests', cmsDeputyRequestsRouter);
 
 // ─── 404 handler ──────────────────────────────────────────────────────────────
 app.use((_req, res) => {

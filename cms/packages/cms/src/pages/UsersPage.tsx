@@ -66,7 +66,7 @@ export const ROLES: Record<Role, RoleInfo> = {
   },
 };
 
-const ROLE_ORDER: Role[] = [
+export const ROLE_ORDER: Role[] = [
   'ADMIN',
   'CHIEF_EDITOR',
   'SECTION_EDITOR',

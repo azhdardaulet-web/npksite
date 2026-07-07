@@ -1,5 +1,14 @@
+import { useHomeBlocks } from '@/hooks/useHomeBlocks';
+
+interface TickerBlock {
+  phrasesRu?: string[];
+}
+
 export function TickerSection() {
-  const phrases = [
+  const { getBlock } = useHomeBlocks();
+  const cms = getBlock<TickerBlock>('ticker');
+
+  const phrases = cms?.phrasesRu?.filter(Boolean).length ? cms.phrasesRu.filter(Boolean) : [
     'Человек труда',
     'Государство, которое держит слово',
     'Один закон для всех',

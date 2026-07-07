@@ -32,7 +32,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   return data as T;
 }
 
-function withQuery(path: string, params?: Record<string, string | number | undefined>): string {
+function withQuery(path: string, params?: Record<string, string | number | boolean | undefined>): string {
   if (!params) return path;
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
@@ -43,7 +43,7 @@ function withQuery(path: string, params?: Record<string, string | number | undef
 }
 
 export const api = {
-  get: <T>(path: string, params?: Record<string, string | number | undefined>) =>
+  get: <T>(path: string, params?: Record<string, string | number | boolean | undefined>) =>
     request<T>(withQuery(path, params)),
   post: <T>(path: string, body: unknown) =>
     request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
@@ -158,7 +158,7 @@ export interface PublicNewsListResponse {
   totalPages: number;
 }
 
-export function fetchNews(params: { format?: NewsFormat; q?: string; page?: number; limit?: number; lang?: string } = {}) {
+export function fetchNews(params: { format?: NewsFormat; isFeatured?: boolean; q?: string; page?: number; limit?: number; lang?: string } = {}) {
   return api.get<PublicNewsListResponse>('/api/v1/news', params);
 }
 
@@ -296,4 +296,22 @@ export interface PublicTestimonial {
 
 export function fetchTestimonials() {
   return api.get<PublicTestimonial[]>('/api/v1/testimonials');
+}
+
+// ─── Страницы (блоки для CMS-редактируемых секций, /pages/:slug) ───────────────
+
+export interface PublicPageBlock {
+  type: string;
+  sortOrder: number;
+  content: Record<string, unknown>;
+}
+
+export interface PublicPage {
+  slug: string;
+  isPublished: boolean;
+  blocks: PublicPageBlock[];
+}
+
+export function fetchPage(slug: string, lang = 'ru') {
+  return api.get<PublicPage>(`/api/v1/pages/${slug}`, { lang });
 }

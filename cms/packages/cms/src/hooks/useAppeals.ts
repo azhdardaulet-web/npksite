@@ -59,6 +59,23 @@ export function useAppeals(filters: AppealFilters, page = 1) {
   });
 }
 
+// Счётчик новых обращений для бейджа в сайдбаре.
+export function useNewAppealsCount() {
+  const { accessToken } = useAuthStore();
+  return useQuery<number>({
+    queryKey: ['appeals', 'new-count'],
+    queryFn: async () => {
+      const { data } = await api.get<AppealListResponse>('/cms/api/v1/appeals', {
+        params: { status: 'NEW', page: 1, limit: 1 },
+      });
+      return data.total;
+    },
+    enabled: !!accessToken,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+}
+
 export function useUpdateAppeal() {
   const qc = useQueryClient();
   return useMutation({

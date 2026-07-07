@@ -1,9 +1,18 @@
 import { useState } from 'react';
 import { submitJoinRequest, ApiError } from '@/lib/api';
+import { useHomeBlocks } from '@/hooks/useHomeBlocks';
 
 const KZ_PHONE_RE = /^\+7\s?7\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/;
 
+interface JoinBlock { titleRu?: string; subtitleRu?: string; imageUrl?: string; }
+
 export function JoinSection() {
+  const { getBlock } = useHomeBlocks();
+  const cms = getBlock<JoinBlock>('join');
+  const titleLines = (cms?.titleRu?.trim() || 'Стань частью\nнародной силы').split('\n');
+  const subtitle = cms?.subtitleRu?.trim() || 'Казахстан справедливых возможностей начинается с людей, которые готовы за него работать.';
+  const image = cms?.imageUrl?.trim() || '/images/join-bg.jpg';
+
   const [consent, setConsent] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -85,10 +94,12 @@ export function JoinSection() {
                 Присоединяйтесь
               </p>
               <h2 style={{ fontSize: 38, fontWeight: 700, color: '#fff', lineHeight: 1.08, margin: '0 0 12px', letterSpacing: '-0.02em', fontFamily: "'Formular',Arial,sans-serif" }}>
-                Стань частью<br />народной силы
+                {titleLines.map((line, i) => (
+                  <span key={i}>{line}{i < titleLines.length - 1 && <br />}</span>
+                ))}
               </h2>
               <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)', margin: '0 0 40px', fontFamily: "'Formular',Arial,sans-serif" }}>
-                Казахстан справедливых возможностей начинается с людей, которые готовы за него работать.
+                {subtitle}
               </p>
 
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -181,7 +192,7 @@ export function JoinSection() {
         {/* RIGHT — photo */}
         <div style={{ position: 'relative', minHeight: 520 }}>
           <img
-            src="/images/join-bg.jpg"
+            src={image}
             alt=""
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />

@@ -26,18 +26,34 @@ export type MediaType = z.infer<typeof MediaTypeSchema>;
 
 export const PageBlockTypeSchema = z.enum([
   'hero',
+  'home_hero',
   'text_image',
   'kpi',
   'quote',
   'pdf_list',
   'contacts_block',
+  'ticker',
+  'stats',
+  'video',
+  'about_hero',
+  'about_community',
+  'about_methods',
+  'about_structure',
+  'about_goal',
+  'press_hero',
+  'press_studio',
+  'press_cta',
+  'reception',
+  'candidates_intro',
+  'program_intro',
+  'join',
 ]);
 export type PageBlockType = z.infer<typeof PageBlockTypeSchema>;
 
 export const LangSchema = z.enum(['ru', 'kz']);
 export type Lang = z.infer<typeof LangSchema>;
 
-export const TeamMemberGroupSchema = z.enum(['LEADERSHIP', 'MEDIA_TEAM']);
+export const TeamMemberGroupSchema = z.enum(['LEADERSHIP', 'MEDIA_TEAM', 'FACTION']);
 export type TeamMemberGroup = z.infer<typeof TeamMemberGroupSchema>;
 
 export const DocumentTypeSchema = z.enum(['ustav', 'deputy_request', 'press_kit', 'other']);
@@ -104,6 +120,7 @@ export const NewsTranslationSchema = z.object({
   content: z.string(),
   seoTitle: z.string().max(200).optional(),
   seoDescription: z.string().max(500).optional(),
+  seoKeywords: z.string().max(500).optional(),
   ogImageUrl: z.string().url().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
@@ -116,6 +133,7 @@ export const NewsSchema = z.object({
   format: NewsFormatSchema,
   status: NewsStatusSchema,
   imageUrl: z.string().url().optional(),
+  isFeatured: z.boolean().optional(),
   readingTime: z.number().int().min(1).optional(),
   tags: z.array(z.string()).default([]),
   tgPosted: z.boolean(),
@@ -134,6 +152,8 @@ export const CreateNewsSchema = z.object({
   imageUrl: z.string().url().optional(),
   tags: z.array(z.string()).optional(),
   tgSkip: z.boolean().optional(),
+  isFeatured: z.boolean().optional(),
+  slug: z.string().max(200).optional(),
   translations: z.array(
     z.object({
       lang: LangSchema,
@@ -142,6 +162,7 @@ export const CreateNewsSchema = z.object({
       content: z.string().min(1),
       seoTitle: z.string().max(200).optional(),
       seoDescription: z.string().max(500).optional(),
+      seoKeywords: z.string().max(500).optional(),
       ogImageUrl: z.string().url().optional(),
     })
   ).min(1),

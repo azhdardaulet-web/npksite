@@ -1,4 +1,7 @@
 import { Link } from 'react-router-dom';
+import { useHomeBlocks } from '@/hooks/useHomeBlocks';
+
+interface ProgramIntroBlock { headingRu?: string; textRu?: string; }
 
 const GAP = 16;
 
@@ -80,6 +83,11 @@ const MOBILE_STYLES = `
 `;
 
 export function ProgramSection() {
+  const { getBlock } = useHomeBlocks();
+  const cms = getBlock<ProgramIntroBlock>('program_intro');
+  const heading = cms?.headingRu?.trim() || 'Программа, которая касается каждого';
+  const subtitle = cms?.textRu?.trim() || 'Мы собрали ключевые акценты новой политической программы Народной партии Казахстана: человек труда, справедливые возможности, ответственная власть, экономика для людей, поддержка семьи и будущее детей.';
+
   return (
     <section
       className="relative w-full overflow-hidden py-12 md:py-16"
@@ -95,10 +103,10 @@ export function ProgramSection() {
             className="font-bold uppercase text-white"
             style={{ fontSize: 'clamp(32px, 5vw, 64px)', lineHeight: '88%', letterSpacing: '-0.035em' }}
           >
-            Программа, которая касается каждого
+            {heading}
           </h2>
           <p className="mt-4 text-[16px] md:text-[20px] font-light leading-relaxed" style={{ color: 'rgba(255,255,255,0.84)' }}>
-            Мы собрали ключевые акценты новой политической программы Народной партии Казахстана: человек труда, справедливые возможности, ответственная власть, экономика для людей, поддержка семьи и будущее детей.
+            {subtitle}
           </p>
         </div>
 

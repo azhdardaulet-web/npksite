@@ -1,6 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Youtube } from 'lucide-react';
+import { usePageBlocks } from '@/hooks/usePageBlocks';
+
+interface HeroBlock {
+  titleRu?: string; subtitleRu?: string;
+  ctaLabelRu?: string; ctaHref?: string;
+}
+interface TextBlock {
+  headingRu?: string; textRu?: string;
+}
 
 /* ─── Data ──────────────────────────────────────────────────────────── */
 const SOCIALS = [
@@ -169,6 +178,22 @@ export function NarodnoeMediaPage() {
   const totalRef = useCountUp(270000);
   const [hovSocial, setHovSocial] = useState<number | null>(null);
 
+  const { getBlock } = usePageBlocks('press-center');
+
+  const hero = getBlock<HeroBlock>('press_hero');
+  const heroTitleParts = (hero?.titleRu?.trim() || 'Народное медиа,\nкоторому верит народ').split('\n');
+  const heroSubtitle = hero?.subtitleRu?.trim() || 'Собственная студия, ежедневный эфир и аудитория, которая опережает партийные СМИ страны. Мы освещаем внутреннюю и международную политику, обсуждаем важные социальные вопросы и продвигаем левоцентристские ценности справедливости.';
+  const heroCtaLabel = hero?.ctaLabelRu?.trim() || 'Подписаться';
+  const heroCtaHref = hero?.ctaHref?.trim() || 'https://www.youtube.com/channel/UCYq_KOlsxp8H2r3GIq6hWtA';
+
+  const studio = getBlock<TextBlock>('press_studio');
+  const studioHeading = studio?.headingRu?.trim() || 'Как работает народное медиа';
+  const studioText = studio?.textRu?.trim() || 'Полный цикл производства — от идеи и съёмки до монтажа и публикации. Собственная студия в сердце партии.';
+
+  const cta = getBlock<TextBlock>('press_cta');
+  const ctaHeading = cta?.headingRu?.trim() || 'Подпишись на народное медиа';
+  const ctaText = cta?.textRu?.trim() || 'Подписывайтесь, участвуйте в обсуждениях и будьте в курсе ключевых событий.';
+
   const tickerText = TICKER.join(' • ') + ' • ';
 
   return (
@@ -196,20 +221,24 @@ export function NarodnoeMediaPage() {
           </div>
 
           <h1 style={{ margin: '0 0 28px', fontWeight: 800, fontSize: 'clamp(42px,7.6vw,110px)', lineHeight: .94, letterSpacing: '-.035em' }}>
-            Народное медиа,{' '}
-            <span style={{ color: '#db1f26' }}>которому верит народ</span>
+            {heroTitleParts.length === 2 ? (
+              <>
+                {heroTitleParts[0]}{' '}
+                <span style={{ color: '#db1f26' }}>{heroTitleParts[1]}</span>
+              </>
+            ) : heroTitleParts.join(' ')}
           </h1>
 
           <p style={{ margin: '0 0 32px', maxWidth: '62ch', fontSize: 'clamp(16px,1.7vw,21px)', lineHeight: 1.55, color: 'rgba(255,255,255,.72)', fontWeight: 500 }}>
-            Собственная студия, ежедневный эфир и аудитория, которая опережает партийные СМИ страны. Мы освещаем внутреннюю и международную политику, обсуждаем важные социальные вопросы и продвигаем левоцентристские ценности справедливости.
+            {heroSubtitle}
           </p>
 
           <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-            <a href="https://www.youtube.com/channel/UCYq_KOlsxp8H2r3GIq6hWtA" target="_blank" rel="noopener noreferrer"
+            <a href={heroCtaHref} target="_blank" rel="noopener noreferrer"
               style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '17px 30px', background: '#db1f26', color: '#fff', textDecoration: 'none', fontSize: 16, fontWeight: 700, borderRadius: 0, transition: 'transform .2s' }}
               onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')}
               onMouseLeave={e => (e.currentTarget.style.transform = 'none')}>
-              <Youtube size={18} /> Подписаться →
+              <Youtube size={18} /> {heroCtaLabel} →
             </a>
             <a href="#projects"
               style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '17px 30px', background: 'transparent', border: '1.5px solid rgba(255,255,255,.24)', color: '#fff', textDecoration: 'none', fontSize: 16, fontWeight: 700, borderRadius: 0, transition: 'border-color .2s' }}
@@ -265,10 +294,10 @@ export function NarodnoeMediaPage() {
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 'clamp(26px,3.4vw,44px)' }}>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: '#db1f26', marginBottom: 16 }}>Наша студия</div>
-            <h2 style={{ margin: 0, fontSize: 'clamp(28px,4.4vw,54px)', fontWeight: 800, lineHeight: 1.02, letterSpacing: '-.025em', maxWidth: '22ch' }}>Как работает народное медиа</h2>
+            <h2 style={{ margin: 0, fontSize: 'clamp(28px,4.4vw,54px)', fontWeight: 800, lineHeight: 1.02, letterSpacing: '-.025em', maxWidth: '22ch' }}>{studioHeading}</h2>
           </div>
           <p style={{ margin: 0, maxWidth: '44ch', fontSize: 16, lineHeight: 1.55, color: 'rgba(255,255,255,.62)' }}>
-            Полный цикл производства — от идеи и съёмки до монтажа и публикации. Собственная студия в сердце партии.
+            {studioText}
           </p>
         </div>
         {/* Bento grid: first image spans 2 cols + 2 rows */}
@@ -306,9 +335,9 @@ export function NarodnoeMediaPage() {
           {/* Ghost text */}
           <span aria-hidden="true" style={{ position: 'absolute', bottom: '-.34em', left: '50%', transform: 'translateX(-50%)', fontSize: 'clamp(130px,22vw,320px)', fontWeight: 800, lineHeight: 1, color: 'rgba(0,0,0,.08)', pointerEvents: 'none', whiteSpace: 'nowrap', userSelect: 'none' }}>ЭФИР</span>
           <div style={{ position: 'relative', zIndex: 1 }}>
-            <h2 style={{ margin: '0 0 18px', fontSize: 'clamp(28px,4.4vw,54px)', fontWeight: 800, lineHeight: 1.02, letterSpacing: '-.03em' }}>Подпишись на народное медиа</h2>
+            <h2 style={{ margin: '0 0 18px', fontSize: 'clamp(28px,4.4vw,54px)', fontWeight: 800, lineHeight: 1.02, letterSpacing: '-.03em' }}>{ctaHeading}</h2>
             <p style={{ margin: '0 auto 30px', maxWidth: '52ch', fontSize: 17, lineHeight: 1.55, color: 'rgba(255,255,255,.85)' }}>
-              Подписывайтесь, участвуйте в обсуждениях и будьте в курсе ключевых событий.
+              {ctaText}
             </p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
               {SOCIALS.map((s, i) => (

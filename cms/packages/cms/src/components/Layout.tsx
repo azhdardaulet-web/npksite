@@ -3,35 +3,30 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Newspaper,
-  Image,
-  Users,
-  Layers,
   Settings,
   LogOut,
   ChevronDown,
   ChevronRight,
   ClipboardList,
   MessageSquareText,
-  Building2,
   PanelLeftClose,
   PanelLeftOpen,
   Bell,
-  UserSquare2,
-  History,
-  ListChecks,
-  Clapperboard,
-  Radio,
-  Quote,
-  Menu as MenuIcon,
+  Landmark,
+  ShoppingCart,
+  Users2,
+  LifeBuoy,
 } from 'lucide-react';
 import { useAuthStore, Role } from '@/store/authStore';
 import { useNewJoinRequestsCount } from '@/hooks/useJoinRequests';
+import { useNewAppealsCount } from '@/hooks/useAppeals';
 
 interface NavItem {
   label: string;
   path?: string;
   icon: React.ElementType;
   roles: Role[];
+  badge?: 'zayavki' | 'obrashcheniya';
   children?: { label: string; path: string }[];
 }
 
@@ -49,70 +44,77 @@ const ALL_ROLES: Role[] = [
   'RECEPTION_MANAGER',
 ];
 
-// Видимость разделов по ролям НПК — см. docs/PLAN.md, Промпт 2.1.
+// Структура сайдбара НПК — Сводка / CRM / CMS / Поддержка / Настройки.
+// «Старые» разделы (Медиабиблиотека, Команда, Кандидаты, История, Программа,
+// Медиапроекты, СМИ о нас, Отзывы) не потеряны — они спрятаны вкладками
+// внутри соответствующих экранов «Управление страницами» (см. src/pages/hubs).
 const navGroups: NavGroupDef[] = [
   {
     title: '',
-    items: [
-      { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ALL_ROLES },
-    ],
+    items: [{ label: 'Сводка', path: '/dashboard', icon: LayoutDashboard, roles: ALL_ROLES }],
   },
   {
     title: 'CRM',
     items: [
-      { label: 'Заявки', path: '/zayavki', icon: ClipboardList, roles: ['ADMIN'] },
+      { label: 'Заявки', path: '/zayavki', icon: ClipboardList, roles: ['ADMIN'], badge: 'zayavki' },
       {
         label: 'Обращения',
         path: '/obrashcheniya',
         icon: MessageSquareText,
         roles: ['ADMIN', 'RECEPTION_MANAGER'],
+        badge: 'obrashcheniya',
       },
+      { label: 'Интернет-магазин', path: '/magazin', icon: ShoppingCart, roles: ['ADMIN'] },
     ],
   },
   {
-    title: 'Редакция',
+    title: 'CMS',
     items: [
       {
-        label: 'Новости',
+        label: 'Новости и медиа',
         icon: Newspaper,
         roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'],
         children: [
+          { label: 'Создать', path: '/news/new' },
           { label: 'Все новости', path: '/news' },
           { label: 'Черновики', path: '/news?status=DRAFT' },
-          { label: 'Создать', path: '/news/new' },
-          { label: 'Импорт из Word', path: '/news/import' },
+          { label: 'Народный подкаст', path: '/podcast' },
+          { label: 'Галерея', path: '/galereya' },
         ],
       },
-    ],
-  },
-  {
-    title: 'Контент',
-    items: [
-      { label: 'Медиабиблиотека', path: '/media', icon: Image, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'] },
-      { label: 'Команда', path: '/team', icon: Users, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'] },
-      { label: 'Филиалы', path: '/filialy', icon: Building2, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR', 'BRANCH_EDITOR'] },
-      { label: 'Страницы', path: '/pages', icon: Layers, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR', 'FACTION'] },
-      { label: 'Кандидаты', path: '/candidates', icon: UserSquare2, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'] },
-      { label: 'История партии', path: '/history', icon: History, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'] },
-      { label: 'Программа', path: '/program', icon: ListChecks, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'] },
-      { label: 'Медиапроекты', path: '/media-projects', icon: Clapperboard, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'] },
-      { label: 'СМИ о нас', path: '/smi', icon: Radio, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'] },
-      { label: 'Отзывы', path: '/testimonials', icon: Quote, roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR'] },
-      { label: 'Меню сайта', path: '/menu', icon: MenuIcon, roles: ['ADMIN'] },
-    ],
-  },
-  {
-    title: 'Система',
-    items: [
-      { label: 'Пользователи', path: '/users', icon: Users, roles: ['ADMIN'] },
-      { label: 'Настройки', path: '/settings', icon: Settings, roles: ['ADMIN'] },
+      {
+        label: 'Фракция',
+        icon: Landmark,
+        roles: ['ADMIN', 'CHIEF_EDITOR', 'FACTION'],
+        children: [
+          { label: 'Создать', path: '/frakciya/zaprosy?create=1' },
+          { label: 'Все запросы', path: '/frakciya/zaprosy' },
+          { label: 'Депутаты', path: '/frakciya/deputaty' },
+        ],
+      },
+      {
+        // Внутри «Страниц» — своя вложенная мини-панель со всеми разделами
+        // (Главная, О партии, Филиалы, Пресс-центр, Контакты, Меню, Пользователи),
+        // см. PageEditor.tsx → PAGE_NAV_TREE. Отдельные пункты тут не нужны.
+        label: 'Управление страницами',
+        path: '/pages',
+        icon: Users2,
+        roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR', 'FACTION', 'BRANCH_EDITOR'],
+      },
     ],
   },
 ];
 
-// Бейдж со счётчиком новых заявок (status=NEW) рядом с пунктом «Заявки».
-function NewJoinRequestsBadge() {
-  const { data: count } = useNewJoinRequestsCount();
+const bottomItems: NavItem[] = [
+  { label: 'Поддержка', path: '/podderzhka', icon: LifeBuoy, roles: ALL_ROLES },
+  { label: 'Настройки', path: '/settings', icon: Settings, roles: ['ADMIN'] },
+];
+
+// Бейджи-счётчики новых записей рядом с пунктами CRM.
+function NavBadge({ kind }: { kind: 'zayavki' | 'obrashcheniya' }) {
+  const { data: joinCount } = useNewJoinRequestsCount();
+  const { data: appealsCount } = useNewAppealsCount();
+  const count = kind === 'zayavki' ? joinCount : appealsCount;
   if (!count) return null;
   return (
     <span className="ml-auto shrink-0 bg-brand-red text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
@@ -126,9 +128,7 @@ function NavGroup({ group, collapsed }: { group: NavGroupDef; collapsed: boolean
   const [openItems, setOpenItems] = useState<string[]>([]);
 
   const toggle = (label: string) => {
-    setOpenItems(prev =>
-      prev.includes(label) ? prev.filter(l => l !== label) : [...prev, label]
-    );
+    setOpenItems((prev) => (prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]));
   };
 
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
@@ -141,11 +141,11 @@ function NavGroup({ group, collapsed }: { group: NavGroupDef; collapsed: boolean
         </p>
       )}
       {group.title && collapsed && <div className="my-2 mx-3 border-t border-white/10" />}
-      {group.items.map(item => {
+      {group.items.map((item) => {
         const Icon = item.icon;
         if (item.children) {
           const isOpen = openItems.includes(item.label);
-          const anyChildActive = item.children.some(c => location.pathname === c.path);
+          const anyChildActive = item.children.some((c) => isActive(c.path.split('?')[0]));
           return (
             <div key={item.label}>
               <button
@@ -164,14 +164,12 @@ function NavGroup({ group, collapsed }: { group: NavGroupDef; collapsed: boolean
               </button>
               {!collapsed && isOpen && (
                 <div className="ml-9 mt-0.5 mb-1 border-l border-white/10 pl-3">
-                  {item.children.map(child => (
+                  {item.children.map((child) => (
                     <Link
                       key={child.path}
                       to={child.path}
                       className={`block py-1.5 px-2 text-sm rounded transition-colors
-                        ${isActive(child.path)
-                          ? 'text-white font-medium'
-                          : 'text-gray-300 hover:text-white'}`}
+                        ${isActive(child.path.split('?')[0]) ? 'text-white font-medium' : 'text-gray-300 hover:text-white'}`}
                     >
                       {child.label}
                     </Link>
@@ -187,13 +185,11 @@ function NavGroup({ group, collapsed }: { group: NavGroupDef; collapsed: boolean
             to={item.path!}
             title={collapsed ? item.label : undefined}
             className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors rounded-lg mx-1
-              ${isActive(item.path!)
-                ? 'bg-brand-red text-white font-medium shadow-sm'
-                : 'text-gray-300 hover:text-white hover:bg-white/5'}`}
+              ${isActive(item.path!) ? 'bg-brand-red text-white font-medium shadow-sm' : 'text-gray-300 hover:text-white hover:bg-white/5'}`}
           >
             <Icon size={18} className="shrink-0" />
             {!collapsed && <span>{item.label}</span>}
-            {!collapsed && item.path === '/zayavki' && <NewJoinRequestsBadge />}
+            {!collapsed && item.badge && <NavBadge kind={item.badge} />}
           </Link>
         );
       })}
@@ -210,19 +206,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   // в которых после фильтрации не осталось видимых пунктов.
   const visibleGroups = useMemo(() => {
     return navGroups
-      .map(group => ({
-        ...group,
-        items: group.items
-          .filter(item => item.roles.includes(role))
-          .map(item =>
-            // BRANCH_EDITOR видит только свой филиал — контекстная подпись пункта
-            item.path === '/filialy' && role === 'BRANCH_EDITOR'
-              ? { ...item, label: 'Мой филиал' }
-              : item
-          ),
-      }))
-      .filter(group => group.items.length > 0);
+      .map((group) => ({ ...group, items: group.items.filter((item) => item.roles.includes(role)) }))
+      .filter((group) => group.items.length > 0);
   }, [role]);
+
+  const visibleBottom = useMemo(() => bottomItems.filter((item) => item.roles.includes(role)), [role]);
 
   return (
     <div className="flex h-screen bg-brand-cream overflow-hidden">
@@ -239,7 +227,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </div>
           )}
           <button
-            onClick={() => setCollapsed(p => !p)}
+            onClick={() => setCollapsed((p) => !p)}
             className="text-gray-400 hover:text-white transition-colors p-1 rounded"
           >
             {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
@@ -248,10 +236,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto py-3 scrollbar-thin">
-          {visibleGroups.map(group => (
+          {visibleGroups.map((group) => (
             <NavGroup key={group.title} group={group} collapsed={collapsed} />
           ))}
         </nav>
+
+        {/* Bottom items */}
+        <div className="border-t border-white/10 py-2">
+          <NavGroup group={{ title: '', items: visibleBottom }} collapsed={collapsed} />
+        </div>
 
         {/* User */}
         <div className="border-t border-white/10 px-3 py-3">
@@ -294,7 +287,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-4">
             <button className="relative text-brand-gray hover:text-brand-dark transition-colors">
               <Bell size={20} />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand-red text-white text-[9px] rounded-full flex items-center justify-center font-bold">3</span>
             </button>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-brand-red flex items-center justify-center text-white text-xs font-bold">
@@ -309,9 +301,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-6">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>
   );
