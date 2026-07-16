@@ -87,45 +87,45 @@ export function ReceptionSection() {
   };
 
   return (
-    <section className="bg-coal py-20 md:py-28">
+    <section className="bg-bg py-20 md:py-28">
       <div className="max-w-[1280px] mx-auto px-4 md:px-10">
         <div className="mb-12">
-          <p className="text-label text-red font-medium mb-3 uppercase tracking-wider">Приёмная</p>
-          <TextReveal tag="h2" className="font-formular text-heading-md md:text-heading-lg text-white">
+          <p className="text-label text-accent-brand font-medium mb-3 uppercase tracking-wider">Приёмная</p>
+          <TextReveal tag="h2" className="font-formular text-heading-md md:text-heading-lg text-text-base">
             {heading}
           </TextReveal>
-          <p className="text-body-lg font-light text-fog mt-3">{subtitle}</p>
+          <p className="text-body-lg font-light text-text-muted mt-3">{subtitle}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* LEFT: Form */}
           <ScrollReveal direction="left">
-            <div className="bg-cinder rounded-panel p-6 md:p-8 border border-white/[0.06]">
-              <h3 className="text-heading font-bold text-white mb-6">Отправить обращение</h3>
+            <div className="bg-surface rounded-panel p-6 md:p-8 border border-line">
+              <h3 className="text-heading font-bold text-text-base mb-6">Отправить обращение</h3>
               {submitted ? (
                 <div className="bg-red/10 border border-red/25 rounded-card p-6 text-center">
-                  <p className="text-body-lg text-white font-medium">Спасибо! Ваше обращение принято.</p>
-                  <p className="text-body text-fog mt-2">Мы свяжемся с вами в ближайшее время.</p>
+                  <p className="text-body-lg text-text-base font-medium">Спасибо! Ваше обращение принято.</p>
+                  <p className="text-body text-text-muted mt-2">Мы свяжемся с вами в ближайшее время.</p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <input type="text" placeholder="Ваше имя" required value={formData.name}
                     onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full bg-ash border border-white/10 rounded-input px-4 py-3.5 text-body text-white placeholder:text-steel focus:border-red focus:shadow-focus outline-none transition-all" />
+                    className="w-full bg-surface-2 border border-line rounded-input px-4 py-3.5 text-body text-text-base placeholder:text-text-muted focus:border-red focus:shadow-focus outline-none transition-all" />
                   <input type="tel" placeholder="Ваш номер телефона" required value={formData.phone}
                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full bg-ash border border-white/10 rounded-input px-4 py-3.5 text-body text-white placeholder:text-steel focus:border-red focus:shadow-focus outline-none transition-all" />
+                    className="w-full bg-surface-2 border border-line rounded-input px-4 py-3.5 text-body text-text-base placeholder:text-text-muted focus:border-red focus:shadow-focus outline-none transition-all" />
                   <select value={formData.topic} onChange={e => setFormData({ ...formData, topic: e.target.value })}
-                    className="w-full bg-ash border border-white/10 rounded-input px-4 py-3.5 text-body text-white focus:border-red focus:shadow-focus outline-none transition-all appearance-none">
-                    <option value="" className="bg-cinder">Выберите тему</option>
+                    className="w-full bg-surface-2 border border-line rounded-input px-4 py-3.5 text-body text-text-base focus:border-red focus:shadow-focus outline-none transition-all appearance-none">
+                    <option value="" className="bg-surface">Выберите тему</option>
                     {(topics.length > 0 ? topics.map(t => ({ id: t.id, label: t.nameRu })) : FALLBACK_TOPICS.map(t => ({ id: t, label: t })))
-                      .map(t => <option key={t.id} value={t.id} className="bg-cinder">{t.label}</option>)}
+                      .map(t => <option key={t.id} value={t.id} className="bg-surface">{t.label}</option>)}
                   </select>
                   <textarea placeholder="Опишите вашу ситуацию" required rows={4} value={formData.message}
                     onChange={e => setFormData({ ...formData, message: e.target.value })}
-                    className="w-full bg-ash border border-white/10 rounded-input px-4 py-3.5 text-body text-white placeholder:text-steel focus:border-red focus:shadow-focus outline-none transition-all resize-y min-h-[120px]" />
+                    className="w-full bg-surface-2 border border-line rounded-input px-4 py-3.5 text-body text-text-base placeholder:text-text-muted focus:border-red focus:shadow-focus outline-none transition-all resize-y min-h-[120px]" />
                   {error && <p className="text-body text-red">{error}</p>}
-                  <label className="flex items-start gap-3 text-body text-fog cursor-pointer">
+                  <label className="flex items-start gap-3 text-body text-text-muted cursor-pointer">
                     <input type="checkbox" required className="mt-0.5 accent-red shrink-0" />
                     Согласен с политикой конфиденциальности
                   </label>
@@ -144,24 +144,24 @@ export function ReceptionSection() {
                 className="block bg-[rgba(37,211,102,0.08)] border border-[rgba(37,211,102,0.2)] rounded-[16px] p-5 md:p-6 transition-all hover:bg-[rgba(37,211,102,0.14)]">
                 <div className="flex items-center gap-3 mb-2">
                   <MessageCircle size={24} className="text-[#25d166]" />
-                  <span className="text-[20px] font-bold text-white">{whatsappNumber}</span>
+                  <span className="text-[20px] font-bold text-text-base">{whatsappNumber}</span>
                 </div>
-                <p className="text-body text-steel">{whatsappLabel}</p>
+                <p className="text-body text-text-muted">{whatsappLabel}</p>
               </a>
             </ScrollReveal>
 
             <ScrollReveal direction="right" delay={0.2}>
               <div ref={counterRef} className="bg-red/[0.08] border border-red/25 rounded-[16px] p-5 md:p-6">
                 <CountUp target={counterValue} triggered={triggered} className="text-[40px] font-bold text-red" />
-                <p className="text-body text-fog mt-1">{counterLabel}</p>
+                <p className="text-body text-text-muted mt-1">{counterLabel}</p>
               </div>
             </ScrollReveal>
 
             {testimonials.map((t, i) => (
               <ScrollReveal key={t.id} direction="right" delay={0.3 + i * 0.1}>
-                <div className="bg-cinder rounded-[16px] p-4 border border-white/[0.06]">
-                  <p className="text-body text-silver mb-2">&ldquo;{t.quote}&rdquo;</p>
-                  <p className="text-label text-steel font-medium">— {t.author}</p>
+                <div className="bg-surface rounded-[16px] p-4 border border-line">
+                  <p className="text-body text-text-base mb-2">&ldquo;{t.quote}&rdquo;</p>
+                  <p className="text-label text-text-muted font-medium">— {t.author}</p>
                 </div>
               </ScrollReveal>
             ))}

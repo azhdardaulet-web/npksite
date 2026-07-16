@@ -28,25 +28,25 @@ export function CandidatesSection() {
   };
 
   return (
-    <section className="bg-coal py-20 md:py-28">
+    <section className="bg-bg py-20 md:py-28">
       <div className="max-w-[1280px] mx-auto px-4 md:px-10">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-8">
           <div>
-            <p className="text-label text-red font-medium mb-3 uppercase tracking-wider">Партия</p>
+            <p className="text-label text-accent-brand font-medium mb-3 uppercase tracking-wider">Партия</p>
             <TextReveal
               tag="h2"
-              className="font-formular text-heading-md md:text-heading-lg text-white"
+              className="font-formular text-heading-md md:text-heading-lg text-text-base"
             >
               {heading}
             </TextReveal>
-            <p className="text-body-lg font-light text-fog mt-3 max-w-[560px]">
+            <p className="text-body-lg font-light text-text-muted mt-3 max-w-[560px]">
               {subtitle}
             </p>
           </div>
           <Link
             to="/kandidaty"
-            className="mt-4 md:mt-0 inline-flex items-center gap-2 text-body font-medium text-red hover:gap-3 transition-all group"
+            className="mt-4 md:mt-0 inline-flex items-center gap-2 text-body font-medium text-accent-brand hover:gap-3 transition-all group"
           >
             Все участники
             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
@@ -62,8 +62,8 @@ export function CandidatesSection() {
               className={cn(
                 'shrink-0 px-3.5 py-1.5 rounded-badge text-label font-medium transition-all duration-200',
                 activeRegion === tag
-                  ? 'bg-red text-white border border-red'
-                  : 'bg-ash text-fog border border-white/10 hover:border-white/30'
+                  ? 'bg-accent-brand text-accent-brand-text border border-accent-brand'
+                  : 'bg-surface-2 text-text-muted border border-line hover:border-text-muted'
               )}
             >
               {tag}
@@ -81,7 +81,7 @@ export function CandidatesSection() {
             {filtered.map((candidate) => (
               <div
                 key={candidate.id}
-                className="shrink-0 w-[280px] md:w-[300px] bg-cinder rounded-card overflow-hidden border border-white/[0.08] group hover:border-red/30 transition-all duration-300 hover:-translate-y-1"
+                className="shrink-0 w-[280px] md:w-[300px] bg-surface rounded-card overflow-hidden border border-line group hover:border-red/30 transition-all duration-300 hover:-translate-y-1"
                 style={{ scrollSnapAlign: 'start' }}
               >
                 {/* Photo */}
@@ -94,10 +94,10 @@ export function CandidatesSection() {
                 </div>
                 {/* Info */}
                 <div className="p-5">
-                  <h3 className="text-body-lg font-bold text-white mb-1">{candidate.name}</h3>
-                  <p className="text-label text-steel mb-2">{candidate.region} &middot; {candidate.district}</p>
-                  <p className="text-body text-fog line-clamp-2 mb-4">{candidate.promise}</p>
-                  <button className="w-full py-2.5 bg-ash border border-white/[0.12] rounded-button text-body font-medium text-white hover:border-red/40 hover:bg-[#2a2a2a] transition-all">
+                  <h3 className="text-body-lg font-bold text-text-base mb-1">{candidate.name}</h3>
+                  <p className="text-label text-text-muted mb-2">{candidate.region} &middot; {candidate.district}</p>
+                  <p className="text-body text-text-muted line-clamp-2 mb-4">{candidate.promise}</p>
+                  <button className="w-full py-2.5 bg-surface-2 border border-line rounded-button text-body font-medium text-text-base hover:border-red/40 hover:bg-line transition-all">
                     Поддержать
                   </button>
                 </div>
@@ -108,14 +108,14 @@ export function CandidatesSection() {
           {/* Scroll buttons */}
           <button
             onClick={() => scroll(-1)}
-            className="absolute left-0 top-1/3 -translate-x-1/2 w-10 h-10 rounded-full bg-cinder border border-white/20 flex items-center justify-center text-white hover:bg-red hover:border-red transition-all hidden lg:flex"
+            className="absolute left-0 top-1/3 -translate-x-1/2 w-10 h-10 rounded-full bg-surface border border-line flex items-center justify-center text-text-base hover:bg-accent-brand hover:border-accent-brand hover:text-accent-brand-text transition-all hidden lg:flex"
             aria-label="Scroll left"
           >
             <ChevronLeft size={18} />
           </button>
           <button
             onClick={() => scroll(1)}
-            className="absolute right-0 top-1/3 translate-x-1/2 w-10 h-10 rounded-full bg-cinder border border-white/20 flex items-center justify-center text-white hover:bg-red hover:border-red transition-all hidden lg:flex"
+            className="absolute right-0 top-1/3 translate-x-1/2 w-10 h-10 rounded-full bg-surface border border-line flex items-center justify-center text-text-base hover:bg-accent-brand hover:border-accent-brand hover:text-accent-brand-text transition-all hidden lg:flex"
             aria-label="Scroll right"
           >
             <ChevronRight size={18} />
