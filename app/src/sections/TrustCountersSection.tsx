@@ -81,7 +81,7 @@ export function TrustCountersSection() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="bg-black overflow-hidden">
+    <section ref={sectionRef} className="bg-bg overflow-hidden">
       {/* ── Stats block ── */}
       <div className="max-w-[1280px] mx-auto px-4 md:px-10 pt-20 md:pt-28 pb-16 md:pb-20">
         {/* Header row */}
@@ -89,12 +89,12 @@ export function TrustCountersSection() {
           <TextReveal
             key={heading}
             tag="h2"
-            className="text-[32px] md:text-[40px] lg:text-[48px] font-bold text-white leading-[1.1]"
+            className="text-[32px] md:text-[40px] lg:text-[48px] font-bold text-text-base leading-[1.1]"
           >
             {heading}
           </TextReveal>
           <div className="flex items-end">
-            <p className="text-[18px] md:text-[20px] font-light text-fog leading-relaxed">
+            <p className="text-[18px] md:text-[20px] font-light text-text-muted leading-relaxed">
               {intro}
             </p>
           </div>
@@ -103,21 +103,21 @@ export function TrustCountersSection() {
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-4 md:gap-8">
           {counters.map((c, i) => (
-            <div key={c.label} className="border-l border-white/20 pl-5 md:pl-8">
+            <div key={c.label} className="border-l border-line pl-5 md:pl-8">
               <div className="flex items-baseline gap-1 mb-1 flex-wrap">
                 <CountUp
                   target={c.target}
                   triggered={triggered}
                   duration={2000 + i * 150}
-                  className="text-[44px] sm:text-[56px] md:text-[72px] lg:text-[80px] font-bold text-white leading-none"
+                  className="text-[44px] sm:text-[56px] md:text-[72px] lg:text-[80px] font-bold text-text-base leading-none"
                 />
                 {c.suffix && (
-                  <span className="text-[24px] sm:text-[32px] md:text-[40px] font-bold text-white leading-none">
+                  <span className="text-[24px] sm:text-[32px] md:text-[40px] font-bold text-text-base leading-none">
                     {c.suffix}
                   </span>
                 )}
               </div>
-              <p className="text-[14px] md:text-[20px] lg:text-[26px] font-bold text-white/70 leading-tight">
+              <p className="text-[14px] md:text-[20px] lg:text-[26px] font-bold text-text-muted leading-tight">
                 {c.label}
               </p>
             </div>

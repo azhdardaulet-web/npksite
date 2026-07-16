@@ -78,7 +78,7 @@ export function HeroSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative grid grid-cols-1 lg:grid-cols-2 bg-coal"
+      className="relative grid grid-cols-1 lg:grid-cols-2 bg-bg"
     >
       {/* Grain overlay */}
       <div className="hero-grain pointer-events-none absolute inset-0 z-20 opacity-[0.03]" aria-hidden="true" />
@@ -98,7 +98,7 @@ export function HeroSection() {
         <div ref={accentLineRef} className="h-[3px] bg-red mb-6" style={{ width: 0 }} />
 
         {/* Headline — static lines */}
-        <h1 className="hero-reveal font-formular text-[32px] sm:text-[42px] md:text-[52px] lg:text-[48px] xl:text-[58px] font-bold text-white leading-[1.08] tracking-tight uppercase mb-1">
+        <h1 className="hero-reveal font-formular text-[32px] sm:text-[42px] md:text-[52px] lg:text-[48px] xl:text-[58px] font-bold text-text-base leading-[1.08] tracking-tight uppercase mb-1">
           {titleLines.map((line, i) => (
             <span key={i}>{line}{i < titleLines.length - 1 && <br />}</span>
           ))}
@@ -114,7 +114,7 @@ export function HeroSection() {
         </div>
 
         {/* Subtitle */}
-        <p className="hero-reveal text-[16px] md:text-[18px] font-light text-fog mb-10 max-w-[480px] leading-relaxed">
+        <p className="hero-reveal text-[16px] md:text-[18px] font-light text-text-muted mb-10 max-w-[480px] leading-relaxed">
           {subtitle}
         </p>
 
