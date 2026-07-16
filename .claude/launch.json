@@ -16,6 +16,14 @@
       "port": 5190,
       "autoPort": false,
       "cwd": "/Users/dauletazhdar/Documents/DA digital/НПК/npksite/cms/packages/cms"
+    },
+    {
+      "name": "npksite-cms-api",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3001,
+      "autoPort": false,
+      "cwd": "/Users/dauletazhdar/Documents/DA digital/НПК/npksite/cms/packages/api"
     }
   ]
 }

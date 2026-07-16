@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s http://localhost:*)",
+      "Bash(source .venv/bin/activate)",
+      "Bash(npm run build*)",
+      "Bash(psql \"postgresql://darrail:dev_pass@localhost:5432/darrail_cms\" -c \"SELECT*)",
+      "Bash(git config --list*)",
+      "Bash(brew services info *)"
+    ]
+  }
+}

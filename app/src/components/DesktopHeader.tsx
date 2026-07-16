@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 /* ─── Dropdown nav structure ───────────────────────────────────────── */
 type SubLink = { label: string; href: string; desc?: string };
@@ -147,12 +148,12 @@ const socials = [
 function StandardDropdown({ items }: { items: SubLink[] }) {
   return (
     <div className="absolute top-full left-0 pt-1 z-50 min-w-[220px]">
-      <div className="bg-[#141414] border border-white/[0.08] shadow-2xl py-1.5">
+      <div className="bg-surface border border-line shadow-2xl py-1.5">
         {items.map((item) => (
           <Link
             key={item.href + item.label}
             to={item.href}
-            className="block px-5 py-2.5 text-[12px] font-medium tracking-[0.03em] text-white/60 hover:text-white hover:bg-white/[0.05] transition-colors duration-100 whitespace-nowrap"
+            className="block px-5 py-2.5 text-[12px] font-medium tracking-[0.03em] text-text-muted hover:text-text-base hover:bg-surface-2 transition-colors duration-100 whitespace-nowrap"
           >
             {item.label}
           </Link>
@@ -167,27 +168,27 @@ function BranchesDropdown() {
   const oblasts = BRANCHES_LIST.slice(3);
   return (
     <div className="absolute top-full left-0 pt-1 z-50 w-[480px]">
-      <div className="bg-[#141414] border border-white/[0.08] shadow-2xl p-4">
-        <div className="text-[10px] font-semibold tracking-[0.12em] uppercase text-white/30 mb-2 px-1">Города республиканского значения</div>
+      <div className="bg-surface border border-line shadow-2xl p-4">
+        <div className="text-[10px] font-semibold tracking-[0.12em] uppercase text-text-muted mb-2 px-1">Города республиканского значения</div>
         <div className="flex gap-1 mb-3 flex-wrap">
           {cities.map((b) => (
             <Link key={b.short} to={b.href}
-              className="px-3 py-1.5 text-[12px] font-medium text-white/70 hover:text-white bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.07] transition-all duration-100">
+              className="px-3 py-1.5 text-[12px] font-medium text-text-muted hover:text-text-base bg-surface-2 hover:bg-line border border-line transition-all duration-100">
               {b.short}
             </Link>
           ))}
         </div>
-        <div className="text-[10px] font-semibold tracking-[0.12em] uppercase text-white/30 mb-2 px-1">Областные филиалы</div>
+        <div className="text-[10px] font-semibold tracking-[0.12em] uppercase text-text-muted mb-2 px-1">Областные филиалы</div>
         <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
           {oblasts.map((b) => (
             <Link key={b.short} to={b.href}
-              className="px-1 py-1.5 text-[12px] font-medium text-white/60 hover:text-white hover:bg-white/[0.05] transition-colors duration-100 truncate">
+              className="px-1 py-1.5 text-[12px] font-medium text-text-muted hover:text-text-base hover:bg-surface-2 transition-colors duration-100 truncate">
               {b.short}
             </Link>
           ))}
         </div>
-        <div className="mt-3 pt-3 border-t border-white/[0.06]">
-          <Link to="/filialy" className="text-[11px] font-semibold text-[#DC0F2D] hover:text-[#ff4459] tracking-[0.06em] uppercase transition-colors">
+        <div className="mt-3 pt-3 border-t border-line">
+          <Link to="/filialy" className="text-[11px] font-semibold text-accent-brand hover:brightness-125 tracking-[0.06em] uppercase transition-colors">
             Все филиалы →
           </Link>
         </div>
@@ -224,8 +225,8 @@ function NavMenuItem({ item }: { item: NavItem }) {
         className={cn(
           'relative h-full flex items-center gap-1 px-3 text-[12px] font-medium tracking-[0.05em] uppercase transition-colors duration-150 whitespace-nowrap select-none',
           isActive
-            ? 'text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-[#DC0F2D]'
-            : 'text-white/55 hover:text-white'
+            ? 'text-text-base after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-accent-brand'
+            : 'text-text-muted hover:text-text-base'
         )}
       >
         {item.label}
@@ -255,7 +256,7 @@ export function DesktopHeader() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 hidden md:block">
       {/* ── Top bar: Logo | Socials | Join button ── */}
-      <div className="bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-white/[0.06]">
+      <div className="bg-bg/95 backdrop-blur-xl border-b border-line">
         <div className="max-w-[1440px] mx-auto px-8 h-[64px] flex items-center gap-6">
           <Link to="/" className="shrink-0 flex items-center">
             <img
@@ -273,15 +274,15 @@ export function DesktopHeader() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={s.label}
-                className="w-9 h-9 flex items-center justify-center rounded-lg text-white/50 hover:text-white hover:bg-white/[0.07] transition-all duration-150"
+                className="w-9 h-9 flex items-center justify-center rounded-lg text-text-muted hover:text-text-base hover:bg-surface-2 transition-all duration-150"
               >
                 {s.icon}
               </a>
             ))}
           </div>
-          <div className="w-px h-6 bg-white/10 shrink-0" />
+          <div className="w-px h-6 bg-line shrink-0" />
           <Link to="/vstupit" className="shrink-0">
-            <button className="px-6 py-2.5 bg-[#DC0F2D] hover:bg-[#b80d25] text-white text-[13px] font-semibold tracking-[0.08em] uppercase transition-colors duration-150 rounded-none">
+            <button className="px-6 py-2.5 bg-accent-brand hover:brightness-90 text-accent-brand-text text-[13px] font-semibold tracking-[0.08em] uppercase transition-colors duration-150 rounded-none">
               Присоединиться
             </button>
           </Link>
@@ -289,7 +290,7 @@ export function DesktopHeader() {
       </div>
 
       {/* ── Bottom bar: Main nav ── */}
-      <div className="bg-[#111111]/95 backdrop-blur-xl border-b border-white/[0.05]">
+      <div className="bg-surface/95 backdrop-blur-xl border-b border-line">
         <div className="max-w-[1440px] mx-auto px-8 h-[44px] flex items-center justify-between">
           <nav className="flex items-center h-full">
             {NAV.map((item) => (
@@ -298,22 +299,23 @@ export function DesktopHeader() {
           </nav>
 
           <div className="flex items-center gap-0.5 shrink-0">
-            <div className="flex items-center gap-1 mr-2 border-r border-white/[0.08] pr-3">
+            <div className="flex items-center gap-1 mr-2 border-r border-line pr-3">
               <IconGlobe />
               <button
                 onClick={() => setLang('kz')}
-                className={cn('text-[12px] font-medium tracking-[0.04em] transition-colors', lang === 'kz' ? 'text-white' : 'text-white/45 hover:text-white')}
+                className={cn('text-[12px] font-medium tracking-[0.04em] transition-colors', lang === 'kz' ? 'text-text-base' : 'text-text-muted hover:text-text-base')}
               >ҚАЗ</button>
-              <span className="text-white/20 text-[10px]">|</span>
+              <span className="text-text-muted text-[10px]">|</span>
               <button
                 onClick={() => setLang('ru')}
-                className={cn('text-[12px] font-medium tracking-[0.04em] transition-colors', lang === 'ru' ? 'text-white' : 'text-white/45 hover:text-white')}
+                className={cn('text-[12px] font-medium tracking-[0.04em] transition-colors', lang === 'ru' ? 'text-text-base' : 'text-text-muted hover:text-text-base')}
               >РУС</button>
             </div>
-            <Link to="/search" className="w-9 h-9 flex items-center justify-center text-white/45 hover:text-white hover:bg-white/[0.06] rounded transition-all duration-150">
+            <ThemeToggle />
+            <Link to="/search" className="w-9 h-9 flex items-center justify-center text-text-muted hover:text-text-base hover:bg-surface-2 rounded transition-all duration-150">
               <IconSearch />
             </Link>
-            <button aria-label="Специальные возможности" className="w-9 h-9 flex items-center justify-center text-white/45 hover:text-white hover:bg-white/[0.06] rounded transition-all duration-150">
+            <button aria-label="Специальные возможности" className="w-9 h-9 flex items-center justify-center text-text-muted hover:text-text-base hover:bg-surface-2 rounded transition-all duration-150">
               <IconAccessibility />
             </button>
           </div>

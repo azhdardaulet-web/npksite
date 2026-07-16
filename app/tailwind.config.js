@@ -20,6 +20,19 @@ module.exports = {
           glow: 'rgba(219,31,38,0.15)',
         },
         whatsapp: '#25d166',
+        // ─── Семантические токены темы (Этап 2) — роль, не значение ───────
+        // Использовать в новых/мигрируемых компонентах вместо bg-black,
+        // text-white и т.п., чтобы текст и фон не сливались при смене темы.
+        // rgb(var(--x-rgb) / <alpha-value>) — так Tailwind умеет применять
+        // модификаторы прозрачности (bg-bg/95) к CSS-переменным.
+        bg: 'rgb(var(--bg-rgb) / <alpha-value>)',
+        surface: 'rgb(var(--surface-rgb) / <alpha-value>)',
+        'surface-2': 'rgb(var(--surface-2-rgb) / <alpha-value>)',
+        'text-base': 'rgb(var(--text-rgb) / <alpha-value>)',
+        'text-muted': 'rgb(var(--text-muted-rgb) / <alpha-value>)',
+        line: 'rgb(var(--line-rgb) / <alpha-value>)',
+        'accent-brand': 'rgb(var(--accent-brand-rgb) / <alpha-value>)',
+        'accent-brand-text': 'rgb(var(--accent-brand-text-rgb) / <alpha-value>)',
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const IconGlobe = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -32,7 +33,7 @@ export function MobileHeader() {
   const activeLabel = lang === 'ru' ? 'РУС' : 'ҚАЗ';
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 md:hidden bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-white/[0.06]">
+    <header className="fixed top-0 left-0 right-0 z-50 md:hidden bg-bg/95 backdrop-blur-xl border-b border-line">
       <div className="flex items-center justify-between gap-2 px-4 h-[56px]">
         {/* Logo */}
         <Link to="/" className="shrink-0 flex items-center">
@@ -41,15 +42,10 @@ export function MobileHeader() {
 
         <div className="flex items-center gap-2 shrink-0">
           {/* Compact language switcher */}
-          <div ref={ref} style={{ position: 'relative' }}>
+          <div ref={ref} className="relative">
             <button
               onClick={() => setOpen(v => !v)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 4,
-                padding: '5px 8px',
-                border: '1px solid rgba(255,255,255,0.12)',
-                background: 'transparent', color: 'white', cursor: 'pointer',
-              }}
+              className="flex items-center gap-1 px-2 py-[5px] border border-line bg-transparent text-text-base cursor-pointer"
             >
               <IconGlobe />
               <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em' }}>{activeLabel}</span>
@@ -57,19 +53,11 @@ export function MobileHeader() {
             </button>
 
             {open && (
-              <div style={{
-                position: 'absolute', top: 'calc(100% + 4px)', right: 0,
-                background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.12)',
-                minWidth: '100%',
-              }}>
+              <div className="absolute top-[calc(100%+4px)] right-0 bg-surface border border-line min-w-full">
                 <button
                   onClick={() => { setLang(other); setOpen(false); }}
-                  style={{
-                    display: 'block', width: '100%', padding: '8px 12px',
-                    fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
-                    color: 'rgba(255,255,255,0.7)', background: 'transparent',
-                    cursor: 'pointer', textAlign: 'center',
-                  }}
+                  className="block w-full py-2 px-3 text-text-muted bg-transparent cursor-pointer text-center"
+                  style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em' }}
                 >
                   {otherLabel}
                 </button>
@@ -77,9 +65,11 @@ export function MobileHeader() {
             )}
           </div>
 
+          <ThemeToggle className="w-8 h-8" />
+
           {/* Join button */}
           <Link to="/vstupit">
-            <button className="px-3 py-1.5 bg-[#DC0F2D] hover:bg-[#b80d25] text-white text-[11px] font-semibold tracking-[0.08em] uppercase transition-colors whitespace-nowrap">
+            <button className="px-3 py-1.5 bg-accent-brand hover:brightness-90 text-accent-brand-text text-[11px] font-semibold tracking-[0.08em] uppercase transition-colors whitespace-nowrap">
               Присоединиться
             </button>
           </Link>

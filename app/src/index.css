@@ -63,6 +63,47 @@
     --border: 0 0% 100% / 0.08;
     --input: 0 0% 12%;
     --ring: 358 80% 49%;
+
+    /* ─── Семантические токены темы (светлая — по умолчанию) ───────────────
+       Роль, а не значение: компоненты берут --bg/--text/... по смыслу,
+       поэтому текст и фон всегда согласованная пара, независимо от темы.
+       *-rgb — те же цвета как "R G B" для Tailwind-модификаторов прозрачности
+       (bg-bg/95 и т.п.): Tailwind не умеет применять /alpha к hex-переменным. */
+    --bg: #ffffff;
+    --bg-rgb: 255 255 255;
+    --surface: #f4f5f7;
+    --surface-rgb: 244 245 247;
+    --surface-2: #e9eaed;
+    --surface-2-rgb: 233 234 237;
+    --text: #111318;
+    --text-rgb: 17 19 24;
+    --text-muted: #5b6068;
+    --text-muted-rgb: 91 96 104;
+    --line: #e3e5e8;
+    --line-rgb: 227 229 232;
+    --accent-brand: #d1272e;
+    --accent-brand-rgb: 209 39 46;
+    --accent-brand-text: #ffffff;
+    --accent-brand-text-rgb: 255 255 255;
+  }
+
+  .dark {
+    --bg: #0c0d10;
+    --bg-rgb: 12 13 16;
+    --surface: #16181d;
+    --surface-rgb: 22 24 29;
+    --surface-2: #1e2127;
+    --surface-2-rgb: 30 33 39;
+    --text: #f2f3f5;
+    --text-rgb: 242 243 245;
+    --text-muted: #9aa0a8;
+    --text-muted-rgb: 154 160 168;
+    --line: #262930;
+    --line-rgb: 38 41 48;
+    --accent-brand: #e5383f;
+    --accent-brand-rgb: 229 56 63;
+    --accent-brand-text: #ffffff;
+    --accent-brand-text-rgb: 255 255 255;
   }
 
   html {
