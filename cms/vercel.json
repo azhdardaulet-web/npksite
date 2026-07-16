@@ -1,0 +1,5 @@
+{
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm --filter shared build && pnpm --filter cms build",
+  "outputDirectory": "packages/cms/dist"
+}
