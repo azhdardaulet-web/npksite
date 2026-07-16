@@ -71,7 +71,7 @@ export function StatsVideoSection() {
   }, []);
 
   return (
-    <div ref={pinRef} className="w-full bg-black">
+    <div ref={pinRef} className="w-full bg-bg">
       <div ref={videoWrapRef} className="w-full" style={{ willChange: 'clip-path' }}>
         {/* Mobile: natural 16:9 block. Desktop: filled via JS above. */}
         <video

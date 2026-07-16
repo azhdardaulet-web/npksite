@@ -73,12 +73,12 @@ export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } =
   }, [paused, news.length]);
 
   return (
-    <section className="bg-[#0a0a0a] pt-6 pb-16 md:pt-8 md:pb-20 overflow-hidden">
+    <section className="bg-bg pt-6 pb-16 md:pt-8 md:pb-20 overflow-hidden">
       <div className="max-w-[1280px] mx-auto px-4 md:px-10">
 
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-[28px] md:text-[36px] font-bold text-white">Новости</h2>
+          <h2 className="text-[28px] md:text-[36px] font-bold text-text-base">Новости</h2>
           {!hideAllNewsLink && (
             <Link to="/novosti"
                className="inline-flex items-center gap-1.5 text-[14px] font-medium text-red hover:text-red/70 transition-colors">
@@ -110,7 +110,7 @@ export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } =
             {/* Tag */}
             <span
               key={`tag-${mainIdx}`}
-              className="absolute top-4 left-4 px-3 py-1 bg-red text-white text-[11px] font-bold uppercase tracking-wider news-slide-content"
+              className="absolute top-4 left-4 px-3 py-1 bg-accent-brand text-accent-brand-text text-[11px] font-bold uppercase tracking-wider news-slide-content"
             >
               {getTag(mainNews)}
             </span>
@@ -146,10 +146,10 @@ export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } =
           </div>
 
           {/* Right: side news list — data-lenis-prevent stops Lenis from eating wheel events */}
-          <div data-lenis-prevent className="flex flex-col divide-y divide-white/[0.07] border-l border-white/[0.07] news-side-scroll" style={{ maxHeight: 520, overflowY: 'auto' }}>
+          <div data-lenis-prevent className="flex flex-col divide-y divide-line border-l border-line news-side-scroll" style={{ maxHeight: 520, overflowY: 'auto' }}>
             {sideNews.map((item) => (
               <div key={item.id}
-                className="flex gap-3 p-4 cursor-pointer hover:bg-white/[0.03] transition-colors group"
+                className="flex gap-3 p-4 cursor-pointer hover:bg-surface-2 transition-colors group"
                 onClick={() => setMainIdx(news.indexOf(item))}>
                 {/* Thumb */}
                 <div className="shrink-0 w-[80px] h-[60px] overflow-hidden">
@@ -161,10 +161,10 @@ export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } =
                 {/* Text */}
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-bold text-red uppercase tracking-wider">{getTag(item)}</span>
-                    <span className="text-[10px] text-steel">{formatDate(item.publishedAt)}</span>
+                    <span className="text-[10px] font-bold text-accent-brand uppercase tracking-wider">{getTag(item)}</span>
+                    <span className="text-[10px] text-text-muted">{formatDate(item.publishedAt)}</span>
                   </div>
-                  <p className="text-[13px] font-medium text-white leading-snug line-clamp-2 group-hover:text-fog transition-colors">
+                  <p className="text-[13px] font-medium text-text-base leading-snug line-clamp-2 group-hover:text-text-muted transition-colors">
                     {item.title}
                   </p>
                 </div>
@@ -173,7 +173,7 @@ export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } =
             {/* All link */}
             <div className="p-4 mt-auto">
               <Link to="/novosti"
-                className="inline-flex items-center gap-1.5 text-[13px] text-fog hover:text-white transition-colors">
+                className="inline-flex items-center gap-1.5 text-[13px] text-text-muted hover:text-text-base transition-colors">
                 Все материалы <ArrowUpRight size={13} />
               </Link>
             </div>
