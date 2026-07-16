@@ -90,22 +90,21 @@ export function ProgramSection() {
 
   return (
     <section
-      className="relative w-full overflow-hidden py-12 md:py-16"
-      style={{ background: '#0a0a0a' }}
+      className="relative w-full overflow-hidden py-12 md:py-16 bg-bg"
     >
       <style>{MOBILE_STYLES}</style>
       <div className="relative z-10 max-w-[1480px] mx-auto px-4 md:px-8">
 
         {/* ── Header ────────────────────────────────────── */}
         <div className="max-w-[860px] mx-auto text-center mb-10">
-          <p className="text-[15px] text-red mb-3">Программа</p>
+          <p className="text-[15px] text-accent-brand mb-3">Программа</p>
           <h2
-            className="font-bold uppercase text-white"
+            className="font-bold uppercase text-text-base"
             style={{ fontSize: 'clamp(32px, 5vw, 64px)', lineHeight: '88%', letterSpacing: '-0.035em' }}
           >
             {heading}
           </h2>
-          <p className="mt-4 text-[16px] md:text-[20px] font-light leading-relaxed" style={{ color: 'rgba(255,255,255,0.84)' }}>
+          <p className="mt-4 text-[16px] md:text-[20px] font-light leading-relaxed text-text-muted">
             {subtitle}
           </p>
         </div>

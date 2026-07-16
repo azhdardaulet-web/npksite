@@ -44,8 +44,8 @@ export function JoinSection() {
     padding: '15px 0',
     background: 'transparent',
     border: 'none',
-    borderBottom: '1px solid rgba(255,255,255,0.2)',
-    color: '#fff',
+    borderBottom: '1px solid var(--line)',
+    color: 'var(--text)',
     fontSize: 15,
     outline: 'none',
     boxSizing: 'border-box',
@@ -56,7 +56,7 @@ export function JoinSection() {
   const labelStyle: React.CSSProperties = {
     fontSize: 10,
     letterSpacing: '0.14em',
-    color: 'rgba(255,255,255,0.4)',
+    color: 'var(--text-muted)',
     textTransform: 'uppercase',
     display: 'block',
     marginBottom: 0,
@@ -65,7 +65,7 @@ export function JoinSection() {
   };
 
   return (
-    <section style={{ background: '#0a0a0a', position: 'relative', overflow: 'hidden' }}>
+    <section style={{ background: 'var(--bg)', position: 'relative', overflow: 'hidden' }}>
       <div style={{
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
@@ -80,10 +80,10 @@ export function JoinSection() {
               <p style={{ fontSize: 11, letterSpacing: '0.18em', color: '#db1f26', textTransform: 'uppercase', fontWeight: 600, margin: '0 0 16px', fontFamily: "'Formular',Arial,sans-serif" }}>
                 Готово
               </p>
-              <h2 style={{ fontSize: 36, fontWeight: 700, color: '#fff', lineHeight: 1.1, margin: '0 0 16px', fontFamily: "'Formular',Arial,sans-serif" }}>
+              <h2 style={{ fontSize: 36, fontWeight: 700, color: 'var(--text)', lineHeight: 1.1, margin: '0 0 16px', fontFamily: "'Formular',Arial,sans-serif" }}>
                 Заявка отправлена
               </h2>
-              <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.45)', margin: 0, fontFamily: "'Formular',Arial,sans-serif" }}>
+              <p style={{ fontSize: 15, color: 'var(--text-muted)', margin: 0, fontFamily: "'Formular',Arial,sans-serif" }}>
                 Мы свяжемся с вами в ближайшее время.
               </p>
             </div>
@@ -93,12 +93,12 @@ export function JoinSection() {
               <p style={{ fontSize: 11, letterSpacing: '0.18em', color: '#db1f26', textTransform: 'uppercase', fontWeight: 600, margin: '0 0 16px', fontFamily: "'Formular',Arial,sans-serif" }}>
                 Присоединяйтесь
               </p>
-              <h2 style={{ fontSize: 38, fontWeight: 700, color: '#fff', lineHeight: 1.08, margin: '0 0 12px', letterSpacing: '-0.02em', fontFamily: "'Formular',Arial,sans-serif" }}>
+              <h2 style={{ fontSize: 38, fontWeight: 700, color: 'var(--text)', lineHeight: 1.08, margin: '0 0 12px', letterSpacing: '-0.02em', fontFamily: "'Formular',Arial,sans-serif" }}>
                 {titleLines.map((line, i) => (
                   <span key={i}>{line}{i < titleLines.length - 1 && <br />}</span>
                 ))}
               </h2>
-              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)', margin: '0 0 40px', fontFamily: "'Formular',Arial,sans-serif" }}>
+              <p style={{ fontSize: 14, color: 'var(--text-muted)', margin: '0 0 40px', fontFamily: "'Formular',Arial,sans-serif" }}>
                 {subtitle}
               </p>
 
@@ -113,7 +113,7 @@ export function JoinSection() {
                     value={fullName}
                     onChange={e => setFullName(e.target.value)}
                     onFocus={e => (e.currentTarget.style.borderBottomColor = '#db1f26')}
-                    onBlur={e => (e.currentTarget.style.borderBottomColor = 'rgba(255,255,255,0.2)')}
+                    onBlur={e => (e.currentTarget.style.borderBottomColor = 'var(--line)')}
                   />
                 </div>
 
@@ -128,7 +128,7 @@ export function JoinSection() {
                     value={phone}
                     onChange={e => setPhone(e.target.value)}
                     onFocus={e => (e.currentTarget.style.borderBottomColor = '#db1f26')}
-                    onBlur={e => (e.currentTarget.style.borderBottomColor = 'rgba(255,255,255,0.2)')}
+                    onBlur={e => (e.currentTarget.style.borderBottomColor = 'var(--line)')}
                   />
                 </div>
 
@@ -144,7 +144,7 @@ export function JoinSection() {
                     onClick={() => setConsent(p => !p)}
                     style={{
                       width: 18, height: 18, flexShrink: 0, marginTop: 2,
-                      border: `2px solid ${consent ? '#db1f26' : 'rgba(255,255,255,0.25)'}`,
+                      border: `2px solid ${consent ? '#db1f26' : 'var(--line)'}`,
                       background: consent ? '#db1f26' : 'transparent',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       transition: 'all .15s',
@@ -156,7 +156,7 @@ export function JoinSection() {
                       </svg>
                     )}
                   </span>
-                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', lineHeight: 1.6, fontFamily: "'Formular',Arial,sans-serif" }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6, fontFamily: "'Formular',Arial,sans-serif" }}>
                     Я даю согласие на обработку персональных данных в соответствии с{' '}
                     <a href="#" style={{ color: '#db1f26', textDecoration: 'none' }}>политикой конфиденциальности</a>
                   </span>
@@ -196,10 +196,10 @@ export function JoinSection() {
             alt=""
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
-          {/* dark overlay from left */}
+          {/* overlay from left, blends photo into section background */}
           <div style={{
             position: 'absolute', inset: 0,
-            background: 'linear-gradient(to right, #0a0a0a 0%, rgba(10,10,10,0.3) 50%, transparent 100%)',
+            background: 'linear-gradient(to right, var(--bg) 0%, rgb(var(--bg-rgb) / 0.3) 50%, transparent 100%)',
           }} />
           {/* red accent line top */}
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: '#db1f26' }} />
