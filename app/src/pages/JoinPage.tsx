@@ -68,18 +68,18 @@ export function JoinPage() {
 
         {submitted ? (
           <ScrollReveal>
-            <div className="bg-cinder rounded-card p-8 md:p-12 border border-white/[0.08] text-center">
+            <div className="bg-surface rounded-card p-8 md:p-12 border border-line text-center">
               <CheckCircle size={64} className="text-red mx-auto mb-4" />
-              <h3 className="text-heading font-bold text-white mb-2">Заявка принята!</h3>
-              <p className="text-body text-silver">Спасибо за интерес. Мы свяжемся с вами в ближайшее время.</p>
+              <h3 className="text-heading font-bold text-text-base mb-2">Заявка принята!</h3>
+              <p className="text-body text-text-base">Спасибо за интерес. Мы свяжемся с вами в ближайшее время.</p>
             </div>
           </ScrollReveal>
         ) : (
           <>
             {step === 1 && (
               <ScrollReveal>
-                <div className="bg-cinder rounded-card p-6 md:p-8 border border-white/[0.08]">
-                  <h3 className="text-heading-sm font-bold text-white mb-6 text-center">Выберите роль</h3>
+                <div className="bg-surface rounded-card p-6 md:p-8 border border-line">
+                  <h3 className="text-heading-sm font-bold text-text-base mb-6 text-center">Выберите роль</h3>
                   <div className="space-y-4">
                     {roles.map((role) => {
                       const Icon = role.icon;
@@ -90,13 +90,13 @@ export function JoinPage() {
                           className={`w-full flex items-start gap-4 p-5 rounded-card border transition-all duration-200 text-left ${
                             selectedRole === role.id
                               ? 'border-red bg-red/[0.08]'
-                              : 'border-white/[0.08] hover:border-white/20 bg-ash'
+                              : 'border-line hover:border-text-muted bg-surface-2'
                           }`}
                         >
                           <Icon size={28} strokeWidth={1.5} className="text-red shrink-0 mt-0.5" />
                           <div>
-                            <h4 className="text-body-lg font-bold text-white mb-1">{role.title}</h4>
-                            <p className="text-body text-fog">{role.description}</p>
+                            <h4 className="text-body-lg font-bold text-text-base mb-1">{role.title}</h4>
+                            <p className="text-body text-text-muted">{role.description}</p>
                           </div>
                         </button>
                       );
@@ -115,25 +115,25 @@ export function JoinPage() {
 
             {step === 2 && (
               <ScrollReveal>
-                <div className="bg-cinder rounded-card p-6 md:p-8 border border-white/[0.08]">
-                  <h3 className="text-heading-sm font-bold text-white mb-6">Заполните данные</h3>
+                <div className="bg-surface rounded-card p-6 md:p-8 border border-line">
+                  <h3 className="text-heading-sm font-bold text-text-base mb-6">Заполните данные</h3>
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <input type="text" placeholder="ФИО" required
                       value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full bg-ash border border-white/10 rounded-input px-4 py-3.5 text-body text-white placeholder:text-steel focus:border-red focus:shadow-focus outline-none transition-all" />
+                      className="w-full bg-surface-2 border border-line rounded-input px-4 py-3.5 text-body text-text-base placeholder:text-text-muted focus:border-red focus:shadow-focus outline-none transition-all" />
                     <input type="tel" placeholder="Телефон" required
                       value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full bg-ash border border-white/10 rounded-input px-4 py-3.5 text-body text-white placeholder:text-steel focus:border-red focus:shadow-focus outline-none transition-all" />
+                      className="w-full bg-surface-2 border border-line rounded-input px-4 py-3.5 text-body text-text-base placeholder:text-text-muted focus:border-red focus:shadow-focus outline-none transition-all" />
                     <input type="email" placeholder="Email (необязательно)"
                       value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full bg-ash border border-white/10 rounded-input px-4 py-3.5 text-body text-white placeholder:text-steel focus:border-red focus:shadow-focus outline-none transition-all" />
+                      className="w-full bg-surface-2 border border-line rounded-input px-4 py-3.5 text-body text-text-base placeholder:text-text-muted focus:border-red focus:shadow-focus outline-none transition-all" />
                     <input type="text" placeholder="Город" required
                       value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })}
-                      className="w-full bg-ash border border-white/10 rounded-input px-4 py-3.5 text-body text-white placeholder:text-steel focus:border-red focus:shadow-focus outline-none transition-all" />
+                      className="w-full bg-surface-2 border border-line rounded-input px-4 py-3.5 text-body text-text-base placeholder:text-text-muted focus:border-red focus:shadow-focus outline-none transition-all" />
                     {error && <p className="text-body text-red">{error}</p>}
                     <div className="flex gap-3">
                       <button type="button" onClick={() => setStep(1)}
-                        className="flex-1 py-3.5 border border-white/20 rounded-pill text-body font-medium text-white hover:bg-white/[0.06] transition-all">
+                        className="flex-1 py-3.5 border border-line rounded-pill text-body font-medium text-text-base hover:bg-surface-2 transition-all">
                         Назад
                       </button>
                       <PrimaryButton type="submit" className="flex-1" disabled={submitting}>

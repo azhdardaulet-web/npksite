@@ -73,21 +73,21 @@ export function ProjectsPage() {
       {/* BREADCRUMBS */}
       <div className="npp-crumbs">
         <Breadcrumb>
-          <BreadcrumbList style={{ color: 'rgba(255,255,255,.6)' }}>
+          <BreadcrumbList style={{ color: 'var(--text-muted)' }}>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
                 <Link to="/">Главная</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator style={{ color: 'rgba(255,255,255,.3)' }} />
+            <BreadcrumbSeparator style={{ color: 'var(--text-muted)' }} />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
                 <Link to="/o-partii">О партии</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator style={{ color: 'rgba(255,255,255,.3)' }} />
+            <BreadcrumbSeparator style={{ color: 'var(--text-muted)' }} />
             <BreadcrumbItem>
-              <BreadcrumbPage style={{ color: 'rgba(255,255,255,.9)' }}>Проекты</BreadcrumbPage>
+              <BreadcrumbPage style={{ color: 'var(--text)' }}>Проекты</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
