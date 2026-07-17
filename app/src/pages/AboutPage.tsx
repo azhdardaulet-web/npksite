@@ -117,15 +117,15 @@ export function AboutPage() {
       {/* ===== BREADCRUMBS ===== */}
       <div className="npo-crumbs">
         <Breadcrumb>
-          <BreadcrumbList style={{ color: 'rgba(255,255,255,.6)' }}>
+          <BreadcrumbList style={{ color: 'var(--text-muted)' }}>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
                 <Link to="/">Главная</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator style={{ color: 'rgba(255,255,255,.3)' }} />
+            <BreadcrumbSeparator style={{ color: 'var(--text-muted)' }} />
             <BreadcrumbItem>
-              <BreadcrumbPage style={{ color: 'rgba(255,255,255,.9)' }}>О партии</BreadcrumbPage>
+              <BreadcrumbPage style={{ color: 'var(--text)' }}>О партии</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -248,7 +248,7 @@ export function AboutPage() {
       </section>
 
       {/* ===== МЕТОДЫ ПАРТИИ ===== */}
-      <section className="npo-section" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <section className="npo-section" style={{ borderTop: '1px solid var(--line)' }}>
         <ScrollReveal>
           <div className="npo-section__header">
             <span className="npo-section__eyebrow">Деятельность</span>
@@ -289,7 +289,7 @@ export function AboutPage() {
       </section>
 
       {/* ===== СТРУКТУРА ПАРТИИ ===== */}
-      <section className="npo-section" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <section className="npo-section" style={{ borderTop: '1px solid var(--line)' }}>
         <ScrollReveal>
           <div className="npo-section__header">
             <span className="npo-section__eyebrow">Организация</span>
@@ -332,7 +332,7 @@ export function AboutPage() {
       </section>
 
       {/* ===== НАША ЦЕЛЬ — SPLIT LAYOUT ===== */}
-      <section className="npo-goal-split" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <section className="npo-goal-split" style={{ borderTop: '1px solid var(--line)' }}>
         <ScrollReveal>
           <div className="npo-goal-split__inner">
             <div className="npo-goal-split__content">
@@ -368,7 +368,7 @@ export function AboutPage() {
       </section>
 
       {/* ===== НАПРАВЛЕНИЯ РАБОТЫ ===== */}
-      <section className="npo-section" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <section className="npo-section" style={{ borderTop: '1px solid var(--line)' }}>
         <ScrollReveal>
           <div className="npo-section__header" style={{ textAlign: 'center' }}>
             <span className="npo-section__eyebrow">Программа</span>

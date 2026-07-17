@@ -114,32 +114,32 @@ export function HistoryPage() {
 
   if (loading) {
     return (
-      <div style={{ background: '#050505', color: '#fff', minHeight: '100vh', paddingTop: 160, textAlign: 'center' }}>
-        <p style={{ color: 'rgba(255,255,255,.4)' }}>Загрузка...</p>
+      <div style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh', paddingTop: 160, textAlign: 'center' }}>
+        <p style={{ color: 'var(--text-muted)' }}>Загрузка...</p>
       </div>
     );
   }
 
   return (
-    <div style={{ background: '#050505', color: '#fff' }}>
+    <div style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       {/* BREADCRUMBS */}
       <section style={{ maxWidth: 1200, margin: '0 auto', padding: '128px 40px 0' }}>
         <Breadcrumb>
-          <BreadcrumbList style={{ color: 'rgba(255,255,255,.6)' }}>
+          <BreadcrumbList style={{ color: 'var(--text-muted)' }}>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
                 <Link to="/">Главная</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator style={{ color: 'rgba(255,255,255,.3)' }} />
+            <BreadcrumbSeparator style={{ color: 'var(--text-muted)' }} />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
                 <Link to="/o-partii">О партии</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator style={{ color: 'rgba(255,255,255,.3)' }} />
+            <BreadcrumbSeparator style={{ color: 'var(--text-muted)' }} />
             <BreadcrumbItem>
-              <BreadcrumbPage style={{ color: 'rgba(255,255,255,.9)' }}>История</BreadcrumbPage>
+              <BreadcrumbPage style={{ color: 'var(--text)' }}>История</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -159,9 +159,9 @@ export function HistoryPage() {
       {/* TICKER */}
       <div style={{
         overflow: 'hidden',
-        borderTop: '1px solid rgba(255,255,255,0.06)',
+        borderTop: '1px solid var(--line)',
         padding: '20px 0',
-        background: '#000001',
+        background: 'var(--bg)',
       }}>
         <div style={{
           display: 'flex',
@@ -172,7 +172,7 @@ export function HistoryPage() {
             <span key={i} style={{
               fontSize: '13px',
               fontWeight: 700,
-              color: 'rgba(255,255,255,0.25)',
+              color: 'var(--text-muted)',
               textTransform: 'uppercase',
               letterSpacing: '0.12em',
               paddingRight: '60px',
@@ -202,9 +202,9 @@ export function HistoryPage() {
         position: 'sticky',
         top: '108px',
         zIndex: 30,
-        background: 'rgba(5,5,5,0.96)',
+        background: 'rgb(var(--bg-rgb) / 0.96)',
         backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        borderBottom: '1px solid var(--line)',
         padding: '16px 40px 0',
       }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative' }}>
@@ -221,7 +221,7 @@ export function HistoryPage() {
                 style={{
                   fontSize: '14px',
                   fontWeight: i === activeIndex ? 700 : 600,
-                  color: i === activeIndex ? '#db1f26' : 'rgba(255,255,255,0.3)',
+                  color: i === activeIndex ? '#db1f26' : 'var(--text-muted)',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
                   padding: '4px 0',
@@ -229,10 +229,10 @@ export function HistoryPage() {
                   border: 'none',
                 }}
                 onMouseEnter={(e) => {
-                  if (i !== activeIndex) e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
+                  if (i !== activeIndex) e.currentTarget.style.color = 'var(--text)';
                 }}
                 onMouseLeave={(e) => {
-                  if (i !== activeIndex) e.currentTarget.style.color = 'rgba(255,255,255,0.3)';
+                  if (i !== activeIndex) e.currentTarget.style.color = 'var(--text-muted)';
                 }}
               >
                 {s.year}
@@ -242,7 +242,7 @@ export function HistoryPage() {
           <div style={{
             position: 'relative',
             height: '2px',
-            background: 'rgba(255,255,255,0.08)',
+            background: 'var(--line)',
             borderRadius: '2px',
             overflow: 'hidden',
           }}>
@@ -281,14 +281,14 @@ export function HistoryPage() {
             fontWeight: 800,
             lineHeight: 1,
             letterSpacing: '-0.04em',
-            color: '#fff',
+            color: 'var(--text)',
             transition: 'all 0.3s ease',
           }}>
             {animatedYear}
           </div>
           <div style={{
             fontSize: '15px',
-            color: 'rgba(255,255,255,0.6)',
+            color: 'var(--text-muted)',
             fontWeight: 600,
             lineHeight: '1.4',
             marginTop: '14px',
@@ -307,7 +307,7 @@ export function HistoryPage() {
               style={{
                 minHeight: '70vh',
                 padding: '40px 0 80px',
-                borderBottom: i === sections.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.06)',
+                borderBottom: i === sections.length - 1 ? 'none' : '1px solid var(--line)',
                 opacity: i === activeIndex ? 1 : 0.25,
                 transition: 'opacity 0.5s ease',
               }}
@@ -324,7 +324,7 @@ export function HistoryPage() {
               <p style={{
                 fontSize: '16px',
                 lineHeight: '1.7',
-                color: 'rgba(255,255,255,0.6)',
+                color: 'var(--text-muted)',
                 margin: '0 0 36px',
                 maxWidth: '640px',
               }}>
@@ -335,7 +335,7 @@ export function HistoryPage() {
                   borderRadius: '32px',
                   overflow: 'hidden',
                   maxWidth: '720px',
-                  background: '#111',
+                  background: 'var(--surface-2)',
                 }}>
                   <img
                     src={s.imageUrl}
@@ -368,7 +368,7 @@ export function HistoryPage() {
             </h2>
             <p style={{
               fontSize: '16px',
-              color: 'rgba(255,255,255,0.5)',
+              color: 'var(--text-muted)',
               lineHeight: '1.6',
               margin: '0 0 28px',
               maxWidth: '480px',
@@ -421,7 +421,7 @@ export function HistoryPage() {
             gap: 16px;
             margin-bottom: 32px;
             padding-bottom: 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            border-bottom: 1px solid var(--line);
           }
         }
       `}</style>
