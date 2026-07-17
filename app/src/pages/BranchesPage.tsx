@@ -23,8 +23,7 @@ export function BranchesPage() {
                   <path
                     key={rp.id}
                     d={rp.d}
-                    fill={selectedRegion?.id === rp.id ? 'rgba(219,31,38,0.25)' : '#1f1f1f'}
-                    stroke={selectedRegion?.id === rp.id ? '#db1f26' : 'rgba(255,255,255,0.08)'}
+                    style={{ fill: selectedRegion?.id === rp.id ? 'rgba(219,31,38,0.25)' : 'var(--surface-2)', stroke: selectedRegion?.id === rp.id ? '#db1f26' : 'var(--line)' }}
                     strokeWidth={selectedRegion?.id === rp.id ? 2 : 1}
                     className="transition-all duration-200 cursor-pointer hover:fill-[rgba(219,31,38,0.15)] hover:stroke-[#db1f26]"
                     onClick={() => setSelectedRegion(region || null)}
@@ -32,9 +31,9 @@ export function BranchesPage() {
                 );
               })}
               {regionLabels.map((rl) => (
-                <text key={rl.id} x={rl.x} y={rl.y} fill="#6b6b6b" fontSize={rl.fontSize || 10}
+                <text key={rl.id} x={rl.x} y={rl.y} fontSize={rl.fontSize || 10}
                   fontWeight={500} textAnchor="middle" className="pointer-events-none select-none"
-                  style={{ fontFamily: 'Inter, sans-serif' }}>{rl.label}</text>
+                  style={{ fontFamily: 'Inter, sans-serif', fill: 'var(--text-muted)' }}>{rl.label}</text>
               ))}
             </svg>
           </div>
@@ -49,14 +48,14 @@ export function BranchesPage() {
                 className={`w-full flex items-center justify-between p-5 rounded-card border text-left transition-all duration-200 ${
                   selectedRegion?.id === region.id
                     ? 'border-red bg-red/[0.08]'
-                    : 'border-white/[0.08] bg-cinder hover:border-white/20'
+                    : 'border-line bg-surface hover:border-text-muted'
                 }`}
               >
                 <div>
-                  <h4 className="text-body-lg font-bold text-white">{region.name}</h4>
-                  <p className="text-label text-steel">{region.chairman}</p>
+                  <h4 className="text-body-lg font-bold text-text-base">{region.name}</h4>
+                  <p className="text-label text-text-muted">{region.chairman}</p>
                 </div>
-                <ChevronRight size={20} className="text-steel shrink-0" />
+                <ChevronRight size={20} className="text-text-muted shrink-0" />
               </button>
             </ScrollReveal>
           ))}
@@ -66,14 +65,14 @@ export function BranchesPage() {
         {selectedRegion && (
           <ScrollReveal>
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedRegion(null)}>
-              <div className="bg-cinder rounded-card p-6 border border-white/[0.08] max-w-md w-full relative" onClick={e => e.stopPropagation()}>
-                <button onClick={() => setSelectedRegion(null)} className="absolute top-4 right-4 text-steel hover:text-white transition-colors" aria-label="Закрыть">
+              <div className="bg-surface rounded-card p-6 border border-line max-w-md w-full relative" onClick={e => e.stopPropagation()}>
+                <button onClick={() => setSelectedRegion(null)} className="absolute top-4 right-4 text-text-muted hover:text-text-base transition-colors" aria-label="Закрыть">
                   <X size={20} />
                 </button>
-                <h4 className="text-heading font-bold text-white mb-4">НПК — {selectedRegion.name}</h4>
+                <h4 className="text-heading font-bold text-text-base mb-4">НПК — {selectedRegion.name}</h4>
                 <div className="space-y-3">
-                  <p className="text-body text-silver"><span className="text-fog">Председатель:</span> {selectedRegion.chairman}</p>
-                  <p className="text-body text-fog flex items-center gap-2"><MapPin size={14} className="shrink-0" />{selectedRegion.address}</p>
+                  <p className="text-body text-text-base"><span className="text-text-muted">Председатель:</span> {selectedRegion.chairman}</p>
+                  <p className="text-body text-text-muted flex items-center gap-2"><MapPin size={14} className="shrink-0" />{selectedRegion.address}</p>
                   <a href={`tel:${selectedRegion.phone.replace(/\s/g, '')}`} className="text-body text-red font-medium flex items-center gap-2 hover:underline">
                     <Phone size={14} className="shrink-0" />{selectedRegion.phone}
                   </a>

@@ -17,25 +17,25 @@ const deputies = [
 
 export function FactionCompositionPage() {
   return (
-    <div className="bg-coal min-h-screen">
+    <div className="bg-bg min-h-screen">
       {/* ===== BREADCRUMBS ===== */}
       <div className="max-w-[1280px] mx-auto px-4 md:px-10" style={{ paddingTop: 128 }}>
         <Breadcrumb>
-          <BreadcrumbList style={{ color: 'rgba(255,255,255,.6)' }}>
+          <BreadcrumbList style={{ color: 'var(--text-muted)' }}>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
                 <Link to="/">Главная</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator style={{ color: 'rgba(255,255,255,.3)' }} />
+            <BreadcrumbSeparator style={{ color: 'var(--text-muted)' }} />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
                 <Link to="/frakciya">Фракция</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator style={{ color: 'rgba(255,255,255,.3)' }} />
+            <BreadcrumbSeparator style={{ color: 'var(--text-muted)' }} />
             <BreadcrumbItem>
-              <BreadcrumbPage style={{ color: 'rgba(255,255,255,.9)' }}>Состав фракции</BreadcrumbPage>
+              <BreadcrumbPage style={{ color: 'var(--text)' }}>Состав фракции</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -54,12 +54,12 @@ export function FactionCompositionPage() {
         </div>
         <h1 style={{
           fontSize: 'clamp(36px, 6vw, 64px)', fontWeight: 800,
-          lineHeight: 0.95, letterSpacing: '-0.04em', margin: 0, color: '#fff',
+          lineHeight: 0.95, letterSpacing: '-0.04em', margin: 0, color: 'var(--text)',
         }}>
           Состав <span style={{ color: '#db1f26' }}>фракции</span>
         </h1>
         <p style={{
-          fontSize: 16, color: 'rgba(255,255,255,0.55)', lineHeight: 1.65,
+          fontSize: 16, color: 'var(--text-muted)', lineHeight: 1.65,
           marginTop: 20, maxWidth: 640,
         }}>
           Депутаты Народной партии Казахстана в Мажилисе Парламента РК — люди, которые
@@ -69,19 +69,19 @@ export function FactionCompositionPage() {
       </section>
 
       {/* ===== НАШИ ЛИЦА ===== */}
-      <section className="bg-coal py-20 md:py-28">
+      <section className="bg-bg py-20 md:py-28">
         <div className="max-w-[1280px] mx-auto px-4 md:px-10">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-8">
             <div>
-              <p className="text-label text-red font-medium mb-3 uppercase tracking-wider">Фракция</p>
+              <p className="text-label text-accent-brand font-medium mb-3 uppercase tracking-wider">Фракция</p>
               <TextReveal
                 tag="h2"
-                className="font-formular text-heading-md md:text-heading-lg text-white"
+                className="font-formular text-heading-md md:text-heading-lg text-text-base"
               >
                 Наши лица
               </TextReveal>
-              <p className="text-body-lg font-light text-fog mt-3 max-w-[560px]">
+              <p className="text-body-lg font-light text-text-muted mt-3 max-w-[560px]">
                 Депутаты фракции НПК в Мажилисе Парламента РК — представители народа,
                 которые каждый день работают над законами для страны.
               </p>
@@ -93,7 +93,7 @@ export function FactionCompositionPage() {
             {deputies.map((d) => (
               <div
                 key={d.name}
-                className="bg-cinder rounded-card overflow-hidden border border-white/[0.08] group hover:border-red/30 transition-all duration-300 hover:-translate-y-1"
+                className="bg-surface rounded-card overflow-hidden border border-line group hover:border-red/30 transition-all duration-300 hover:-translate-y-1"
               >
                 {/* Photo */}
                 <div className="aspect-[4/5] overflow-hidden">
@@ -105,9 +105,9 @@ export function FactionCompositionPage() {
                 </div>
                 {/* Info */}
                 <div className="p-5">
-                  <h3 className="text-body-lg font-bold text-white mb-1">{d.name}</h3>
-                  <p className="text-label text-red font-medium mb-2">{d.role}</p>
-                  <p className="text-body text-fog line-clamp-2">{d.committee}</p>
+                  <h3 className="text-body-lg font-bold text-text-base mb-1">{d.name}</h3>
+                  <p className="text-label text-accent-brand font-medium mb-2">{d.role}</p>
+                  <p className="text-body text-text-muted line-clamp-2">{d.committee}</p>
                 </div>
               </div>
             ))}
