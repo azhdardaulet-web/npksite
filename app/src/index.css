@@ -136,8 +136,8 @@
 
   body {
     font-family: 'Formular', 'Helvetica Neue', -apple-system, sans-serif;
-    background-color: var(--color-coal);
-    color: var(--color-snow);
+    background-color: var(--bg);
+    color: var(--text);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }

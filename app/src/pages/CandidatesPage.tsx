@@ -16,12 +16,12 @@ const FALLBACK: PublicCandidate[] = fallbackCandidates.map((c) => ({
 
 function CandidateSkeleton() {
   return (
-    <div className="bg-cinder rounded-card p-6 border border-white/[0.08] h-full flex flex-col">
-      <div className="w-[80px] h-[80px] rounded-full bg-white/[0.06] mb-4 shrink-0" />
-      <div className="h-4 w-2/3 bg-white/[0.08] rounded mb-2" />
-      <div className="h-3 w-1/2 bg-white/[0.06] rounded mb-3" />
-      <div className="h-3 w-full bg-white/[0.05] rounded mb-1" />
-      <div className="h-3 w-4/5 bg-white/[0.05] rounded" />
+    <div className="bg-surface rounded-card p-6 border border-line h-full flex flex-col">
+      <div className="w-[80px] h-[80px] rounded-full bg-surface-2 mb-4 shrink-0" />
+      <div className="h-4 w-2/3 bg-surface-2 rounded mb-2" />
+      <div className="h-3 w-1/2 bg-surface-2 rounded mb-3" />
+      <div className="h-3 w-full bg-surface-2 rounded mb-1" />
+      <div className="h-3 w-4/5 bg-surface-2 rounded" />
     </div>
   );
 }
@@ -49,13 +49,13 @@ export function CandidatesPage() {
             ? Array.from({ length: 8 }).map((_, i) => <CandidateSkeleton key={i} />)
             : candidates.map((candidate, index) => (
                 <ScrollReveal key={candidate.id} delay={index * 0.08}>
-                  <div className="bg-cinder rounded-card p-6 border border-white/[0.08] h-full flex flex-col transition-all duration-200 hover:border-red/30 hover:-translate-y-1">
-                    <div className="w-[80px] h-[80px] rounded-full overflow-hidden mb-4 shrink-0 bg-ash">
+                  <div className="bg-surface rounded-card p-6 border border-line h-full flex flex-col transition-all duration-200 hover:border-red/30 hover:-translate-y-1">
+                    <div className="w-[80px] h-[80px] rounded-full overflow-hidden mb-4 shrink-0 bg-surface-2">
                       {candidate.photoUrl && <img src={candidate.photoUrl} alt={candidate.name} className="w-full h-full object-cover" />}
                     </div>
-                    <h3 className="text-body-lg font-bold text-white mb-1">{candidate.name}</h3>
-                    <p className="text-label text-steel mb-2">{candidate.region}{candidate.district ? ` · ${candidate.district}` : ''}</p>
-                    <p className="text-body text-fog mb-4 flex-grow">{candidate.promise}</p>
+                    <h3 className="text-body-lg font-bold text-text-base mb-1">{candidate.name}</h3>
+                    <p className="text-label text-text-muted mb-2">{candidate.region}{candidate.district ? ` · ${candidate.district}` : ''}</p>
+                    <p className="text-body text-text-muted mb-4 flex-grow">{candidate.promise}</p>
                     <DarkActionButton fullWidth>Поддержать</DarkActionButton>
                   </div>
                 </ScrollReveal>

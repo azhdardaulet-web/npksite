@@ -12,8 +12,8 @@ export function DarkActionButton({ children, onClick, className, fullWidth }: Da
     <button
       onClick={onClick}
       className={cn(
-        'bg-ash text-white text-sm font-medium rounded-button px-4 py-2.5',
-        'border border-white/[0.12] hover:border-white/30 hover:bg-[#2a2a2a]',
+        'bg-surface-2 text-text-base text-sm font-medium rounded-button px-4 py-2.5',
+        'border border-line hover:border-text-muted hover:bg-line',
         'transition-all duration-200',
         fullWidth && 'w-full',
         className

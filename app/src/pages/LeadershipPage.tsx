@@ -12,11 +12,11 @@ const FALLBACK: PublicTeamMember[] = [
 
 function LeaderSkeleton() {
   return (
-    <div className="bg-cinder rounded-card p-6 border border-white/[0.08]">
-      <div className="w-16 h-16 rounded-full bg-white/[0.06] mb-4" />
-      <div className="h-4 w-1/2 bg-white/[0.08] rounded mb-2" />
-      <div className="h-3 w-1/3 bg-white/[0.06] rounded mb-3" />
-      <div className="h-3 w-full bg-white/[0.05] rounded" />
+    <div className="bg-surface rounded-card p-6 border border-line">
+      <div className="w-16 h-16 rounded-full bg-surface-2 mb-4" />
+      <div className="h-4 w-1/2 bg-surface-2 rounded mb-2" />
+      <div className="h-3 w-1/3 bg-surface-2 rounded mb-3" />
+      <div className="h-3 w-full bg-surface-2 rounded" />
     </div>
   );
 }
@@ -43,17 +43,17 @@ export function LeadershipPage() {
             ? Array.from({ length: 4 }).map((_, i) => <LeaderSkeleton key={i} />)
             : leaders.map((leader, index) => (
                 <ScrollReveal key={leader.id} delay={index * 0.08}>
-                  <div className="bg-cinder rounded-card p-6 border border-white/[0.08]">
-                    <div className="w-16 h-16 rounded-full bg-ash overflow-hidden flex items-center justify-center mb-4">
+                  <div className="bg-surface rounded-card p-6 border border-line">
+                    <div className="w-16 h-16 rounded-full bg-surface-2 overflow-hidden flex items-center justify-center mb-4">
                       {leader.photoUrl ? (
                         <img src={leader.photoUrl} alt={leader.name} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-xl font-bold text-red">{leader.name[0]}</span>
+                        <span className="text-xl font-bold text-accent-brand">{leader.name[0]}</span>
                       )}
                     </div>
-                    <h3 className="text-heading-sm font-bold text-white mb-1">{leader.name}</h3>
-                    <p className="text-label text-red font-medium mb-3">{leader.position}</p>
-                    <p className="text-body text-fog">{leader.bio}</p>
+                    <h3 className="text-heading-sm font-bold text-text-base mb-1">{leader.name}</h3>
+                    <p className="text-label text-accent-brand font-medium mb-3">{leader.position}</p>
+                    <p className="text-body text-text-muted">{leader.bio}</p>
                   </div>
                 </ScrollReveal>
               ))}

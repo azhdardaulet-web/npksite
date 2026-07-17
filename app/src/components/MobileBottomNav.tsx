@@ -51,17 +51,17 @@ function MenuDrawer({ onClose }: { onClose: () => void }) {
   const location = useLocation();
 
   return (
-    <div style={{ position: 'fixed', inset: 0, bottom: 68, display: 'flex', flexDirection: 'column', background: '#050505', zIndex: 9998 }}>
+    <div style={{ position: 'fixed', inset: 0, bottom: 68, display: 'flex', flexDirection: 'column', background: 'var(--bg)', zIndex: 9998 }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,.07)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid var(--line)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ display: 'flex', flexDirection: 'column', border: '2px solid #fff', borderRadius: 6, overflow: 'hidden', lineHeight: 1, fontWeight: 800, fontSize: 13 }}>
-            <span style={{ padding: '3px 7px 2px', borderBottom: '2px solid #fff' }}>КХП</span>
+          <span style={{ display: 'flex', flexDirection: 'column', border: '2px solid var(--text)', borderRadius: 6, overflow: 'hidden', lineHeight: 1, fontWeight: 800, fontSize: 13 }}>
+            <span style={{ padding: '3px 7px 2px', borderBottom: '2px solid var(--text)' }}>КХП</span>
             <span style={{ padding: '2px 7px 3px' }}>НПК</span>
           </span>
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>Народная партия<br /><span style={{ fontWeight: 500, color: 'rgba(255,255,255,.5)', fontSize: 11 }}>Казахстана</span></span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', lineHeight: 1.2 }}>Народная партия<br /><span style={{ fontWeight: 500, color: 'var(--text-muted)', fontSize: 11 }}>Казахстана</span></span>
         </div>
-        <button onClick={onClose} style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,.07)', border: 'none', color: '#fff', cursor: 'pointer', borderRadius: 8 }}>
+        <button onClick={onClose} style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-2)', border: 'none', color: 'var(--text)', cursor: 'pointer', borderRadius: 8 }}>
           <X size={20} />
         </button>
       </div>
@@ -74,15 +74,15 @@ function MenuDrawer({ onClose }: { onClose: () => void }) {
               <>
                 <button
                   onClick={() => setExpanded(expanded === section.href ? null : section.href)}
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', background: 'none', border: 'none', color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer', textAlign: 'left' }}>
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', background: 'none', border: 'none', color: 'var(--text)', fontSize: 16, fontWeight: 700, cursor: 'pointer', textAlign: 'left' }}>
                   {section.label}
-                  <ChevronRight size={16} style={{ transform: expanded === section.href ? 'rotate(90deg)' : 'none', transition: 'transform .2s', color: 'rgba(255,255,255,.4)' }} />
+                  <ChevronRight size={16} style={{ transform: expanded === section.href ? 'rotate(90deg)' : 'none', transition: 'transform .2s', color: 'var(--text-muted)' }} />
                 </button>
                 {expanded === section.href && (
-                  <div style={{ background: 'rgba(255,255,255,.03)', borderLeft: '2px solid #db1f26', marginLeft: 20 }}>
+                  <div style={{ background: 'var(--surface-2)', borderLeft: '2px solid #db1f26', marginLeft: 20 }}>
                     {section.children.map(child => (
                       <Link key={child.href} to={child.href} onClick={onClose}
-                        style={{ display: 'block', padding: '11px 20px', fontSize: 14, fontWeight: 500, color: location.pathname === child.href ? '#fff' : 'rgba(255,255,255,.55)', textDecoration: 'none' }}>
+                        style={{ display: 'block', padding: '11px 20px', fontSize: 14, fontWeight: 500, color: location.pathname === child.href ? 'var(--text)' : 'var(--text-muted)', textDecoration: 'none' }}>
                         {child.label}
                       </Link>
                     ))}
@@ -91,23 +91,23 @@ function MenuDrawer({ onClose }: { onClose: () => void }) {
               </>
             ) : (
               <Link to={section.href} onClick={onClose}
-                style={{ display: 'flex', alignItems: 'center', padding: '14px 20px', fontSize: 16, fontWeight: 700, color: location.pathname === section.href ? '#db1f26' : '#fff', textDecoration: 'none', borderBottom: '1px solid rgba(255,255,255,.04)' }}>
+                style={{ display: 'flex', alignItems: 'center', padding: '14px 20px', fontSize: 16, fontWeight: 700, color: location.pathname === section.href ? '#db1f26' : 'var(--text)', textDecoration: 'none', borderBottom: '1px solid var(--line)' }}>
                 {section.label}
               </Link>
             )}
-            <div style={{ height: 1, background: 'rgba(255,255,255,.04)', margin: '0 20px' }} />
+            <div style={{ height: 1, background: 'var(--line)', margin: '0 20px' }} />
           </div>
         ))}
       </div>
 
       {/* Bottom: lang + CTA */}
-      <div style={{ padding: '16px 20px 24px', borderTop: '1px solid rgba(255,255,255,.07)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, padding: '10px 14px', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.09)' }}>
-          <Globe size={14} style={{ color: 'rgba(255,255,255,.4)', flexShrink: 0 }} />
-          <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,.35)', letterSpacing: '.08em', textTransform: 'uppercase', marginRight: 4 }}>Язык:</span>
-          <button onClick={() => setLang('kz')} style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.06em', background: lang === 'kz' ? '#db1f26' : 'transparent', color: '#fff', border: 'none', padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit', opacity: lang === 'kz' ? 1 : 0.4 }}>ҚАЗ</button>
-          <span style={{ color: 'rgba(255,255,255,.2)', fontSize: 11 }}>|</span>
-          <button onClick={() => setLang('ru')} style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.06em', background: lang === 'ru' ? '#db1f26' : 'transparent', color: '#fff', border: 'none', padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit', opacity: lang === 'ru' ? 1 : 0.4 }}>РУС</button>
+      <div style={{ padding: '16px 20px 24px', borderTop: '1px solid var(--line)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, padding: '10px 14px', background: 'var(--surface-2)', border: '1px solid var(--line)' }}>
+          <Globe size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '.08em', textTransform: 'uppercase', marginRight: 4 }}>Язык:</span>
+          <button onClick={() => setLang('kz')} style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.06em', background: lang === 'kz' ? '#db1f26' : 'transparent', color: lang === 'kz' ? '#fff' : 'var(--text-muted)', border: 'none', padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>ҚАЗ</button>
+          <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>|</span>
+          <button onClick={() => setLang('ru')} style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.06em', background: lang === 'ru' ? '#db1f26' : 'transparent', color: lang === 'ru' ? '#fff' : 'var(--text-muted)', border: 'none', padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>РУС</button>
         </div>
         <Link to="/vstupit" onClick={onClose}
           style={{ display: 'block', textAlign: 'center', padding: '14px', background: '#db1f26', color: '#fff', textDecoration: 'none', fontSize: 15, fontWeight: 700, letterSpacing: '.04em', marginBottom: 16 }}>
@@ -116,7 +116,7 @@ function MenuDrawer({ onClose }: { onClose: () => void }) {
         <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
           {SOCIALS.map(s => (
             <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}
-              style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,.15)', color: 'rgba(255,255,255,.6)' }}>
+              style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--line)', color: 'var(--text-muted)' }}>
               <s.icon size={18} />
             </a>
           ))}
@@ -135,24 +135,24 @@ function JoinSheet({ onClose }: { onClose: () => void }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'flex-end' }}>
       <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.7)', backdropFilter: 'blur(4px)' }} />
-      <div style={{ position: 'relative', width: '100%', background: '#0a0a0a', borderTop: '1px solid rgba(255,255,255,.1)', padding: '24px 20px 40px' }}>
-        <div style={{ width: 36, height: 4, background: 'rgba(255,255,255,.2)', margin: '0 auto 24px', borderRadius: 2 }} />
-        <button onClick={onClose} style={{ position: 'absolute', top: 20, right: 20, background: 'none', border: 'none', color: 'rgba(255,255,255,.5)', cursor: 'pointer', display: 'flex' }}>
+      <div style={{ position: 'relative', width: '100%', background: 'var(--bg)', borderTop: '1px solid var(--line)', padding: '24px 20px 40px' }}>
+        <div style={{ width: 36, height: 4, background: 'var(--line)', margin: '0 auto 24px', borderRadius: 2 }} />
+        <button onClick={onClose} style={{ position: 'absolute', top: 20, right: 20, background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex' }}>
           <X size={20} />
         </button>
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: '#db1f26', marginBottom: 8 }}>Народная партия Казахстана</div>
-        <h2 style={{ margin: '0 0 24px', fontSize: 26, fontWeight: 800, color: '#fff', letterSpacing: '-.02em' }}>Присоединяйтесь к нам</h2>
+        <h2 style={{ margin: '0 0 24px', fontSize: 26, fontWeight: 800, color: 'var(--text)', letterSpacing: '-.02em' }}>Присоединяйтесь к нам</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
           {[
             { label: 'Стать волонтёром', checked: volunteer, set: setVolunteer },
             { label: 'Вступить в партию', checked: member,   set: setMember },
           ].map(opt => (
             <label key={opt.label} onClick={() => opt.set(!opt.checked)}
-              style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', background: opt.checked ? 'rgba(219,31,38,.1)' : 'rgba(255,255,255,.04)', border: `1px solid ${opt.checked ? 'rgba(219,31,38,.5)' : 'rgba(255,255,255,.1)'}`, cursor: 'pointer' }}>
-              <div style={{ width: 22, height: 22, flexShrink: 0, border: `2px solid ${opt.checked ? '#db1f26' : 'rgba(255,255,255,.3)'}`, background: opt.checked ? '#db1f26' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', background: opt.checked ? 'rgba(219,31,38,.1)' : 'var(--surface-2)', border: `1px solid ${opt.checked ? 'rgba(219,31,38,.5)' : 'var(--line)'}`, cursor: 'pointer' }}>
+              <div style={{ width: 22, height: 22, flexShrink: 0, border: `2px solid ${opt.checked ? '#db1f26' : 'var(--line)'}`, background: opt.checked ? '#db1f26' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {opt.checked && <span style={{ color: '#fff', fontSize: 14, lineHeight: 1 }}>✓</span>}
               </div>
-              <span style={{ fontSize: 15, fontWeight: 600, color: opt.checked ? '#fff' : 'rgba(255,255,255,.7)' }}>{opt.label}</span>
+              <span style={{ fontSize: 15, fontWeight: 600, color: opt.checked ? 'var(--text)' : 'var(--text-muted)' }}>{opt.label}</span>
             </label>
           ))}
         </div>
@@ -161,15 +161,15 @@ function JoinSheet({ onClose }: { onClose: () => void }) {
           Присоединиться →
         </button>
         <Link to="/priemnaya" onClick={onClose}
-          style={{ display: 'block', width: '100%', padding: '14px', background: 'transparent', border: '1px solid rgba(255,255,255,.2)', color: '#fff', fontSize: 14, fontWeight: 600, textDecoration: 'none', textAlign: 'center', marginBottom: 24, boxSizing: 'border-box' }}>
+          style={{ display: 'block', width: '100%', padding: '14px', background: 'transparent', border: '1px solid var(--line)', color: 'var(--text)', fontSize: 14, fontWeight: 600, textDecoration: 'none', textAlign: 'center', marginBottom: 24, boxSizing: 'border-box' }}>
           Записаться в онлайн приёмную
         </Link>
-        <div style={{ borderTop: '1px solid rgba(255,255,255,.07)', paddingTop: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,.35)', marginBottom: 12, textAlign: 'center' }}>Мы в соцсетях</div>
+        <div style={{ borderTop: '1px solid var(--line)', paddingTop: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 12, textAlign: 'center' }}>Мы в соцсетях</div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
             {SOCIALS.map(s => (
               <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}
-                style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,.15)', color: 'rgba(255,255,255,.6)', textDecoration: 'none' }}>
+                style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--line)', color: 'var(--text-muted)', textDecoration: 'none' }}>
                 <s.icon size={20} />
               </a>
             ))}
@@ -213,10 +213,10 @@ export function MobileBottomNav() {
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999,
         height: `calc(${NAV_H}px + env(safe-area-inset-bottom, 0px))`,
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-        background: 'rgba(7,7,9,0.97)',
+        background: 'rgb(var(--bg-rgb) / 0.97)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderTop: '1px solid rgba(255,255,255,0.07)',
+        borderTop: '1px solid var(--line)',
         boxShadow: '0 -6px 32px rgba(0,0,0,0.55)',
         transform: 'translateZ(0)',
         WebkitTransform: 'translateZ(0)',
@@ -269,12 +269,12 @@ export function MobileBottomNav() {
                 style={{
                   flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
                   justifyContent: 'center', gap: 4, padding: '6px 4px',
-                  background: menuOpen ? 'rgba(255,255,255,0.05)' : 'none',
+                  background: menuOpen ? 'var(--surface-2)' : 'none',
                   border: 'none', cursor: 'pointer', borderRadius: 12,
                 }}>
                 <div style={{ position: 'relative' }}>
                   <Menu size={22} strokeWidth={menuOpen ? 2 : 1.6}
-                    color={menuOpen ? '#ffffff' : 'rgba(255,255,255,0.4)'}/>
+                    color={menuOpen ? 'var(--text)' : 'var(--text-muted)'}/>
                   {menuOpen && <div style={{
                     position: 'absolute', bottom: -7, left: '50%',
                     width: 4, height: 4, borderRadius: '50%', background: '#DC0F2D',
@@ -283,7 +283,7 @@ export function MobileBottomNav() {
                 </div>
                 <span style={{
                   fontSize: 10, fontWeight: menuOpen ? 700 : 500,
-                  color: menuOpen ? '#fff' : 'rgba(255,255,255,.38)',
+                  color: menuOpen ? 'var(--text)' : 'var(--text-muted)',
                   transition: 'color .18s',
                 }}>{tab.label}</span>
               </button>
@@ -300,12 +300,12 @@ export function MobileBottomNav() {
                 style={{
                   flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
                   justifyContent: 'center', gap: 4, padding: '6px 4px', textDecoration: 'none',
-                  background: isActive ? 'rgba(255,255,255,0.05)' : 'none',
+                  background: isActive ? 'var(--surface-2)' : 'none',
                   borderRadius: 12,
                 }}>
                 <div style={{ position: 'relative' }}>
                   <Icon size={22} strokeWidth={isActive ? 2 : 1.6}
-                    color={isActive ? '#ffffff' : 'rgba(255,255,255,0.4)'}/>
+                    color={isActive ? 'var(--text)' : 'var(--text-muted)'}/>
                   {isActive && <div style={{
                     position: 'absolute', bottom: -7, left: '50%',
                     width: 4, height: 4, borderRadius: '50%', background: '#DC0F2D',
@@ -314,7 +314,7 @@ export function MobileBottomNav() {
                 </div>
                 <span style={{
                   fontSize: 10, fontWeight: isActive ? 700 : 500,
-                  color: isActive ? '#fff' : 'rgba(255,255,255,.38)',
+                  color: isActive ? 'var(--text)' : 'var(--text-muted)',
                   transition: 'color .18s',
                 }}>{tab.label}</span>
               </Link>

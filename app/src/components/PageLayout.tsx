@@ -21,7 +21,7 @@ export function PageLayout() {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-[100dvh] bg-coal">
+    <div className="min-h-[100dvh] bg-bg">
       {/* WHAT: Global custom cursor — rendered once at layout level
           WHY:  Persists across route changes without remounting */}
       <CustomCursor />

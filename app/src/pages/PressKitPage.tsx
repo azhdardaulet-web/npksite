@@ -37,13 +37,13 @@ export function PressKitPage() {
         <SectionHeader light="Пресс-" bold="кит" subtitle="Материалы для журналистов и СМИ" />
         <div className="space-y-3">
           {loading ? (
-            <p className="text-body text-fog text-center py-8">Загрузка...</p>
+            <p className="text-body text-text-muted text-center py-8">Загрузка...</p>
           ) : materials.map((item, index) => (
             <ScrollReveal key={item.id} delay={index * 0.05}>
-              <div className="bg-cinder rounded-card p-5 border border-white/[0.08] flex items-center justify-between">
+              <div className="bg-surface rounded-card p-5 border border-line flex items-center justify-between">
                 <div>
-                  <h4 className="text-body-lg font-medium text-white">{item.title}</h4>
-                  <p className="text-label text-steel">{formatSize(item.fileSize)}</p>
+                  <h4 className="text-body-lg font-medium text-text-base">{item.title}</h4>
+                  <p className="text-label text-text-muted">{formatSize(item.fileSize)}</p>
                 </div>
                 <DarkActionButton className="flex items-center gap-2" onClick={() => window.open(item.fileUrl, '_blank', 'noopener')}>
                   <Download size={16} />
