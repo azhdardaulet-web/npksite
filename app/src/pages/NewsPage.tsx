@@ -411,7 +411,7 @@ export function NewsPage() {
       `}</style>
 
       {/* Народное медиа */}
-      <section className="bg-[#0a0a0a] border-t border-white/[0.07] pb-16 md:pb-24">
+      <section className="bg-surface border-t border-line pb-16 md:pb-24">
         <div className="max-w-[1280px] mx-auto px-4 md:px-10">
           <NarodnoeMediaSection />
         </div>

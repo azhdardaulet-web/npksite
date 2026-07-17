@@ -190,10 +190,10 @@ export function NarodnoeMediaSection({ videoRef: externalRef }: { videoRef?: Rea
   const ref = externalRef ?? ownRef;
 
   return (
-        <div className="mt-12 pt-10 border-t border-white/[0.07]">
+        <div className="mt-12 pt-10 border-t border-line">
           <div className="mb-6">
-            <p className="text-[10px] font-bold text-red uppercase tracking-widest mb-2">Народное медиа. Народное доверие.</p>
-            <h3 className="text-[22px] md:text-[28px] font-bold text-white uppercase leading-tight">
+            <p className="text-[10px] font-bold text-accent-brand uppercase tracking-widest mb-2">Народное медиа. Народное доверие.</p>
+            <h3 className="text-[22px] md:text-[28px] font-bold text-text-base uppercase leading-tight">
               Голос партии, который слышит страна
             </h3>
           </div>
@@ -212,7 +212,7 @@ export function NarodnoeMediaSection({ videoRef: externalRef }: { videoRef?: Rea
                 className="group shrink-0 w-[240px] sm:w-[260px]"
                 style={{ scrollSnapAlign: 'start' }}
               >
-                <div className="relative aspect-video overflow-hidden bg-ash mb-2.5">
+                <div className="relative aspect-video overflow-hidden bg-surface-2 mb-2.5">
                   <img
                     src={`https://i.ytimg.com/vi/${v.id}/mqdefault.jpg`}
                     alt={v.title}
@@ -225,8 +225,8 @@ export function NarodnoeMediaSection({ videoRef: externalRef }: { videoRef?: Rea
                     </div>
                   </div>
                 </div>
-                <p className="text-[13px] font-medium text-white leading-snug line-clamp-2 group-hover:text-fog transition-colors">{v.title}</p>
-                <p className="text-[11px] text-steel mt-1">{v.date}</p>
+                <p className="text-[13px] font-medium text-text-base leading-snug line-clamp-2 group-hover:text-text-muted transition-colors">{v.title}</p>
+                <p className="text-[11px] text-text-muted mt-1">{v.date}</p>
               </a>
             ))}
           </div>
@@ -236,21 +236,21 @@ export function NarodnoeMediaSection({ videoRef: externalRef }: { videoRef?: Rea
               href="https://www.youtube.com/channel/UCYq_KOlsxp8H2r3GIq6hWtA"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-[13px] font-medium text-white border border-white/20 hover:border-white/50 px-5 py-2.5 transition-all"
+              className="inline-flex items-center gap-2 text-[13px] font-medium text-text-base border border-line hover:border-text-muted px-5 py-2.5 transition-all"
             >
               Все выпуски <ArrowUpRight size={14} />
             </a>
             <div className="flex gap-2">
               <button
                 onClick={() => ref.current?.scrollBy({ left: -280, behavior: 'smooth' })}
-                className="w-9 h-9 border border-white/20 flex items-center justify-center text-white hover:bg-white/10 transition-all"
+                className="w-9 h-9 border border-line flex items-center justify-center text-text-base hover:bg-surface-2 transition-all"
                 aria-label="Назад"
               >
                 <ChevronLeft size={16} />
               </button>
               <button
                 onClick={() => ref.current?.scrollBy({ left: 280, behavior: 'smooth' })}
-                className="w-9 h-9 border border-white/20 flex items-center justify-center text-white hover:bg-white/10 transition-all"
+                className="w-9 h-9 border border-line flex items-center justify-center text-text-base hover:bg-surface-2 transition-all"
                 aria-label="Вперёд"
               >
                 <ChevronRight size={16} />
@@ -258,8 +258,8 @@ export function NarodnoeMediaSection({ videoRef: externalRef }: { videoRef?: Rea
             </div>
           </div>
 
-          <div className="mt-8 pt-6 border-t border-white/[0.07]">
-            <p className="text-[11px] font-bold text-fog/40 uppercase tracking-widest mb-4">Присоединяйтесь к нашему сообществу</p>
+          <div className="mt-8 pt-6 border-t border-line">
+            <p className="text-[11px] font-bold text-text-muted uppercase tracking-widest mb-4">Присоединяйтесь к нашему сообществу</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
               {SOCIAL.map((s) => (
                 <a
@@ -267,11 +267,11 @@ export function NarodnoeMediaSection({ videoRef: externalRef }: { videoRef?: Rea
                   href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-center gap-2.5 bg-white/[0.04] border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.07] transition-all px-4 py-2.5"
+                  className="group flex items-center gap-2.5 bg-surface-2 border border-line hover:border-text-muted hover:bg-line transition-all px-4 py-2.5"
                 >
-                  <span className="text-fog/60 group-hover:text-white transition-colors">{s.icon}</span>
-                  <span className="text-[12px] font-medium text-fog/60 group-hover:text-white transition-colors">{s.name}</span>
-                  <span className="text-[13px] font-bold text-white ml-auto">{s.count}</span>
+                  <span className="text-text-muted group-hover:text-text-base transition-colors">{s.icon}</span>
+                  <span className="text-[12px] font-medium text-text-muted group-hover:text-text-base transition-colors">{s.name}</span>
+                  <span className="text-[13px] font-bold text-text-base ml-auto">{s.count}</span>
                 </a>
               ))}
             </div>
