@@ -233,7 +233,7 @@ class GlobeController {
     defs.appendChild(lg);
 
     const rg=this._S('radialGradient',{id:'npk-ocean',cx:'52%',cy:'44%',r:'55%'});
-    [[0,'#0e2240',1],[55,'#071528',1],[100,'#030d1a',1]].forEach(([o,c,a])=>{
+    [[0,'var(--globe-ocean-1)',1],[55,'var(--globe-ocean-2)',1],[100,'var(--globe-ocean-3)',1]].forEach(([o,c,a])=>{
       rg.appendChild(this._S('stop',{offset:o+'%','stop-color':c as string,'stop-opacity':String(a)}));
     });
     defs.appendChild(rg);
@@ -278,7 +278,7 @@ class GlobeController {
     let s=0x9e3a; const rnd=()=>{ s=(s*16807+12345)&0x7fffffff; return (s%10000)/10000; };
     for(let i=0;i<150;i++){
       const x=rnd()*this.W, y=rnd()*this.H*0.8;
-      g.appendChild(this._S('circle',{cx:x.toFixed(0),cy:y.toFixed(0),r:(0.4+rnd()*1.1).toFixed(1),fill:'#fff',opacity:(0.1+rnd()*0.5).toFixed(2)}));
+      g.appendChild(this._S('circle',{cx:x.toFixed(0),cy:y.toFixed(0),r:(0.4+rnd()*1.1).toFixed(1),fill:'var(--globe-star)',opacity:(0.1+rnd()*0.5).toFixed(2)}));
     }
   }
 
@@ -289,8 +289,8 @@ class GlobeController {
       const lines=o.t.split('\n');
       const el=this._S('text',{'text-anchor':'middle'}) as SVGTextElement;
       el.style.fontFamily=font;
-      if(kind==='country'){ el.setAttribute('fill','rgba(255,255,255,0.82)'); el.setAttribute('font-size',o.big?'22':'14'); el.setAttribute('font-weight','600'); el.setAttribute('letter-spacing',o.big?'0.34em':'0.16em'); }
-      else { el.setAttribute('fill','rgba(186,206,232,0.72)'); el.setAttribute('font-size','10.5'); el.setAttribute('font-weight','500'); el.setAttribute('letter-spacing','0.08em'); }
+      if(kind==='country'){ el.setAttribute('fill','var(--text)'); el.setAttribute('font-size',o.big?'22':'14'); el.setAttribute('font-weight','600'); el.setAttribute('letter-spacing',o.big?'0.34em':'0.16em'); }
+      else { el.setAttribute('fill','var(--text-muted)'); el.setAttribute('font-size','10.5'); el.setAttribute('font-weight','500'); el.setAttribute('letter-spacing','0.08em'); }
       lines.forEach((ln: string,i: number)=>{ const ts=this._S('tspan',{x:'0',dy:i===0?'0':(kind==='country'?'1.15em':'1.1em')}); ts.textContent=ln; el.appendChild(ts); });
       g.appendChild(el); this._labelEls.push({el,o,kind,lines});
     };
@@ -312,7 +312,7 @@ class GlobeController {
       } else {
         const halo=this._S('circle',{r:'9',fill:'rgba(219,31,38,0.18)'});
         const pulse=this._S('circle',{r:'6',fill:'#db1f26',opacity:'0'}); pulse.style.transformBox='fill-box'; pulse.style.transformOrigin='center';
-        const core=this._S('circle',{r:'4.5',fill:'#db1f26',stroke:'#fff','stroke-width':'1.2'});
+        const core=this._S('circle',{r:'4.5',fill:'#db1f26',stroke:'var(--globe-marker-ring)','stroke-width':'1.2'});
         grp.appendChild(halo); grp.appendChild(pulse); grp.appendChild(core);
         g.appendChild(grp); this._markerEls.push({grp,halo,pulse,core,b,i,_sx:null,_sy:null,_vis:false});
       }
@@ -340,7 +340,7 @@ class GlobeController {
 
   private _buildWorldPaths() {
     const g=this.els.gWorld; if(!g) return; g.innerHTML=''; this._worldEls=[];
-    for(const f of this._world){ const p=this._S('path',{fill:'#0a1626',stroke:'rgba(120,160,205,0.10)','stroke-width':'0.5'}); g.appendChild(p); this._worldEls.push({p,f}); }
+    for(const f of this._world){ const p=this._S('path',{fill:'var(--globe-land)',stroke:'var(--globe-land-stroke)','stroke-width':'0.5'}); g.appendChild(p); this._worldEls.push({p,f}); }
   }
 
   private _makeLights() {
@@ -366,8 +366,8 @@ class GlobeController {
   private _buildRegionPaths() {
     const g=this.els.gRegions; if(!g) return; g.innerHTML=''; this._regionEls=[];
     this._kz.forEach((f,i)=>{
-      const fillP=this._S('path',{fill:'rgba(120,165,220,0.05)',stroke:'none'});
-      const lineP=this._S('path',{fill:'none',stroke:'rgba(196,216,242,0.42)','stroke-width':'1.1','stroke-linejoin':'round'});
+      const fillP=this._S('path',{fill:'var(--globe-region-fill)',stroke:'none'});
+      const lineP=this._S('path',{fill:'none',stroke:'var(--globe-region-stroke)','stroke-width':'1.1','stroke-linejoin':'round'});
       g.appendChild(fillP); g.appendChild(lineP); this._regionEls.push({fillP,lineP,f,i});
     });
   }
@@ -493,8 +493,8 @@ class GlobeController {
     for(const r of this._regionEls){ const d=this._path(r.f.type,r.f.coords); r.lineP.setAttribute('d',d); r.fillP.setAttribute('d',d);
       const isSel=this._branchFeat&&sel!=null&&this._branchFeat[sel]===r.i, isHov=hf===r.i;
       if(isSel){ r.lineP.setAttribute('stroke','#db1f26'); r.lineP.setAttribute('stroke-width','1.9'); r.lineP.setAttribute('filter','url(#npk-glow)'); r.fillP.setAttribute('fill','rgba(219,31,38,0.16)'); }
-      else if(isHov){ r.lineP.setAttribute('stroke','rgba(255,255,255,0.92)'); r.lineP.setAttribute('stroke-width','1.5'); r.lineP.setAttribute('filter','url(#npk-glow)'); r.fillP.setAttribute('fill','rgba(190,215,245,0.12)'); }
-      else { r.lineP.setAttribute('stroke','rgba(202,222,248,0.52)'); r.lineP.setAttribute('stroke-width','1.05'); r.lineP.removeAttribute('filter'); r.fillP.setAttribute('fill','rgba(120,165,220,0.05)'); }
+      else if(isHov){ r.lineP.setAttribute('stroke','var(--globe-region-hover-stroke)'); r.lineP.setAttribute('stroke-width','1.5'); r.lineP.setAttribute('filter','url(#npk-glow)'); r.fillP.setAttribute('fill','var(--globe-region-hover-fill)'); }
+      else { r.lineP.setAttribute('stroke','var(--globe-region-stroke)'); r.lineP.setAttribute('stroke-width','1.05'); r.lineP.removeAttribute('filter'); r.fillP.setAttribute('fill','var(--globe-region-fill)'); }
     }
     for(const L of this._labelEls){ const p=this._proj(L.o.lng,L.o.lat);
       if(p.v&&p.rx>0.12){ const op=Math.min(1,(p.rx-0.12)*2.2); L.el.style.display=''; L.el.setAttribute('opacity',op.toFixed(2)); L.el.setAttribute('transform',`translate(${p.sx.toFixed(1)},${p.sy.toFixed(1)})`); } else L.el.style.display='none'; }
@@ -534,7 +534,7 @@ function KZRealMap({ activeBi, onSelect }: { activeBi: number|null; onSelect: (i
   const px = (lng: number) => ((lng - 50) / 37) * 1146 + 14;
   const py = (lat: number) => ((55 - lat) / 15) * 632 + 28;
   return (
-    <div style={{position:'relative',borderRadius:16,overflow:'hidden',background:'#0d1c31'}}>
+    <div style={{position:'relative',borderRadius:16,overflow:'hidden',background:'var(--surface)'}}>
       <img src="/mapkz.svg" alt="Карта Казахстана" style={{width:'100%',display:'block',opacity:0.9}}/>
       <svg viewBox="0 0 1174 671" style={{position:'absolute',top:0,left:0,width:'100%',height:'100%'}}>
         <defs>
@@ -555,10 +555,10 @@ function KZRealMap({ activeBi, onSelect }: { activeBi: number|null; onSelect: (i
                 <circle cx={x} cy={y} r={10} fill="#db1f26"/>
               </> : <>
                 <circle cx={x} cy={y} r={b.city?14:10}
-                  fill={b.city?'rgba(255,196,64,0.18)':'rgba(255,255,255,0.08)'}/>
+                  fill={b.city?'rgba(255,196,64,0.18)':'var(--globe-region-fill)'}/>
                 <circle cx={x} cy={y} r={b.city?7:5}
-                  fill={b.city?'#ffc440':'rgba(255,255,255,0.65)'}
-                  stroke={b.city?'rgba(255,196,64,0.5)':'rgba(255,255,255,0.2)'} strokeWidth="2"/>
+                  fill={b.city?'#ffc440':'var(--text-muted)'}
+                  stroke={b.city?'rgba(255,196,64,0.5)':'var(--line)'} strokeWidth="2"/>
               </>}
             </g>
           );
@@ -582,13 +582,13 @@ function BranchMapMobile() {
   const selBranch = activeBi!=null ? BRANCHES[activeBi] : null;
 
   return (
-    <section style={{background:'#020b18',fontFamily:"'Formular',Arial,sans-serif"}}>
+    <section style={{background:'var(--surface)',fontFamily:"'Formular',Arial,sans-serif"}}>
       {/* Header */}
       <div style={{padding:'40px 20px 20px'}}>
         <p style={{fontSize:11,letterSpacing:'0.18em',color:'#db1f26',textTransform:'uppercase',fontWeight:600,margin:'0 0 10px'}}>
           Наши филиалы
         </p>
-        <h2 style={{fontSize:28,fontWeight:700,color:'#fff',lineHeight:'92%',letterSpacing:'-0.03em',margin:0}}>
+        <h2 style={{fontSize:28,fontWeight:700,color:'var(--text)',lineHeight:'92%',letterSpacing:'-0.03em',margin:0}}>
           {BRANCHES.length} отделений<br/>по всему Казахстану
         </h2>
       </div>
@@ -599,10 +599,10 @@ function BranchMapMobile() {
           onClick={()=>setListOpen(p=>!p)}
           style={{
             width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between',
-            padding:'14px 18px',background:'rgba(255,255,255,0.05)',
+            padding:'14px 18px',background:'var(--surface-2)',
             borderRadius:listOpen?'12px 12px 0 0':'12px',
-            border:'1px solid rgba(255,255,255,0.1)',
-            borderBottom: listOpen?'1px solid rgba(255,255,255,0.06)':'1px solid rgba(255,255,255,0.1)',
+            border:'1px solid var(--line)',
+            borderBottom: listOpen?'1px solid var(--line)':'1px solid var(--line)',
             outline:'none',cursor:'pointer',transition:'border-radius .2s'
           }}
         >
@@ -611,15 +611,15 @@ function BranchMapMobile() {
               width:8,height:8,borderRadius:'50%',flexShrink:0,
               background: activeBi!=null
                 ? '#db1f26'
-                : 'rgba(255,255,255,0.4)'
+                : 'var(--text-muted)'
             }}/>
-            <span style={{fontSize:14,fontWeight:600,color:'#fff',fontFamily:"'Formular',Arial,sans-serif"}}>
+            <span style={{fontSize:14,fontWeight:600,color:'var(--text)',fontFamily:"'Formular',Arial,sans-serif"}}>
               {selBranch ? selBranch.short : 'Ваш регион'}
             </span>
           </span>
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none"
             style={{flexShrink:0,transform:listOpen?'rotate(180deg)':'rotate(0deg)',transition:'transform .22s'}}>
-            <path d="M5 7l4 4 4-4" stroke="rgba(255,255,255,0.5)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M5 7l4 4 4-4" stroke="var(--text-muted)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
 
@@ -630,47 +630,47 @@ function BranchMapMobile() {
           transition:'max-height .35s ease',
         }}>
           <div style={{
-            background:'rgba(8,18,36,0.98)',
-            border:'1px solid rgba(255,255,255,0.1)',borderTop:'none',
+            background:'rgb(var(--globe-panel-rgb) / .98)',
+            border:'1px solid var(--line)',borderTop:'none',
             borderRadius:'0 0 12px 12px',
             maxHeight:440,overflowY:'auto'
           }} data-lenis-prevent>
             {/* Cities group */}
             <div style={{padding:'10px 18px 4px'}}>
-              <div style={{fontSize:9.5,letterSpacing:'0.14em',color:'rgba(255,255,255,.28)',textTransform:'uppercase',fontWeight:600,marginBottom:4}}>
+              <div style={{fontSize:9.5,letterSpacing:'0.14em',color:'var(--text-muted)',textTransform:'uppercase',fontWeight:600,marginBottom:4}}>
                 Города респ. значения
               </div>
               {cities.map(b=>{const bi=BRANCHES.indexOf(b);return(
                 <button key={bi} onClick={()=>select(bi)} style={{
                   width:'100%',display:'flex',alignItems:'center',gap:12,
                   padding:'10px 0',background:'none',border:'none',
-                  borderBottom:'1px solid rgba(255,255,255,0.05)',
+                  borderBottom:'1px solid var(--line)',
                   cursor:'pointer',outline:'none',textAlign:'left'
                 }}>
                   <span style={{width:7,height:7,borderRadius:'50%',flexShrink:0,
                     background:activeBi===bi?'#db1f26':'#ffc440'}}/>
                   <span style={{fontSize:13,fontFamily:"'Formular',Arial,sans-serif",
-                    color:activeBi===bi?'#fff':'rgba(255,255,255,.75)',
+                    color:activeBi===bi?'var(--text)':'var(--text-muted)',
                     fontWeight:activeBi===bi?700:400}}>{b.short}</span>
                 </button>
               );})}
             </div>
             {/* Oblasts group */}
             <div style={{padding:'10px 18px 14px'}}>
-              <div style={{fontSize:9.5,letterSpacing:'0.14em',color:'rgba(255,255,255,.28)',textTransform:'uppercase',fontWeight:600,marginBottom:4}}>
+              <div style={{fontSize:9.5,letterSpacing:'0.14em',color:'var(--text-muted)',textTransform:'uppercase',fontWeight:600,marginBottom:4}}>
                 Областные филиалы
               </div>
               {oblasts.map(b=>{const bi=BRANCHES.indexOf(b);return(
                 <button key={bi} onClick={()=>select(bi)} style={{
                   width:'100%',display:'flex',alignItems:'center',gap:12,
                   padding:'10px 0',background:'none',border:'none',
-                  borderBottom:'1px solid rgba(255,255,255,0.05)',
+                  borderBottom:'1px solid var(--line)',
                   cursor:'pointer',outline:'none',textAlign:'left'
                 }}>
                   <span style={{width:7,height:7,borderRadius:'50%',flexShrink:0,
-                    background:activeBi===bi?'#db1f26':'rgba(255,255,255,0.45)'}}/>
+                    background:activeBi===bi?'#db1f26':'var(--text-muted)'}}/>
                   <span style={{fontSize:13,fontFamily:"'Formular',Arial,sans-serif",
-                    color:activeBi===bi?'#fff':'rgba(255,255,255,.75)',
+                    color:activeBi===bi?'var(--text)':'var(--text-muted)',
                     fontWeight:activeBi===bi?700:400}}>{b.short}</span>
                 </button>
               );})}
@@ -699,18 +699,18 @@ function BranchMapMobile() {
             padding:'16px',border:'1px solid rgba(219,31,38,0.16)',
             fontFamily:"'Formular',Arial,sans-serif"
           }}>
-            <div style={{fontSize:15,fontWeight:700,color:'#fff'}}>{selBranch.short}</div>
+            <div style={{fontSize:15,fontWeight:700,color:'var(--text)'}}>{selBranch.short}</div>
             {selBranch.chairman && <div>
-              <div style={{fontSize:9,letterSpacing:'0.12em',color:'rgba(255,255,255,.32)',textTransform:'uppercase',marginBottom:2}}>Председатель</div>
-              <div style={{fontSize:12.5,color:'rgba(255,255,255,.88)',fontWeight:500}}>{selBranch.chairman}</div>
+              <div style={{fontSize:9,letterSpacing:'0.12em',color:'var(--text-muted)',textTransform:'uppercase',marginBottom:2}}>Председатель</div>
+              <div style={{fontSize:12.5,color:'var(--text)',fontWeight:500}}>{selBranch.chairman}</div>
             </div>}
             <div>
-              <div style={{fontSize:9,letterSpacing:'0.12em',color:'rgba(255,255,255,.32)',textTransform:'uppercase',marginBottom:2}}>Адрес</div>
-              <div style={{fontSize:12,color:'rgba(255,255,255,.75)',lineHeight:1.45}}>{selBranch.address}</div>
+              <div style={{fontSize:9,letterSpacing:'0.12em',color:'var(--text-muted)',textTransform:'uppercase',marginBottom:2}}>Адрес</div>
+              <div style={{fontSize:12,color:'var(--text-muted)',lineHeight:1.45}}>{selBranch.address}</div>
             </div>
             <div>
-              <div style={{fontSize:9,letterSpacing:'0.12em',color:'rgba(255,255,255,.32)',textTransform:'uppercase',marginBottom:2}}>Телефон</div>
-              <div style={{fontSize:13,fontWeight:600,color:'rgba(255,255,255,.95)'}}>{selBranch.phone}</div>
+              <div style={{fontSize:9,letterSpacing:'0.12em',color:'var(--text-muted)',textTransform:'uppercase',marginBottom:2}}>Телефон</div>
+              <div style={{fontSize:13,fontWeight:600,color:'var(--text)'}}>{selBranch.phone}</div>
             </div>
             <a href="#" style={{
               display:'block',marginTop:4,padding:'10px 0',textAlign:'center',
@@ -774,20 +774,20 @@ export function BranchMapSection() {
   if (isMobile) return <BranchMapMobile />;
 
   return (
-    <section ref={sectionRef} className="relative w-full" style={{height:'300vh',background:'#020b18'}}>
+    <section ref={sectionRef} className="relative w-full" style={{height:'300vh',background:'var(--surface)'}}>
       <div className="sticky top-0 w-full overflow-hidden" style={{height:'100vh'}}>
         {/* Globe canvas */}
         <div ref={hostRef} className="absolute inset-0 z-[1]" />
 
         {/* Vignette */}
         <div className="absolute inset-0 z-[2] pointer-events-none"
-          style={{background:'radial-gradient(130% 90% at 14% 36%,rgba(0,0,2,.82) 0%,rgba(0,0,2,.3) 38%,rgba(0,0,2,0) 56%),linear-gradient(180deg,rgba(0,0,2,.45) 0%,rgba(0,0,2,0) 18%)'}} />
+          style={{background:'radial-gradient(130% 90% at 14% 36%,rgb(var(--globe-vignette-rgb) / .82) 0%,rgb(var(--globe-vignette-rgb) / .3) 38%,rgb(var(--globe-vignette-rgb) / 0) 56%),linear-gradient(180deg,rgb(var(--globe-vignette-rgb) / .45) 0%,rgb(var(--globe-vignette-rgb) / 0) 18%)'}} />
 
         {/* Side list */}
         <div className="absolute left-4 top-1/2 -translate-y-1/2 z-[7] flex flex-col rounded-[20px] overflow-hidden"
-          style={{width:296,maxHeight:'76vh',background:'rgba(7,14,26,.86)',border:'1px solid rgba(255,255,255,.1)',backdropFilter:'blur(20px)',boxShadow:'0 30px 80px rgba(0,0,0,.55)',fontFamily:"'Formular',Arial,sans-serif"}}>
-          <div className="flex items-center justify-between px-[18px] py-[14px]" style={{borderBottom:'1px solid rgba(255,255,255,.08)'}}>
-            <span style={{fontSize:11,letterSpacing:'0.18em',color:'rgba(255,255,255,.5)',fontWeight:600}}>ВЫБЕРИТЕ ФИЛИАЛ</span>
+          style={{width:296,maxHeight:'76vh',background:'rgb(var(--globe-panel-rgb) / .86)',border:'1px solid rgb(var(--globe-panel-border-rgb) / .1)',backdropFilter:'blur(20px)',boxShadow:'0 30px 80px rgba(0,0,0,.55)',fontFamily:"'Formular',Arial,sans-serif"}}>
+          <div className="flex items-center justify-between px-[18px] py-[14px]" style={{borderBottom:'1px solid rgb(var(--globe-panel-border-rgb) / .08)'}}>
+            <span style={{fontSize:11,letterSpacing:'0.18em',color:'var(--text-muted)',fontWeight:600}}>ВЫБЕРИТЕ ФИЛИАЛ</span>
             <span style={{fontSize:11,color:'#db1f26',fontWeight:700}}>{BRANCHES.length}</span>
           </div>
           <div className="overflow-y-auto p-[6px]" data-lenis-prevent>
@@ -797,10 +797,10 @@ export function BranchMapSection() {
                 <button key={i} onClick={()=>controllerRef.current?.selectBranch(i)}
                   className="w-full flex items-center gap-[10px] text-left rounded-[10px] mb-[2px] transition-colors"
                   style={{padding:'10px 11px',background:active?'rgba(219,31,38,0.12)':'transparent',borderLeft:`2.5px solid ${active?'#db1f26':'transparent'}`,outline:'none',cursor:'pointer'}}>
-                  <span style={{width:7,height:7,borderRadius:'50%',flexShrink:0,background:active?'#db1f26':(b.city?'rgba(255,196,64,0.9)':'rgba(255,255,255,0.55)'),boxShadow:active?'0 0 8px rgba(219,31,38,0.9)':'none'}}/>
+                  <span style={{width:7,height:7,borderRadius:'50%',flexShrink:0,background:active?'#db1f26':(b.city?'rgba(255,196,64,0.9)':'var(--text-muted)'),boxShadow:active?'0 0 8px rgba(219,31,38,0.9)':'none'}}/>
                   <span className="flex flex-col gap-[1px] min-w-0">
-                    <span className="truncate" style={{fontSize:13,fontWeight:600,color:active?'#fff':'rgba(255,255,255,0.82)'}}>{b.short}</span>
-                    <span className="truncate" style={{fontSize:10.5,color:'rgba(255,255,255,0.4)'}}>{b.chairman||'—'}</span>
+                    <span className="truncate" style={{fontSize:13,fontWeight:600,color:active?'var(--text)':'var(--text-muted)'}}>{b.short}</span>
+                    <span className="truncate" style={{fontSize:10.5,color:'var(--text-muted)'}}>{b.chairman||'—'}</span>
                   </span>
                 </button>
               );
@@ -813,38 +813,38 @@ export function BranchMapSection() {
           const pos=controllerRef.current?.cardPos(displayBi)??{x:600,y:200};
           return (
             <div className="absolute z-[8] rounded-[18px] pointer-events-auto"
-              style={{width:300,left:pos.x,top:pos.y,transform:'translate(-50%,0)',padding:'18px 20px 20px',background:'rgba(9,17,30,.92)',border:'1px solid rgba(120,170,225,.22)',backdropFilter:'blur(22px)',boxShadow:'0 24px 70px rgba(0,0,0,.7)',animation:'npkfade .3s ease',fontFamily:"'Formular',Arial,sans-serif",color:'#fff'}}>
+              style={{width:300,left:pos.x,top:pos.y,transform:'translate(-50%,0)',padding:'18px 20px 20px',background:'rgb(var(--globe-panel-rgb) / .92)',border:'1px solid rgba(120,170,225,.22)',backdropFilter:'blur(22px)',boxShadow:'0 24px 70px rgba(0,0,0,.7)',animation:'npkfade .3s ease',fontFamily:"'Formular',Arial,sans-serif",color:'var(--text)'}}>
               <style>{`@keyframes npkfade{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}`}</style>
               <div style={{position:'absolute',top:0,right:0,width:70,height:70,borderRadius:'0 18px 0 0',background:'radial-gradient(80% 80% at 100% 0%,rgba(219,31,38,.2),transparent 70%)',pointerEvents:'none'}}/>
               <button onClick={()=>controllerRef.current?.close()}
-                style={{position:'absolute',top:12,right:12,width:24,height:24,borderRadius:7,border:'1px solid rgba(255,255,255,.15)',color:'rgba(255,255,255,.6)',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',background:'none',outline:'none'}}>✕</button>
+                style={{position:'absolute',top:12,right:12,width:24,height:24,borderRadius:7,border:'1px solid rgb(var(--globe-panel-border-rgb) / .15)',color:'var(--text-muted)',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',background:'none',outline:'none'}}>✕</button>
               <div className="flex items-center gap-[10px] mb-4 pr-7">
                 <span style={{width:26,height:26,borderRadius:8,background:'rgba(219,31,38,.15)',border:'1px solid rgba(219,31,38,.5)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
                   <span style={{width:9,height:9,borderRadius:'50%',background:'#db1f26',boxShadow:'0 0 8px rgba(219,31,38,.9)'}}/>
                 </span>
-                <span style={{fontSize:14.5,fontWeight:700,lineHeight:1.2,color:'#fff'}}>{selBranch.name}</span>
+                <span style={{fontSize:14.5,fontWeight:700,lineHeight:1.2,color:'var(--text)'}}>{selBranch.name}</span>
               </div>
               <div className="flex flex-col gap-[11px]">
-                {selBranch.chairman && <div><div style={{fontSize:10,letterSpacing:'0.08em',color:'rgba(255,255,255,.4)',marginBottom:2,textTransform:'uppercase'}}>Председатель</div><div style={{fontSize:13,fontWeight:500,color:'rgba(255,255,255,.92)'}}>{selBranch.chairman}</div></div>}
-                <div><div style={{fontSize:10,letterSpacing:'0.08em',color:'rgba(255,255,255,.4)',marginBottom:2,textTransform:'uppercase'}}>Email</div><div style={{fontSize:12.5,color:'#7cc4f2'}}>{selBranch.email}</div></div>
-                <div><div style={{fontSize:10,letterSpacing:'0.08em',color:'rgba(255,255,255,.4)',marginBottom:2,textTransform:'uppercase'}}>Адрес</div><div style={{fontSize:12,color:'rgba(255,255,255,.82)',lineHeight:1.45}}>{selBranch.address}</div></div>
-                <div><div style={{fontSize:10,letterSpacing:'0.08em',color:'rgba(255,255,255,.4)',marginBottom:2,textTransform:'uppercase'}}>Телефон</div><div style={{fontSize:13,fontWeight:600,color:'rgba(255,255,255,.95)'}}>{selBranch.phone}</div></div>
+                {selBranch.chairman && <div><div style={{fontSize:10,letterSpacing:'0.08em',color:'var(--text-muted)',marginBottom:2,textTransform:'uppercase'}}>Председатель</div><div style={{fontSize:13,fontWeight:500,color:'var(--text)'}}>{selBranch.chairman}</div></div>}
+                <div><div style={{fontSize:10,letterSpacing:'0.08em',color:'var(--text-muted)',marginBottom:2,textTransform:'uppercase'}}>Email</div><div style={{fontSize:12.5,color:'#7cc4f2'}}>{selBranch.email}</div></div>
+                <div><div style={{fontSize:10,letterSpacing:'0.08em',color:'var(--text-muted)',marginBottom:2,textTransform:'uppercase'}}>Адрес</div><div style={{fontSize:12,color:'var(--text)',lineHeight:1.45}}>{selBranch.address}</div></div>
+                <div><div style={{fontSize:10,letterSpacing:'0.08em',color:'var(--text-muted)',marginBottom:2,textTransform:'uppercase'}}>Телефон</div><div style={{fontSize:13,fontWeight:600,color:'var(--text)'}}>{selBranch.phone}</div></div>
               </div>
               <a href="#" style={{display:'block',marginTop:16,padding:'9px 0',textAlign:'center',background:'#db1f26',borderRadius:10,fontSize:13,fontWeight:700,color:'#fff',textDecoration:'none',letterSpacing:'0.02em',transition:'background .2s'}}
                 onMouseEnter={e=>(e.currentTarget.style.background='#b91721')}
                 onMouseLeave={e=>(e.currentTarget.style.background='#db1f26')}>
                 Подробнее →
               </a>
-              <div style={{position:'absolute',bottom:-9,left:'50%',transform:'translateX(-50%)',width:0,height:0,borderLeft:'9px solid transparent',borderRight:'9px solid transparent',borderTop:'9px solid rgba(9,17,30,.92)'}}/>
+              <div style={{position:'absolute',bottom:-9,left:'50%',transform:'translateX(-50%)',width:0,height:0,borderLeft:'9px solid transparent',borderRight:'9px solid transparent',borderTop:'9px solid rgb(var(--globe-panel-rgb) / .92)'}}/>
             </div>
           );
         })()}
 
         {/* Legend — top right */}
         <div className="absolute right-5 top-5 z-[5] flex flex-col gap-[9px] rounded-[14px]"
-          style={{padding:'14px 18px',background:'rgba(7,14,26,.55)',border:'1px solid rgba(255,255,255,.07)',backdropFilter:'blur(12px)',fontFamily:"'Formular',Arial,sans-serif"}}>
-          {[['#db1f26','0 0 8px rgba(219,31,38,.9)','Выбранный регион'],['#fff','0 0 6px rgba(255,255,255,.6)','Филиалы'],['#ffc440','0 0 6px rgba(255,196,64,.7)','Города респ. значения']].map(([bg,sh,label])=>(
-            <div key={label} className="flex items-center gap-[9px]" style={{fontSize:11.5,color:'rgba(255,255,255,.72)'}}>
+          style={{padding:'14px 18px',background:'rgb(var(--globe-panel-rgb) / .55)',border:'1px solid rgb(var(--globe-panel-border-rgb) / .07)',backdropFilter:'blur(12px)',fontFamily:"'Formular',Arial,sans-serif"}}>
+          {[['#db1f26','0 0 8px rgba(219,31,38,.9)','Выбранный регион'],['var(--text)','0 0 6px rgba(120,120,120,.4)','Филиалы'],['#ffc440','0 0 6px rgba(255,196,64,.7)','Города респ. значения']].map(([bg,sh,label])=>(
+            <div key={label} className="flex items-center gap-[9px]" style={{fontSize:11.5,color:'var(--text-muted)'}}>
               <span style={{width:10,height:10,borderRadius:'50%',background:bg,boxShadow:sh,flexShrink:0}}/>
               {label}
             </div>
@@ -853,22 +853,22 @@ export function BranchMapSection() {
 
         {/* Compass */}
         <div className="absolute right-[52px] bottom-[44px] z-[5] rounded-full flex items-center justify-center"
-          style={{width:70,height:70,border:'1px solid rgba(255,255,255,.16)',background:'rgba(7,14,26,.4)',backdropFilter:'blur(10px)'}}>
+          style={{width:70,height:70,border:'1px solid rgb(var(--globe-panel-border-rgb) / .16)',background:'rgb(var(--globe-panel-rgb) / .4)',backdropFilter:'blur(10px)'}}>
           <svg width="46" height="46" viewBox="0 0 48 48">
-            <circle cx="24" cy="24" r="21" fill="none" stroke="rgba(255,255,255,.12)"/>
-            <text x="24" y="11" textAnchor="middle" fontSize="8" fill="rgba(255,255,255,.7)" fontFamily="inherit">N</text>
+            <circle cx="24" cy="24" r="21" fill="none" stroke="var(--line)"/>
+            <text x="24" y="11" textAnchor="middle" fontSize="8" fill="var(--text-muted)" fontFamily="inherit">N</text>
             <path d="M24 13 L28 24 L24 22 L20 24 Z" fill="#db1f26"/>
-            <path d="M24 35 L20 24 L24 26 L28 24 Z" fill="rgba(255,255,255,.4)"/>
+            <path d="M24 35 L20 24 L24 26 L28 24 Z" fill="var(--text-muted)"/>
           </svg>
         </div>
 
         {/* Scroll hint */}
         <div className="absolute left-1/2 -translate-x-1/2 bottom-[42px] z-[5] flex items-center gap-[11px]"
-          style={{fontSize:12.5,letterSpacing:'0.04em',color:'rgba(255,255,255,.5)',pointerEvents:'none'}}>
-          <span style={{width:20,height:1,background:'linear-gradient(90deg,transparent,rgba(255,255,255,.4))'}}/>
-          <svg width="15" height="20" viewBox="0 0 16 22" fill="none" stroke="rgba(255,255,255,.6)" strokeWidth="1.4"><rect x="1" y="1" width="14" height="20" rx="7"/><path d="M8 5v4"/></svg>
+          style={{fontSize:12.5,letterSpacing:'0.04em',color:'var(--text-muted)',pointerEvents:'none'}}>
+          <span style={{width:20,height:1,background:'linear-gradient(90deg,transparent,var(--text-muted))'}}/>
+          <svg width="15" height="20" viewBox="0 0 16 22" fill="none" stroke="var(--text-muted)" strokeWidth="1.4"><rect x="1" y="1" width="14" height="20" rx="7"/><path d="M8 5v4"/></svg>
           Прокрутите для масштабирования
-          <span style={{width:20,height:1,background:'linear-gradient(270deg,transparent,rgba(255,255,255,.4))'}}/>
+          <span style={{width:20,height:1,background:'linear-gradient(270deg,transparent,var(--text-muted))'}}/>
         </div>
       </div>
     </section>
