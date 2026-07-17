@@ -59,13 +59,13 @@ export function ProgramPage() {
   }, []);
 
   return (
-    <div style={{ background: '#050505', color: '#fff', minHeight: '100vh', overflowX: 'hidden' }}>
+    <div style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh', overflowX: 'hidden' }}>
 
       {/* HERO */}
       <section style={{ position: 'relative', padding: 'clamp(120px,16vh,180px) clamp(16px,4vw,44px) clamp(50px,6vw,90px)', maxWidth: 1300, margin: '0 auto' }}>
         <div style={{ position: 'absolute', inset: 0, zIndex: 0, backgroundImage: 'radial-gradient(circle at 78% 22%, rgba(219,31,38,.28), transparent 46%)', pointerEvents: 'none' }} />
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '7px 14px 7px 12px', border: '1px solid rgba(255,255,255,.16)', borderRadius: 100, fontSize: 12, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,.8)' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '7px 14px 7px 12px', border: '1px solid var(--line)', borderRadius: 100, fontSize: 12, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
             <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#db1f26', display: 'block' }} />
             Предвыборная программа
           </div>
@@ -74,32 +74,32 @@ export function ProgramPage() {
           </h1>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: 'clamp(28px,4vw,60px)', alignItems: 'center', marginTop: 'clamp(30px,4vw,54px)' }}>
             <div>
-              <p style={{ margin: 0, maxWidth: '42ch', fontSize: 'clamp(16px,1.6vw,22px)', lineHeight: 1.5, color: 'rgba(255,255,255,.72)', fontWeight: 500 }}>
+              <p style={{ margin: 0, maxWidth: '42ch', fontSize: 'clamp(16px,1.6vw,22px)', lineHeight: 1.5, color: 'var(--text-muted)', fontWeight: 500 }}>
                 Каждый, кто честно работает, должен жить достойно.
               </p>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 24 }}>
                 <span style={{ padding: '9px 18px', background: '#db1f26', color: '#fff', fontWeight: 700, fontSize: 15 }}>Билік — халыққа!</span>
-                <span style={{ padding: '9px 18px', border: '1.5px solid rgba(255,255,255,.28)', color: '#fff', fontWeight: 700, fontSize: 15 }}>Власть — народу!</span>
+                <span style={{ padding: '9px 18px', border: '1.5px solid var(--line)', color: 'var(--text)', fontWeight: 700, fontSize: 15 }}>Власть — народу!</span>
               </div>
               <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 30 }}>
                 <a href="/vstupit" style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '17px 30px', background: '#db1f26', color: '#fff', textDecoration: 'none', fontSize: 16, fontWeight: 700 }}>Вступить в партию →</a>
-                <a href="#video" style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '17px 30px', background: 'transparent', border: '1.5px solid rgba(255,255,255,.24)', color: '#fff', textDecoration: 'none', fontSize: 16, fontWeight: 700 }}>▶ Смотреть агитролик</a>
+                <a href="#video" style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '17px 30px', background: 'transparent', border: '1.5px solid var(--line)', color: 'var(--text)', textDecoration: 'none', fontSize: 16, fontWeight: 700 }}>▶ Смотреть агитролик</a>
               </div>
             </div>
             <div style={{ position: 'relative' }}>
               <div style={{ position: 'absolute', inset: '-8% -6% -12%', borderRadius: 48, background: 'radial-gradient(circle at 50% 40%, rgba(219,31,38,.5), transparent 68%)', filter: 'blur(30px)', zIndex: 0 }} />
-              <img src="/banner.png" alt="Народная партия Казахстана" style={{ position: 'relative', zIndex: 1, width: '100%', height: 'auto', display: 'block', border: '1px solid rgba(255,255,255,.1)', boxShadow: '0 40px 90px -30px rgba(0,0,0,.8)' }} />
+              <img src="/banner.png" alt="Народная партия Казахстана" style={{ position: 'relative', zIndex: 1, width: '100%', height: 'auto', display: 'block', border: '1px solid var(--line)', boxShadow: '0 40px 90px -30px rgba(0,0,0,.8)' }} />
             </div>
           </div>
         </div>
       </section>
 
       {/* MARQUEE */}
-      <div style={{ padding: 'clamp(24px,4vw,56px) 0', borderTop: '1px solid rgba(255,255,255,.07)', borderBottom: '1px solid rgba(255,255,255,.07)', overflow: 'hidden' }}>
+      <div style={{ padding: 'clamp(24px,4vw,56px) 0', borderTop: '1px solid var(--line)', borderBottom: '1px solid var(--line)', overflow: 'hidden' }}>
         <style>{`@keyframes prog-marq{from{transform:translateX(0)}to{transform:translateX(-50%)}}`}</style>
         <div style={{ display: 'flex', width: 'max-content', animation: 'prog-marq 34s linear infinite' }}>
           {[0, 1].map(i => (
-            <span key={i} aria-hidden={i === 1 || undefined} style={{ flexShrink: 0, fontSize: 'clamp(40px,7vw,88px)', fontWeight: 800, letterSpacing: '-.02em', color: 'transparent', WebkitTextStroke: '1.4px rgba(255,255,255,.32)', whiteSpace: 'nowrap', paddingRight: '.3em' }}>
+            <span key={i} aria-hidden={i === 1 || undefined} style={{ flexShrink: 0, fontSize: 'clamp(40px,7vw,88px)', fontWeight: 800, letterSpacing: '-.02em', color: 'transparent', WebkitTextStroke: '1.4px var(--line)', whiteSpace: 'nowrap', paddingRight: '.3em' }}>
               {tickerText.split(' • ').filter(Boolean).map((word, j) => (
                 <span key={j}>{word}{' '}<span style={{ color: '#db1f26', WebkitTextStroke: '0' }}>•</span>{' '}</span>
               ))}
