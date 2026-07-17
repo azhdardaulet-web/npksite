@@ -38,20 +38,20 @@ function formatDate(iso: string | null) {
 /* ─── Breadcrumbs ─────────────────────────────────────────────────── */
 function Breadcrumbs() {
   return (
-    <nav style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, letterSpacing: '.04em', color: 'rgba(255,255,255,.4)', marginBottom: 0 }}>
-      <Link to="/" style={{ color: 'rgba(255,255,255,.4)', textDecoration: 'none', transition: 'color .15s' }}
-        onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-        onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,.4)')}>
+    <nav style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, letterSpacing: '.04em', color: 'var(--text-muted)', marginBottom: 0 }}>
+      <Link to="/" style={{ color: 'var(--text-muted)', textDecoration: 'none', transition: 'color .15s' }}
+        onMouseEnter={e => (e.currentTarget.style.color = 'var(--text)')}
+        onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
         Главная
       </Link>
       <ChevronRight size={12} />
-      <Link to="/novosti" style={{ color: 'rgba(255,255,255,.4)', textDecoration: 'none', transition: 'color .15s' }}
-        onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-        onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,.4)')}>
+      <Link to="/novosti" style={{ color: 'var(--text-muted)', textDecoration: 'none', transition: 'color .15s' }}
+        onMouseEnter={e => (e.currentTarget.style.color = 'var(--text)')}
+        onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
         Пресс-центр
       </Link>
       <ChevronRight size={12} />
-      <span style={{ color: '#fff' }}>Новости и релизы</span>
+      <span style={{ color: 'var(--text)' }}>Новости и релизы</span>
     </nav>
   );
 }
@@ -74,29 +74,29 @@ function Sidebar({
 
       {/* Search — inline above cards, stays in sidebar too */}
       <div style={{ position: 'relative', marginBottom: 2 }}>
-        <Search size={14} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,.3)', pointerEvents: 'none' }} />
+        <Search size={14} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
         <input
           type="text"
           placeholder="Поиск по ключевым словам"
           value={keyword}
           onChange={e => setKeyword(e.target.value)}
-          style={{ width: '100%', padding: '13px 36px 13px 38px', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.1)', color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+          style={{ width: '100%', padding: '13px 36px 13px 38px', background: 'var(--surface)', border: '1px solid var(--line)', color: 'var(--text)', fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
         />
         {keyword && (
-          <button onClick={() => setKeyword('')} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,.4)', display: 'flex' }}>
+          <button onClick={() => setKeyword('')} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex' }}>
             <X size={14} />
           </button>
         )}
       </div>
 
       {/* Date filter */}
-      <div style={{ background: '#0e0e0f', border: '1px solid rgba(255,255,255,.08)', borderTop: 'none', padding: '16px 16px', marginBottom: 2 }}>
-        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.35)', marginBottom: 10 }}>Дата публикации</div>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderTop: 'none', padding: '16px 16px', marginBottom: 2 }}>
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>Дата публикации</div>
         <input
           type="date"
           value={date}
           onChange={e => setDate(e.target.value)}
-          style={{ width: '100%', padding: '10px 12px', background: '#050505', border: '1px solid rgba(255,255,255,.1)', color: date ? '#fff' : 'rgba(255,255,255,.3)', fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', colorScheme: 'dark' }}
+          style={{ width: '100%', padding: '10px 12px', background: 'var(--bg)', border: '1px solid var(--line)', color: date ? 'var(--text)' : 'var(--text-muted)', fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
         />
       </div>
 
@@ -111,8 +111,8 @@ function Sidebar({
       )}
 
       {/* Format nav */}
-      <div style={{ background: '#0e0e0f', border: '1px solid rgba(255,255,255,.08)', borderTop: 'none', marginTop: 2 }}>
-        <div style={{ padding: '14px 16px 10px', fontSize: 10, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.35)' }}>Форматы</div>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderTop: 'none', marginTop: 2 }}>
+        <div style={{ padding: '14px 16px 10px', fontSize: 10, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Форматы</div>
         {FORMATS.map(f => (
           <button
             key={f}
@@ -121,14 +121,14 @@ function Sidebar({
               display: 'block', width: '100%', textAlign: 'left', padding: '11px 16px',
               background: format === f ? 'rgba(219,31,38,.1)' : 'transparent',
               borderLeft: format === f ? '3px solid #db1f26' : '3px solid transparent',
-              color: format === f ? '#fff' : 'rgba(255,255,255,.55)',
+              color: format === f ? 'var(--text)' : 'var(--text-muted)',
               fontSize: 13, fontWeight: format === f ? 700 : 500,
               border: 'none',
-              borderBottom: '1px solid rgba(255,255,255,.05)',
+              borderBottom: '1px solid var(--line)',
               cursor: 'pointer', fontFamily: 'inherit', transition: 'all .15s',
             }}
-            onMouseEnter={e => { if (format !== f) e.currentTarget.style.color = '#fff'; }}
-            onMouseLeave={e => { if (format !== f) e.currentTarget.style.color = 'rgba(255,255,255,.55)'; }}
+            onMouseEnter={e => { if (format !== f) e.currentTarget.style.color = 'var(--text)'; }}
+            onMouseLeave={e => { if (format !== f) e.currentTarget.style.color = 'var(--text-muted)'; }}
           >
             {f}
           </button>
@@ -147,10 +147,10 @@ function NewsCard({ item }: { item: PublicNewsItem }) {
       className="news-card"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{ display: 'flex', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.07)', overflow: 'hidden', cursor: 'pointer', transition: 'border-color .2s', borderColor: hovered ? 'rgba(255,255,255,.18)' : 'rgba(255,255,255,.07)', textDecoration: 'none' }}
+      style={{ display: 'flex', background: 'var(--surface)', border: '1px solid var(--line)', overflow: 'hidden', cursor: 'pointer', transition: 'border-color .2s', borderColor: hovered ? 'var(--text-muted)' : 'var(--line)', textDecoration: 'none' }}
     >
       {/* Image */}
-      <div className="news-card-img" style={{ flexShrink: 0, overflow: 'hidden', position: 'relative', background: '#151515' }}>
+      <div className="news-card-img" style={{ flexShrink: 0, overflow: 'hidden', position: 'relative', background: 'var(--surface-2)' }}>
         {item.imageUrl && (
           <img
             src={item.imageUrl}
@@ -165,13 +165,13 @@ function NewsCard({ item }: { item: PublicNewsItem }) {
       {/* Content */}
       <div className="news-card-body" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', fontWeight: 600 }}>{formatDate(item.publishedAt)}</span>
-          <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,.2)', display: 'block' }} />
+          <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>{formatDate(item.publishedAt)}</span>
+          <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'var(--line)', display: 'block' }} />
           <span style={{ fontSize: 11, color: '#db1f26', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>{NEWS_FORMAT_LABELS[item.format]}</span>
         </div>
-        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#fff', lineHeight: 1.35 }}>{item.title}</h3>
-        <p className="news-card-excerpt" style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,.5)', lineHeight: 1.6, flex: 1 }}>{item.excerpt}</p>
-        <span style={{ fontSize: 12, color: hovered ? '#db1f26' : 'rgba(255,255,255,.35)', fontWeight: 700, transition: 'color .15s', letterSpacing: '.04em' }}>
+        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--text)', lineHeight: 1.35 }}>{item.title}</h3>
+        <p className="news-card-excerpt" style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, flex: 1 }}>{item.excerpt}</p>
+        <span style={{ fontSize: 12, color: hovered ? '#db1f26' : 'var(--text-muted)', fontWeight: 700, transition: 'color .15s', letterSpacing: '.04em' }}>
           Читать →
         </span>
       </div>
@@ -191,7 +191,7 @@ function Pagination({ page, total, perPage, onChange }: { page: number; total: n
       <button
         onClick={() => onChange(page - 1)}
         disabled={page === 1}
-        style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid rgba(255,255,255,.12)', color: page === 1 ? 'rgba(255,255,255,.2)' : '#fff', cursor: page === 1 ? 'default' : 'pointer', fontSize: 16 }}
+        style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--line)', color: page === 1 ? 'var(--line)' : 'var(--text)', cursor: page === 1 ? 'default' : 'pointer', fontSize: 16 }}
       >
         ‹
       </button>
@@ -199,7 +199,7 @@ function Pagination({ page, total, perPage, onChange }: { page: number; total: n
         <button
           key={p}
           onClick={() => onChange(p)}
-          style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: page === p ? '#db1f26' : 'transparent', border: page === p ? '1px solid #db1f26' : '1px solid rgba(255,255,255,.12)', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: page === p ? 700 : 500, fontFamily: 'inherit' }}
+          style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: page === p ? '#db1f26' : 'transparent', border: page === p ? '1px solid #db1f26' : '1px solid var(--line)', color: page === p ? '#fff' : 'var(--text)', cursor: 'pointer', fontSize: 14, fontWeight: page === p ? 700 : 500, fontFamily: 'inherit' }}
         >
           {p}
         </button>
@@ -207,7 +207,7 @@ function Pagination({ page, total, perPage, onChange }: { page: number; total: n
       <button
         onClick={() => onChange(page + 1)}
         disabled={page === pageCount}
-        style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid rgba(255,255,255,.12)', color: page === pageCount ? 'rgba(255,255,255,.2)' : '#fff', cursor: page === pageCount ? 'default' : 'pointer', fontSize: 16 }}
+        style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--line)', color: page === pageCount ? 'var(--line)' : 'var(--text)', cursor: page === pageCount ? 'default' : 'pointer', fontSize: 16 }}
       >
         ›
       </button>
@@ -218,12 +218,12 @@ function Pagination({ page, total, perPage, onChange }: { page: number; total: n
 /* ─── Skeleton ────────────────────────────────────────────────────── */
 function CardSkeleton() {
   return (
-    <div style={{ display: 'flex', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.07)', overflow: 'hidden' }}>
-      <div className="news-card-img" style={{ flexShrink: 0, background: 'rgba(255,255,255,.04)' }} />
+    <div style={{ display: 'flex', background: 'var(--surface)', border: '1px solid var(--line)', overflow: 'hidden' }}>
+      <div className="news-card-img" style={{ flexShrink: 0, background: 'var(--surface-2)' }} />
       <div className="news-card-body" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10, justifyContent: 'center' }}>
-        <div style={{ width: '30%', height: 10, background: 'rgba(255,255,255,.06)' }} />
-        <div style={{ width: '70%', height: 16, background: 'rgba(255,255,255,.08)' }} />
-        <div style={{ width: '90%', height: 12, background: 'rgba(255,255,255,.05)' }} />
+        <div style={{ width: '30%', height: 10, background: 'var(--surface-2)' }} />
+        <div style={{ width: '70%', height: 16, background: 'var(--surface-2)' }} />
+        <div style={{ width: '90%', height: 12, background: 'var(--surface-2)' }} />
       </div>
     </div>
   );
@@ -281,11 +281,11 @@ export function NewsPage() {
   const handleDate = (v: string) => { setDate(v); setPage(1); };
 
   return (
-    <div style={{ background: '#050505', color: '#fff', minHeight: '100vh' }}>
+    <div style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh' }}>
 
       {/* Breadcrumbs bar */}
       <div style={{ paddingTop: 108 }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 clamp(16px,4vw,40px) 20px', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 clamp(16px,4vw,40px) 20px', borderBottom: '1px solid var(--line)' }}>
           <Breadcrumbs />
         </div>
       </div>
@@ -297,15 +297,15 @@ export function NewsPage() {
       {/* Heading row — full width, above the grid */}
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '48px clamp(16px,4vw,40px) 24px' }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 'clamp(24px,3vw,36px)', fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1.1 }}>Все новости</h2>
-        <span style={{ fontSize: 13, color: 'rgba(255,255,255,.4)', fontWeight: 500 }}>
-          Найдено: <strong style={{ color: '#fff' }}>{total}</strong> материалов
+        <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 500 }}>
+          Найдено: <strong style={{ color: 'var(--text)' }}>{total}</strong> материалов
           {format !== 'Все' && (
             <span style={{ marginLeft: 10, padding: '3px 10px', background: 'rgba(219,31,38,.12)', border: '1px solid rgba(219,31,38,.3)', fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#ff5a60' }}>
               {format}
             </span>
           )}
           {usedFallback && (
-            <span style={{ marginLeft: 10, fontSize: 11, color: 'rgba(255,255,255,.3)' }}>· демо-данные (сервер недоступен)</span>
+            <span style={{ marginLeft: 10, fontSize: 11, color: 'var(--text-muted)' }}>· демо-данные (сервер недоступен)</span>
           )}
         </span>
       </div>
@@ -314,19 +314,19 @@ export function NewsPage() {
       <div className="mobile-filter-bar" style={{ maxWidth: 1280, margin: '0 auto', padding: '0 16px 12px' }}>
         {/* Search */}
         <div style={{ position: 'relative', marginBottom: 8 }}>
-          <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,.3)', pointerEvents: 'none' }} />
+          <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
           <input type="text" placeholder="Поиск..." value={keyword} onChange={e => handleKeyword(e.target.value)}
-            style={{ width: '100%', padding: '10px 36px 10px 34px', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.1)', color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+            style={{ width: '100%', padding: '10px 36px 10px 34px', background: 'var(--surface)', border: '1px solid var(--line)', color: 'var(--text)', fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
           {keyword && (
-            <button onClick={() => handleKeyword('')} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,.4)', display: 'flex' }}><X size={14} /></button>
+            <button onClick={() => handleKeyword('')} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex' }}><X size={14} /></button>
           )}
         </div>
         {/* Row: date + reset */}
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <div style={{ position: 'relative', flex: 1 }}>
-            <Calendar size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,.3)', pointerEvents: 'none' }} />
+            <Calendar size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
             <input type="date" value={date} onChange={e => handleDate(e.target.value)}
-              style={{ width: '100%', padding: '9px 10px 9px 30px', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.1)', color: date ? '#fff' : 'rgba(255,255,255,.3)', fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', colorScheme: 'dark' }} />
+              style={{ width: '100%', padding: '9px 10px 9px 30px', background: 'var(--surface)', border: '1px solid var(--line)', color: date ? 'var(--text)' : 'var(--text-muted)', fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
           </div>
           {(keyword || date || format !== 'Все') && (
             <button onClick={reset} style={{ padding: '9px 14px', background: 'rgba(219,31,38,.15)', border: '1px solid rgba(219,31,38,.3)', color: '#ff5a60', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
@@ -339,7 +339,7 @@ export function NewsPage() {
           <style>{`.mobile-filter-bar div::-webkit-scrollbar{display:none}`}</style>
           {FORMATS.map(f => (
             <button key={f} onClick={() => handleFormat(f)}
-              style={{ flexShrink: 0, padding: '6px 14px', background: format === f ? '#db1f26' : 'rgba(255,255,255,.05)', border: `1px solid ${format === f ? '#db1f26' : 'rgba(255,255,255,.1)'}`, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+              style={{ flexShrink: 0, padding: '6px 14px', background: format === f ? '#db1f26' : 'var(--surface-2)', border: `1px solid ${format === f ? '#db1f26' : 'var(--line)'}`, color: format === f ? '#fff' : 'var(--text)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
               {f}
             </button>
           ))}
@@ -362,7 +362,7 @@ export function NewsPage() {
           ) : (
             <div style={{ padding: '60px 0', textAlign: 'center' }}>
               <div style={{ fontSize: 40, marginBottom: 16, opacity: .3 }}>🔍</div>
-              <p style={{ fontSize: 16, color: 'rgba(255,255,255,.4)' }}>По вашему запросу ничего не найдено</p>
+              <p style={{ fontSize: 16, color: 'var(--text-muted)' }}>По вашему запросу ничего не найдено</p>
               <button onClick={reset} style={{ marginTop: 16, padding: '11px 24px', background: '#db1f26', border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                 Сбросить фильтры
               </button>
