@@ -1,7 +1,7 @@
 /* ===== PROJECT DETAIL ===== */
 .npd {
-  background: #050505;
-  color: #fff;
+  background: var(--bg);
+  color: var(--text);
   font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
 }
 
@@ -45,7 +45,7 @@
 .npd-hero__desc {
   font-size: 16px;
   line-height: 1.7;
-  color: rgba(255,255,255,0.6);
+  color: var(--text-muted);
   margin: 0;
   padding-top: 60px;
 }
@@ -62,7 +62,7 @@
   gap: 6px;
   font-size: 13px;
   font-weight: 600;
-  color: rgba(255,255,255,0.4);
+  color: var(--text-muted);
   text-decoration: none;
   transition: color 0.2s;
 }
@@ -75,7 +75,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 60px 40px;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid var(--line);
 }
 .npd-stats__header {
   margin-bottom: 40px;
@@ -90,7 +90,7 @@
 }
 .npd-stats__text {
   font-size: 16px;
-  color: rgba(255,255,255,0.55);
+  color: var(--text-muted);
   line-height: 1.65;
   margin-top: 12px;
   max-width: 480px;
@@ -109,7 +109,7 @@
 }
 .npd-stat__label {
   font-size: 14px;
-  color: rgba(255,255,255,0.5);
+  color: var(--text-muted);
   margin-top: 8px;
 }
 
@@ -118,7 +118,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 60px 40px;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid var(--line);
 }
 .npd-values__header {
   margin-bottom: 40px;
@@ -199,7 +199,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 60px 40px;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid var(--line);
 }
 .npd-gallery__title {
   font-size: clamp(22px, 3vw, 32px);
@@ -232,7 +232,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 60px 40px 100px;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid var(--line);
 }
 .npd-team__header {
   margin-bottom: 40px;
@@ -255,7 +255,7 @@
 }
 .npd-team__text {
   font-size: 16px;
-  color: rgba(255,255,255,0.55);
+  color: var(--text-muted);
   line-height: 1.65;
   margin-top: 12px;
   max-width: 480px;
@@ -328,7 +328,7 @@
 }
 .npd-cta__text {
   font-size: 17px;
-  color: rgba(255,255,255,0.5);
+  color: var(--text-muted);
   line-height: 1.6;
   margin: 0 0 32px;
 }

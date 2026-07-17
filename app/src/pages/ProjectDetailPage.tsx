@@ -176,7 +176,7 @@ export function ProjectDetailPage() {
     return (
       <div className="npd" style={{ padding: '200px 40px', textAlign: 'center' }}>
         <h1 style={{ fontSize: 48, fontWeight: 800 }}>404</h1>
-        <p style={{ color: 'rgba(255,255,255,0.5)', marginTop: 16 }}>Проект не найден</p>
+        <p style={{ color: 'var(--text-muted)', marginTop: 16 }}>Проект не найден</p>
         <Link to="/proekty" className="npd-cta__btn" style={{ marginTop: 32 }}>
           ← Все проекты
         </Link>
@@ -189,27 +189,27 @@ export function ProjectDetailPage() {
       {/* BREADCRUMBS */}
       <div className="npd-crumbs">
         <Breadcrumb>
-          <BreadcrumbList style={{ color: 'rgba(255,255,255,.6)' }}>
+          <BreadcrumbList style={{ color: 'var(--text-muted)' }}>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
                 <Link to="/">Главная</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator style={{ color: 'rgba(255,255,255,.3)' }} />
+            <BreadcrumbSeparator style={{ color: 'var(--text-muted)' }} />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
                 <Link to="/o-partii">О партии</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator style={{ color: 'rgba(255,255,255,.3)' }} />
+            <BreadcrumbSeparator style={{ color: 'var(--text-muted)' }} />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
                 <Link to="/proekty">Проекты</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator style={{ color: 'rgba(255,255,255,.3)' }} />
+            <BreadcrumbSeparator style={{ color: 'var(--text-muted)' }} />
             <BreadcrumbItem>
-              <BreadcrumbPage style={{ color: 'rgba(255,255,255,.9)' }}>{p.title}</BreadcrumbPage>
+              <BreadcrumbPage style={{ color: 'var(--text)' }}>{p.title}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
