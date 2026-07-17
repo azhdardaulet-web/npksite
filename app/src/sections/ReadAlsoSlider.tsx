@@ -20,22 +20,22 @@ export function ReadAlsoSlider() {
     scrollRef.current?.scrollBy({ left: dir === 'right' ? 300 : -300, behavior: 'smooth' });
 
   return (
-    <section style={{ background: '#0a0a0a', borderTop: '1px solid rgba(255,255,255,.07)', padding: 'clamp(40px,5vw,64px) 0 clamp(48px,6vw,80px)' }}>
+    <section style={{ background: 'var(--bg)', borderTop: '1px solid var(--line)', padding: 'clamp(40px,5vw,64px) 0 clamp(48px,6vw,80px)' }}>
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 clamp(16px,4vw,40px)' }}>
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 28, gap: 12, flexWrap: 'wrap' }}>
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: '#db1f26', marginBottom: 8 }}>Материалы по теме</div>
-            <h2 style={{ margin: 0, fontSize: 'clamp(20px,2.5vw,30px)', fontWeight: 800, color: '#fff', letterSpacing: '-.02em' }}>Читайте также</h2>
+            <h2 style={{ margin: 0, fontSize: 'clamp(20px,2.5vw,30px)', fontWeight: 800, color: 'var(--text)', letterSpacing: '-.02em' }}>Читайте также</h2>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             {(['left', 'right'] as const).map(dir => (
               <button key={dir} onClick={() => scroll(dir)}
                 aria-label={dir === 'left' ? 'Назад' : 'Вперёд'}
-                style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid rgba(255,255,255,.15)', color: '#fff', cursor: 'pointer', transition: 'all .15s' }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.07)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,.35)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,255,255,.15)'; }}
+                style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--line)', color: 'var(--text)', cursor: 'pointer', transition: 'all .15s' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-2)'; e.currentTarget.style.borderColor = 'var(--text-muted)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'var(--line)'; }}
               >
                 {dir === 'left' ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
               </button>
@@ -54,9 +54,9 @@ export function ReadAlsoSlider() {
               onMouseLeave={() => setHovered(null)}
               style={{
                 flexShrink: 0, width: 'clamp(220px,20vw,270px)', scrollSnapAlign: 'start',
-                display: 'flex', flexDirection: 'column', background: '#0e0e0f',
-                border: `1px solid ${hovered === item.id ? 'rgba(255,255,255,.2)' : 'rgba(255,255,255,.07)'}`,
-                overflow: 'hidden', textDecoration: 'none', color: '#fff', transition: 'border-color .2s',
+                display: 'flex', flexDirection: 'column', background: 'var(--surface)',
+                border: `1px solid ${hovered === item.id ? 'var(--text-muted)' : 'var(--line)'}`,
+                overflow: 'hidden', textDecoration: 'none', color: 'var(--text)', transition: 'border-color .2s',
               }}
             >
               <div style={{ position: 'relative', aspectRatio: '16/9', overflow: 'hidden' }}>
@@ -65,9 +65,9 @@ export function ReadAlsoSlider() {
                 <span style={{ position: 'absolute', top: 10, left: 10, padding: '3px 8px', background: '#db1f26', fontSize: 10, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: '#fff' }}>{item.tag}</span>
               </div>
               <div style={{ padding: '14px 16px 18px', flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <span style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', fontWeight: 600 }}>{item.date}</span>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>{item.date}</span>
                 <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, lineHeight: 1.4, flex: 1 }}>{item.title}</h4>
-                <span style={{ fontSize: 12, color: hovered === item.id ? '#db1f26' : 'rgba(255,255,255,.3)', fontWeight: 700, transition: 'color .15s' }}>Читать →</span>
+                <span style={{ fontSize: 12, color: hovered === item.id ? '#db1f26' : 'var(--text-muted)', fontWeight: 700, transition: 'color .15s' }}>Читать →</span>
               </div>
             </Link>
           ))}

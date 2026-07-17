@@ -19,20 +19,20 @@ const PER_PAGE = 6;
 /* ─── Breadcrumbs ─────────────────────────────────────────────────── */
 function Breadcrumbs() {
   return (
-    <nav style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, letterSpacing: '.04em', color: 'rgba(255,255,255,.4)' }}>
-      <Link to="/" style={{ color: 'rgba(255,255,255,.4)', textDecoration: 'none', transition: 'color .15s' }}
-        onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-        onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,.4)')}>
+    <nav style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, letterSpacing: '.04em', color: 'var(--text-muted)' }}>
+      <Link to="/" style={{ color: 'var(--text-muted)', textDecoration: 'none', transition: 'color .15s' }}
+        onMouseEnter={e => (e.currentTarget.style.color = 'var(--text)')}
+        onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
         Главная
       </Link>
       <ChevronRight size={12} />
-      <Link to="/novosti" style={{ color: 'rgba(255,255,255,.4)', textDecoration: 'none', transition: 'color .15s' }}
-        onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-        onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,.4)')}>
+      <Link to="/novosti" style={{ color: 'var(--text-muted)', textDecoration: 'none', transition: 'color .15s' }}
+        onMouseEnter={e => (e.currentTarget.style.color = 'var(--text)')}
+        onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
         Пресс-центр
       </Link>
       <ChevronRight size={12} />
-      <span style={{ color: '#fff' }}>СМИ о нас</span>
+      <span style={{ color: 'var(--text)' }}>СМИ о нас</span>
     </nav>
   );
 }
@@ -54,28 +54,28 @@ function Sidebar({
     <aside style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
 
       <div style={{ position: 'relative', marginBottom: 2 }}>
-        <Search size={14} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,.3)', pointerEvents: 'none' }} />
+        <Search size={14} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
         <input
           type="text"
           placeholder="Поиск по ключевым словам"
           value={keyword}
           onChange={e => setKeyword(e.target.value)}
-          style={{ width: '100%', padding: '13px 36px 13px 38px', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.1)', color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+          style={{ width: '100%', padding: '13px 36px 13px 38px', background: 'var(--surface)', border: '1px solid var(--line)', color: 'var(--text)', fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
         />
         {keyword && (
-          <button onClick={() => setKeyword('')} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,.4)', display: 'flex' }}>
+          <button onClick={() => setKeyword('')} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex' }}>
             <X size={14} />
           </button>
         )}
       </div>
 
-      <div style={{ background: '#0e0e0f', border: '1px solid rgba(255,255,255,.08)', borderTop: 'none', padding: '16px 16px', marginBottom: 2 }}>
-        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.35)', marginBottom: 10 }}>Дата публикации</div>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderTop: 'none', padding: '16px 16px', marginBottom: 2 }}>
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>Дата публикации</div>
         <input
           type="date"
           value={date}
           onChange={e => setDate(e.target.value)}
-          style={{ width: '100%', padding: '10px 12px', background: '#050505', border: '1px solid rgba(255,255,255,.1)', color: date ? '#fff' : 'rgba(255,255,255,.3)', fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', colorScheme: 'dark' }}
+          style={{ width: '100%', padding: '10px 12px', background: 'var(--bg)', border: '1px solid var(--line)', color: date ? 'var(--text)' : 'var(--text-muted)', fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
         />
       </div>
 
@@ -88,8 +88,8 @@ function Sidebar({
         </button>
       )}
 
-      <div style={{ background: '#0e0e0f', border: '1px solid rgba(255,255,255,.08)', borderTop: 'none', marginTop: 2 }}>
-        <div style={{ padding: '14px 16px 10px', fontSize: 10, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.35)' }}>Тип источника</div>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderTop: 'none', marginTop: 2 }}>
+        <div style={{ padding: '14px 16px 10px', fontSize: 10, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Тип источника</div>
         {SOURCES.map(s => (
           <button
             key={s}
@@ -98,14 +98,14 @@ function Sidebar({
               display: 'block', width: '100%', textAlign: 'left', padding: '11px 16px',
               background: source === s ? 'rgba(219,31,38,.1)' : 'transparent',
               borderLeft: source === s ? '3px solid #db1f26' : '3px solid transparent',
-              color: source === s ? '#fff' : 'rgba(255,255,255,.55)',
+              color: source === s ? 'var(--text)' : 'var(--text-muted)',
               fontSize: 13, fontWeight: source === s ? 700 : 500,
               border: 'none',
-              borderBottom: '1px solid rgba(255,255,255,.05)',
+              borderBottom: '1px solid var(--line)',
               cursor: 'pointer', fontFamily: 'inherit', transition: 'all .15s',
             }}
-            onMouseEnter={e => { if (source !== s) e.currentTarget.style.color = '#fff'; }}
-            onMouseLeave={e => { if (source !== s) e.currentTarget.style.color = 'rgba(255,255,255,.55)'; }}
+            onMouseEnter={e => { if (source !== s) e.currentTarget.style.color = 'var(--text)'; }}
+            onMouseLeave={e => { if (source !== s) e.currentTarget.style.color = 'var(--text-muted)'; }}
           >
             {s}
           </button>
@@ -126,9 +126,9 @@ function SmiCard({ item }: { item: PublicMediaPublication }) {
       onClick={(e) => { if (!item.url) e.preventDefault(); }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{ display: 'flex', flexDirection: 'row', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.07)', overflow: 'hidden', cursor: item.url ? 'pointer' : 'default', transition: 'border-color .2s', borderColor: hovered ? 'rgba(255,255,255,.18)' : 'rgba(255,255,255,.07)', textDecoration: 'none' }}
+      style={{ display: 'flex', flexDirection: 'row', background: 'var(--surface)', border: '1px solid var(--line)', overflow: 'hidden', cursor: item.url ? 'pointer' : 'default', transition: 'border-color .2s', borderColor: hovered ? 'var(--text-muted)' : 'var(--line)', textDecoration: 'none' }}
     >
-      <div style={{ flexShrink: 0, width: 240, height: 135, overflow: 'hidden', position: 'relative', background: '#151515' }}>
+      <div style={{ flexShrink: 0, width: 240, height: 135, overflow: 'hidden', position: 'relative', background: 'var(--surface-2)' }}>
         {item.imageUrl && (
           <img
             src={item.imageUrl}
@@ -142,15 +142,15 @@ function SmiCard({ item }: { item: PublicMediaPublication }) {
       </div>
       <div style={{ padding: '20px 22px', flex: 1, display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', fontWeight: 600 }}>{new Date(item.date).toLocaleDateString('ru-RU')}</span>
-          <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,.2)', display: 'block' }} />
+          <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>{new Date(item.date).toLocaleDateString('ru-RU')}</span>
+          <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'var(--line)', display: 'block' }} />
           <span style={{ fontSize: 11, color: '#db1f26', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>{item.sourceType}</span>
-          <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,.2)', display: 'block' }} />
-          <span style={{ fontSize: 11, color: 'rgba(255,255,255,.5)', fontWeight: 600 }}>{item.mediaName}</span>
+          <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'var(--line)', display: 'block' }} />
+          <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>{item.mediaName}</span>
         </div>
-        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#fff', lineHeight: 1.35 }}>{item.title}</h3>
-        <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,.5)', lineHeight: 1.6, flex: 1 }}>{item.excerpt}</p>
-        <span style={{ fontSize: 12, color: hovered ? '#db1f26' : 'rgba(255,255,255,.35)', fontWeight: 700, transition: 'color .15s', letterSpacing: '.04em' }}>
+        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--text)', lineHeight: 1.35 }}>{item.title}</h3>
+        <p style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, flex: 1 }}>{item.excerpt}</p>
+        <span style={{ fontSize: 12, color: hovered ? '#db1f26' : 'var(--text-muted)', fontWeight: 700, transition: 'color .15s', letterSpacing: '.04em' }}>
           Читать →
         </span>
       </div>
@@ -166,17 +166,17 @@ function Pagination({ page, total, perPage, onChange }: { page: number; total: n
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center', marginTop: 48 }}>
       <button onClick={() => onChange(page - 1)} disabled={page === 1}
-        style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid rgba(255,255,255,.12)', color: page === 1 ? 'rgba(255,255,255,.2)' : '#fff', cursor: page === 1 ? 'default' : 'pointer', fontSize: 16 }}>
+        style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--line)', color: page === 1 ? 'var(--line)' : 'var(--text)', cursor: page === 1 ? 'default' : 'pointer', fontSize: 16 }}>
         ‹
       </button>
       {pages.map(p => (
         <button key={p} onClick={() => onChange(p)}
-          style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: page === p ? '#db1f26' : 'transparent', border: page === p ? '1px solid #db1f26' : '1px solid rgba(255,255,255,.12)', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: page === p ? 700 : 500, fontFamily: 'inherit' }}>
+          style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: page === p ? '#db1f26' : 'transparent', border: page === p ? '1px solid #db1f26' : '1px solid var(--line)', color: page === p ? '#fff' : 'var(--text)', cursor: 'pointer', fontSize: 14, fontWeight: page === p ? 700 : 500, fontFamily: 'inherit' }}>
           {p}
         </button>
       ))}
       <button onClick={() => onChange(page + 1)} disabled={page === pageCount}
-        style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid rgba(255,255,255,.12)', color: page === pageCount ? 'rgba(255,255,255,.2)' : '#fff', cursor: page === pageCount ? 'default' : 'pointer', fontSize: 16 }}>
+        style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--line)', color: page === pageCount ? 'var(--line)' : 'var(--text)', cursor: page === pageCount ? 'default' : 'pointer', fontSize: 16 }}>
         ›
       </button>
     </div>
@@ -214,11 +214,11 @@ export function SmiPage() {
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   return (
-    <div style={{ background: '#050505', color: '#fff', minHeight: '100vh' }}>
+    <div style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh' }}>
 
       {/* Breadcrumbs */}
       <div style={{ paddingTop: 108 }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 clamp(16px,4vw,40px) 20px', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 clamp(16px,4vw,40px) 20px', borderBottom: '1px solid var(--line)' }}>
           <Breadcrumbs />
         </div>
       </div>
@@ -227,15 +227,15 @@ export function SmiPage() {
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '48px clamp(16px,4vw,40px) 24px' }}>
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: '#db1f26', marginBottom: 12 }}>Пресс-центр</div>
         <h1 style={{ margin: '0 0 12px', fontSize: 'clamp(28px,4vw,48px)', fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1.1 }}>СМИ о нас</h1>
-        <p style={{ margin: 0, fontSize: 15, color: 'rgba(255,255,255,.45)', maxWidth: 560, lineHeight: 1.65 }}>
+        <p style={{ margin: 0, fontSize: 15, color: 'var(--text-muted)', maxWidth: 560, lineHeight: 1.65 }}>
           Публикации ведущих казахстанских и зарубежных СМИ о деятельности Народной партии Казахстана.
         </p>
       </div>
 
       {/* Count row */}
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 clamp(16px,4vw,40px) 24px' }}>
-        <span style={{ fontSize: 13, color: 'rgba(255,255,255,.4)', fontWeight: 500 }}>
-          Найдено: <strong style={{ color: '#fff' }}>{filtered.length}</strong> материалов
+        <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 500 }}>
+          Найдено: <strong style={{ color: 'var(--text)' }}>{filtered.length}</strong> материалов
           {source !== 'Все' && (
             <span style={{ marginLeft: 10, padding: '3px 10px', background: 'rgba(219,31,38,.12)', border: '1px solid rgba(219,31,38,.3)', fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#ff5a60' }}>
               {source}
@@ -249,7 +249,7 @@ export function SmiPage() {
 
         <div>
           {loading ? (
-            <div style={{ padding: '60px 0', textAlign: 'center', color: 'rgba(255,255,255,.4)' }}>Загрузка...</div>
+            <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--text-muted)' }}>Загрузка...</div>
           ) : paginated.length > 0 ? (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 2 }}>
               {paginated.map(item => <SmiCard key={item.id} item={item} />)}
@@ -257,7 +257,7 @@ export function SmiPage() {
           ) : (
             <div style={{ padding: '60px 0', textAlign: 'center' }}>
               <div style={{ fontSize: 40, marginBottom: 16, opacity: .3 }}>🔍</div>
-              <p style={{ fontSize: 16, color: 'rgba(255,255,255,.4)' }}>По вашему запросу ничего не найдено</p>
+              <p style={{ fontSize: 16, color: 'var(--text-muted)' }}>По вашему запросу ничего не найдено</p>
               <button onClick={reset} style={{ marginTop: 16, padding: '11px 24px', background: '#db1f26', border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                 Сбросить фильтры
               </button>
