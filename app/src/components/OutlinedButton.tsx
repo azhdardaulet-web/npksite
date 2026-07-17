@@ -15,8 +15,8 @@ export function OutlinedButton({ children, onClick, className, fullWidth, type =
       onClick={onClick}
       data-magnetic
       className={cn(
-        'bg-transparent text-white font-medium text-[15px] rounded-pill px-7 py-3.5 min-h-[48px]',
-        'border-[1.5px] border-white/40 hover:border-white hover:bg-white/[0.06]',
+        'bg-transparent text-text-base font-medium text-[15px] rounded-pill px-7 py-3.5 min-h-[48px]',
+        'border-[1.5px] border-line hover:border-text-base hover:bg-surface-2',
         'transition-colors duration-200',
         fullWidth && 'w-full',
         className

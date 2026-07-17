@@ -12,7 +12,7 @@ const navLinks = [
 const socialIcons = [
   { name: 'YouTube', color: '#FF0000' },
   { name: 'Instagram', color: '#E4405F' },
-  { name: 'TikTok', color: '#ffffff' },
+  { name: 'TikTok', color: 'var(--text)' },
   { name: 'Telegram', color: '#0088cc' },
   { name: 'Facebook', color: '#1877F2' },
 ];
