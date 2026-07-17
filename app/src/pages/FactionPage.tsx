@@ -68,15 +68,15 @@ export function FactionPage() {
       {/* ===== BREADCRUMBS ===== */}
       <div className="npf-crumbs">
         <Breadcrumb>
-          <BreadcrumbList style={{ color: 'rgba(255,255,255,.6)' }}>
+          <BreadcrumbList style={{ color: 'var(--text-muted)' }}>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
                 <Link to="/">Главная</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator style={{ color: 'rgba(255,255,255,.3)' }} />
+            <BreadcrumbSeparator style={{ color: 'var(--text-muted)' }} />
             <BreadcrumbItem>
-              <BreadcrumbPage style={{ color: 'rgba(255,255,255,.9)' }}>Фракция</BreadcrumbPage>
+              <BreadcrumbPage style={{ color: 'var(--text)' }}>Фракция</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -169,7 +169,7 @@ export function FactionPage() {
       </section>
 
       {/* ===== ABOUT ===== */}
-      <section className="npf-section" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <section className="npf-section" style={{ borderTop: '1px solid var(--line)' }}>
         <ScrollReveal>
           <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 60, alignItems: 'start' }}>
             <div>
@@ -198,7 +198,7 @@ export function FactionPage() {
       </section>
 
       {/* ===== ACHIEVEMENTS ===== */}
-      <section className="npf-section" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <section className="npf-section" style={{ borderTop: '1px solid var(--line)' }}>
         <ScrollReveal>
           <div className="npf-section__header">
             <span className="npf-section__eyebrow">Достижения</span>
