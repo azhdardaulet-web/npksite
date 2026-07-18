@@ -23,6 +23,7 @@ import { ProjectsPage } from '@/pages/ProjectsPage';
 import { ProjectDetailPage } from '@/pages/ProjectDetailPage';
 import { FactionCompositionPage } from '@/pages/FactionCompositionPage';
 import { FactionRequestsPage } from '@/pages/FactionRequestsPage';
+import { RacingGamePage } from '@/pages/RacingGamePage';
 
 function App() {
   return (
@@ -53,6 +54,8 @@ function App() {
         <Route path="/smi-o-nas" element={<SmiPage />} />
         <Route path="/narodnoe-media" element={<NarodnoeMediaPage />} />
       </Route>
+      {/* Мини-игра «8-битная гонка» — полноэкранная, без общего лейаута сайта */}
+      <Route path="/gonka" element={<RacingGamePage />} />
     </Routes>
   );
 }
