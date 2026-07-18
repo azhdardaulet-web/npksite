@@ -222,7 +222,7 @@
   }
 
   .animate-ticker {
-    animation: ticker-scroll 25s linear infinite;
+    animation: ticker-scroll 50s linear infinite;
   }
 
   /* Image reveal clip */

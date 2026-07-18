@@ -13,6 +13,7 @@ export interface Region {
   chairman: string;
   address: string;
   phone: string;
+  email?: string;
 }
 
 export interface NewsItem {

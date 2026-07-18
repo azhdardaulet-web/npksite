@@ -72,15 +72,27 @@ export function BranchesPage() {
                 <h4 className="text-heading font-bold text-text-base mb-4">НПК — {selectedRegion.name}</h4>
                 <div className="space-y-3">
                   <p className="text-body text-text-base"><span className="text-text-muted">Председатель:</span> {selectedRegion.chairman}</p>
-                  <p className="text-body text-text-muted flex items-center gap-2"><MapPin size={14} className="shrink-0" />{selectedRegion.address}</p>
-                  <a href={`tel:${selectedRegion.phone.replace(/\s/g, '')}`} className="text-body text-red font-medium flex items-center gap-2 hover:underline">
-                    <Phone size={14} className="shrink-0" />{selectedRegion.phone}
-                  </a>
+                  <p className="text-body text-text-muted flex items-start gap-2"><MapPin size={14} className="shrink-0 mt-1" />{selectedRegion.address}</p>
+                  {selectedRegion.phone && selectedRegion.phone !== '—' ? (
+                    <a href={`tel:${selectedRegion.phone.replace(/[\s()\-]/g, '')}`} className="text-body text-red font-medium flex items-center gap-2 hover:underline">
+                      <Phone size={14} className="shrink-0" />{selectedRegion.phone}
+                    </a>
+                  ) : (
+                    <p className="text-body text-text-muted flex items-center gap-2">
+                      <Phone size={14} className="shrink-0" />Телефон не указан
+                    </p>
+                  )}
+                  {selectedRegion.email && (
+                    <a href={`mailto:${selectedRegion.email}`} className="text-body text-text-muted flex items-center gap-2 hover:text-text-base transition-colors break-all">
+                      <span className="shrink-0 text-xs opacity-60">@</span>{selectedRegion.email}
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
           </ScrollReveal>
         )}
+
       </div>
     </div>
   );

@@ -10,27 +10,28 @@ export const candidates: Candidate[] = [
 ];
 
 export const regions: Region[] = [
-  { id: 'astana', name: 'Астана', chairman: 'Нурлан Сагинтаев', address: 'пр. Кабанбай батыра, 18', phone: '+7 7172 70 12 34' },
-  { id: 'almaty', name: 'Алматы', chairman: 'Бахытжан Жумагулов', address: 'пр. Назарбаева, 127', phone: '+7 727 330 45 67' },
-  { id: 'shymkent', name: 'Шымкент', chairman: 'Габит Сыздыков', address: 'ул. Тауке хана, 42', phone: '+7 7252 41 89 01' },
-  { id: 'abay', name: 'Абайская обл.', chairman: 'Серик Утегенов', address: 'г. Семей, пр. Независимости, 8', phone: '+7 7222 33 45 67' },
-  { id: 'akmola', name: 'Акмолинская обл.', chairman: 'Ермек Кошербаев', address: 'г. Кокшетау, ул. Ауэзова, 93', phone: '+7 7162 25 67 89' },
-  { id: 'aktobe', name: 'Актюбинская обл.', chairman: 'Онласын Укишев', address: 'г. Актобе, пр. Абилкайыр хана, 47', phone: '+7 7132 78 90 12' },
-  { id: 'almaty-obl', name: 'Алматинская обл.', chairman: 'Канат Бозумбаев', address: 'г. Талдыкорган, пр. Бокейхана, 21', phone: '+7 7282 44 56 78' },
-  { id: 'atyrau', name: 'Атырауская обл.', chairman: 'Нурлан Ногаев', address: 'г. Атырау, ул. Сатпаева, 15', phone: '+7 7122 31 23 45' },
-  { id: 'vko', name: 'Восточно-Казахстанская обл.', chairman: 'Даниал Ахметов', address: 'г. Усть-Каменогорск, пр. Независимости, 45', phone: '+7 7232 65 43 21' },
-  { id: 'zhambyl', name: 'Жамбылская обл.', chairman: 'Бердибек Сапарбаев', address: 'г. Тараз, пр. Тауелсиздик, 33', phone: '+7 7262 54 32 10' },
-  { id: 'jetisu', name: 'Жетысуская обл.', chairman: 'Бейбит Искаков', address: 'г. Талгар, ул. Жетысу, 12', phone: '+7 72737 12 34 56' },
-  { id: 'zko', name: 'Западно-Казахстанская обл.', chairman: 'Гали Искалиев', address: 'г. Уральск, пр. Назарбаева, 102', phone: '+7 7112 87 65 43' },
-  { id: 'karaganda', name: 'Карагандинская обл.', chairman: 'Женис Касымбек', address: 'г. Караганда, бул. Нуркена, 11', phone: '+7 7212 43 21 09' },
-  { id: 'kostanay', name: 'Костанайская обл.', chairman: 'Архимед Мухамбетов', address: 'г. Костанай, ул. Алтынсарина, 55', phone: '+7 7142 76 54 32' },
-  { id: 'kyzylorda', name: 'Кызылординская обл.', chairman: 'Гульшара Абдыкаликова', address: 'г. Кызылорда, ул. Кырыкмольда, 28', phone: '+7 7242 98 76 54' },
-  { id: 'mangistau', name: 'Мангистауская обл.', chairman: 'Нурлан Ногаев', address: 'г. Актау, 14 мкр, 32', phone: '+7 7292 34 56 78' },
-  { id: 'pavlodar', name: 'Павлодарская обл.', chairman: 'Абылкаир Скаков', address: 'г. Павлодар, ул. Торайгырова, 61', phone: '+7 7182 56 78 90' },
-  { id: 'nko', name: 'Северо-Казахстанская обл.', chairman: 'Кумар Аксакалов', address: 'г. Петропавловск, ул. Назарбаева, 140', phone: '+7 7152 67 89 01' },
-  { id: 'turkestan', name: 'Туркестанская обл.', chairman: 'Умирзак Шукеев', address: 'г. Туркестан, пр. Б. Саттарханова, 7', phone: '+7 7253 45 67 89' },
-  { id: 'ulytau', name: 'Улытауская обл.', chairman: 'Берик Уали', address: 'г. Жезказган, ул. Шугыла, 3', phone: '+7 7102 23 45 67' },
+  { id: 'almaty',      name: 'Алматы (г.)',                      chairman: 'Кусаинов Бейбут Булатович',        address: '050000, г. Алматы, ул. Қазыбек би 22, БЦ Жан-Ер, офис 222',                              phone: '+7 778 788 2034', email: 'halykparty_almaty@qhp.kz' },
+  { id: 'astana',     name: 'Астана (г.)',                       chairman: 'Оразханов Нұрдәулет Амантайұлы',   address: '010000, г. Астана, ул. Желтоксан, 16, НП 2',                                              phone: '+7 702 796 4570', email: 'halykparty_astana@qhp.kz' },
+  { id: 'shymkent',  name: 'Шымкент (г.)',                      chairman: 'Умаров Баймырза Абденбаевич (и.о.)', address: '160011, г. Шымкент, ул. Д. Кунаева 20/1',                                                  phone: '—',               email: 'halykparty_shymkent@qhp.kz' },
+  { id: 'akmola',    name: 'Акмолинская обл.',                  chairman: 'Тастамбеков Арман Зейнуллаевич',   address: '020000, г. Кокшетау, ул. М. Дулатулы, 31',                                               phone: '+7 775 212 9293', email: 'halykparty_akmola@mail.ru' },
+  { id: 'aktobe',    name: 'Актюбинская обл.',                  chairman: 'Курмангазин Бауыржан Олжашевич',   address: '030002, г. Актобе, ул. Мангилик Ел, здание 7 «Б», каб. 603',                            phone: '+7 778 803 3848', email: 'halykparty_aktobe@qhp.kz' },
+  { id: 'almaty-obl',name: 'Алматинская обл.',                  chairman: 'Дудабаев Еркебулан Бакытович (и.о.)', address: '040800, г. Конаев, ул. Достык, 5, каб. 20',                                              phone: '—',               email: 'halykparty_almaty_obl@qhp.kz' },
+  { id: 'atyrau',    name: 'Атырауская обл.',                   chairman: 'Досмухамбетова Балжан Ибатовна',   address: '060000, г. Атырау, ул. М. Утемисова 134 А, БЦ «Евразия», 5 этаж',                      phone: '+7 778 485 4437', email: 'halykparty_atyrau@qhp.kz' },
+  { id: 'vko',       name: 'Восточно-Казахстанская обл.',       chairman: 'Мусин Кайрат Маратович',           address: '070000, г. Усть-Каменогорск, ул. М. Горького, 46, офис 211',                            phone: '+7 7232 24 4648', email: 'halykparty_vko@qhp.kz' },
+  { id: 'jetisu',    name: 'Жетысуская обл.',                   chairman: 'Ибраимов Олжас Бекдаулетович',     address: '040000, г. Талдыкорган, пр. Н. Назарбаева, 44, каб. 22',                                phone: '+7 701 149 9555', email: 'halykparty_taldykorgan@qhp.kz' },
+  { id: 'zhambyl',   name: 'Жамбылская обл.',                   chairman: 'Аккозиев Рахман Сейлханович',      address: '080000, г. Тараз, ул. Казыбек би, 109А, офис 3',                                         phone: '—',               email: 'halykparty_zhambyl@qhp.kz' },
+  { id: 'zko',       name: 'Западно-Казахстанская обл.',        chairman: 'Лаврентьев Борис Георгиевич',      address: '090000, г. Уральск, ул. Ихсанова, 38, каб. 207',                                         phone: '+7 7112 25 3445', email: 'halykparty_zko@mail.ru' },
+  { id: 'karaganda', name: 'Карагандинская обл.',               chairman: 'Максутов Калел Мухатаевич',        address: '100000, г. Караганда, ул. Алиханова, 5, каб. 300–302',                                   phone: '+7 701 512 5129', email: 'halykparty_karaganda@qhp.kz' },
+  { id: 'kostanay',  name: 'Костанайская обл.',                 chairman: 'Березуцкая Ольга Ивановна',        address: '110000, г. Костанай, ул. Байтурсынова, 95, каб. 332, 333',                              phone: '+7 7142 53 4571', email: 'halykparty.kostanai@mail.ru' },
+  { id: 'abay',      name: 'Область Абай',                      chairman: '—',                                address: 'г. Семей, ул. Мәңгілік ел 9, каб. 310',                                                  phone: '—',               email: 'halykparty.semey@mail.ru' },
+  { id: 'kyzylorda', name: 'Кызылординская обл.',               chairman: 'Ерназаров Кайрат Шаршыбекович',    address: '120000, г. Кызылорда, ул. Кунаева 10, 1 этаж, офис 1, 2',                              phone: '+7 700 500 3484', email: 'halykparty_kyzylorda@qhp.kz' },
+  { id: 'mangistau', name: 'Мангистауская обл.',                chairman: 'Тулеугалиев Рашид Бектурович (и.о.)', address: '130000, г. Актау, 14 мкр, зд. 61/1, БЦ «Звезда Актау», каб. 305',                    phone: '+7 778 572 0073', email: 'halykparty_mangistau@qhp.kz' },
+  { id: 'pavlodar',  name: 'Павлодарская обл.',                 chairman: 'Агибаев Алимбек Тулегенович (и.о.)', address: '140000, г. Павлодар, ул. Маргулана, 110, офис 4',                                       phone: '+7 701 756 9763', email: 'halykparty.pavlodar@mail.ru' },
+  { id: 'nko',       name: 'Северо-Казахстанская обл.',         chairman: 'Жумагулов Ергали Сергалиевич',     address: '150000, г. Петропавловск, ул. Ы. Алтынсарина 166, офис 405',                           phone: '+7 7152 36 5916', email: 'halykparty_sko@mail.ru' },
+  { id: 'turkestan', name: 'Туркестанская обл.',                chairman: 'Камбарова Зухра Медеуовна',        address: '161200, г. Туркестан, ул. Б. Саттарханова, 45',                                          phone: '+7 775 315 2007', email: 'halykparty_turkestan@qhp.kz' },
+  { id: 'ulytau',    name: 'Улытауская обл.',                   chairman: 'Максутов Калел Мухатаевич',        address: '100600, г. Жезказган, пр. Алаша-Хана 37А, 2 этаж, офис 2',                             phone: '+7 777 629 5454', email: 'halykparty_ulytau@mail.ru' },
 ];
+
 
 export const newsItems: NewsItem[] = [
   { id: 1, date: '18 июня 2026', title: 'НПК представила план строительства 50 новых школ в сельской местности', image: '/images/news-1.jpg', category: 'Образование', readTime: '5 мин' },
@@ -63,4 +64,4 @@ export const regionFilterTags = [
   'Туркестанская', 'Улытауская',
 ];
 
-export const ELECTION_DATE = new Date('2026-07-01T00:00:00+06:00');
+export const ELECTION_DATE = new Date('2026-08-23T00:00:00+06:00');
