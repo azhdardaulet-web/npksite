@@ -7,9 +7,12 @@ interface CountUpProps {
   prefix?: string;
   className?: string;
   triggered?: boolean;
+  /** Если задано — target считается умноженным на 10^decimals (например, target=11,
+   *  decimals=1 → анимация 0..11, отображается как «1,1»). Позволяет считать дробные значения. */
+  decimals?: number;
 }
 
-export function CountUp({ target, duration = 1500, suffix = '', prefix = '', className = '', triggered }: CountUpProps) {
+export function CountUp({ target, duration = 1500, suffix = '', prefix = '', className = '', triggered, decimals = 0 }: CountUpProps) {
   const [count, setCount] = useState(0);
   const rafRef = useRef<number | null>(null);
   const hasRun = useRef(false);
@@ -42,7 +45,9 @@ export function CountUp({ target, duration = 1500, suffix = '', prefix = '', cla
     };
   }, [triggered, target, duration]);
 
-  const formatted = count.toLocaleString('ru-RU');
+  const formatted = decimals
+    ? (count / 10 ** decimals).toLocaleString('ru-RU', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+    : count.toLocaleString('ru-RU');
 
   return (
     <span className={className}>

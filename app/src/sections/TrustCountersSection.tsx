@@ -7,10 +7,18 @@ import { useHomeBlocks } from '@/hooks/useHomeBlocks';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const DEFAULT_COUNTERS = [
-  { label: 'Лет на политической арене', target: 30, suffix: '+' },
-  { label: 'единомышленников', target: 200, suffix: 'тыс+' },
-  { label: 'Региональных отделений', target: 20, suffix: '' },
+interface Counter {
+  label: string;
+  target: number;
+  suffix?: string;
+  decimals?: number;
+}
+
+const DEFAULT_COUNTERS: Counter[] = [
+  { label: 'лет деятельности', target: 25, suffix: '+' },
+  { label: 'подписчиков официальных медиаресурсов', target: 11, decimals: 1, suffix: ' млн+' },
+  { label: 'региональных филиалов', target: 20, suffix: '' },
+  { label: 'депутатских запросов', target: 500, suffix: '+' },
 ];
 
 interface StatsBlock {
@@ -39,9 +47,8 @@ export function TrustCountersSection() {
 
   const { getBlock } = useHomeBlocks();
   const cms = getBlock<StatsBlock>('stats');
-  const heading = cms?.headingRu?.trim() || 'Народная партия в цифрах и фактах';
-  const intro = cms?.introRu?.trim() || 'Три десятилетия служения. Сотни тысяч голосов. Двадцать регионов. Тринадцать кандидатов, готовых вернуть власть народу.';
-  const counters = cms?.items?.length
+  const heading = cms?.headingRu?.trim() || 'Народная партия в цифрах';
+  const counters: Counter[] = cms?.items?.length
     ? cms.items.map((it) => ({ label: it.labelRu, target: parseInt(it.value, 10) || 0, suffix: it.suffix ?? '' }))
     : DEFAULT_COUNTERS;
 
@@ -85,7 +92,7 @@ export function TrustCountersSection() {
       {/* ── Stats block ── */}
       <div className="max-w-[1280px] mx-auto px-4 md:px-10 pt-20 md:pt-28 pb-16 md:pb-20">
         {/* Header row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 mb-14 md:mb-16">
+        <div className="mb-14 md:mb-16">
           <TextReveal
             key={heading}
             tag="h2"
@@ -93,31 +100,27 @@ export function TrustCountersSection() {
           >
             {heading}
           </TextReveal>
-          <div className="flex items-end">
-            <p className="text-[18px] md:text-[20px] font-light text-text-muted leading-relaxed">
-              {intro}
-            </p>
-          </div>
         </div>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-3 gap-4 md:gap-8">
+        {/* Stats row: 2 колонки до lg (больше места на число), 4 — от lg (1024px+) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
           {counters.map((c, i) => (
             <div key={c.label} className="border-l border-line pl-5 md:pl-8">
               <div className="flex items-baseline gap-1 mb-1 flex-wrap">
                 <CountUp
                   target={c.target}
+                  decimals={c.decimals}
                   triggered={triggered}
                   duration={2000 + i * 150}
-                  className="text-[44px] sm:text-[56px] md:text-[72px] lg:text-[80px] font-bold text-text-base leading-none"
+                  className="text-[44px] sm:text-[56px] md:text-[72px] lg:text-[64px] xl:text-[80px] font-bold text-text-base leading-none"
                 />
                 {c.suffix && (
-                  <span className="text-[24px] sm:text-[32px] md:text-[40px] font-bold text-text-base leading-none">
+                  <span className="text-[24px] sm:text-[32px] md:text-[40px] lg:text-[32px] xl:text-[40px] font-bold text-text-base leading-none">
                     {c.suffix}
                   </span>
                 )}
               </div>
-              <p className="text-[14px] md:text-[20px] lg:text-[26px] font-bold text-text-muted leading-tight">
+              <p className="text-[14px] md:text-[20px] lg:text-[18px] xl:text-[26px] font-bold text-text-muted leading-tight">
                 {c.label}
               </p>
             </div>

@@ -25,7 +25,11 @@ export function HeroSection() {
   const cta1Href = cms?.cta1Href?.trim() || '/vstupit';
   const cta2Label = cms?.cta2LabelRu?.trim() || 'Программа партии';
   const cta2Href = cms?.cta2Href?.trim() || '/programma';
-  const imageUrl = cms?.imageUrl?.trim() || '/images/hero-banner.png';
+  // WHY: широкое кадрирование (mobileherosec) используется и на десктопе тоже —
+  // узкий вариант (desktopherosec) при object-cover в высокой колонке обрезал
+  // людей по верху/краям, широкий вписывается без обрезки.
+  const desktopImageUrl = cms?.imageUrl?.trim() || '/images/hero-banner-mobile.png';
+  const mobileImageUrl = cms?.imageUrl?.trim() || '/images/hero-banner-mobile.png';
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -56,72 +60,64 @@ export function HeroSection() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative bg-bg overflow-hidden">
-      {/* ── Desktop/tablet (md–xl): изображение якорится к правому краю на всю
-             высоту секции; его левая часть уходит под градиент цвета фона,
-             поэтому при сужении экрана кадрируется пустая зона, а не люди.
-             На 2xl (≥1536) картинка идёт в потоке с натуральными пропорциями
-             (композиция как в макете) — люди не «моются» градиентом. ── */}
-      <div className="hero-right hidden md:block absolute inset-y-0 right-0 w-full pointer-events-none 2xl:static 2xl:inset-auto" aria-hidden="true">
-        <img
-          src={imageUrl}
-          alt=""
-          className="absolute right-0 top-0 h-full w-auto max-w-none 2xl:static 2xl:w-full 2xl:h-auto"
-        />
-        {/* Градиент в цвет фона поверх левого края картинки: в светлой теме
-            сливается с белым краем PNG, в тёмной — гасит его в тёмный фон.
-            На md–lg картинка занимает почти всю ширину — градиент сильнее;
-            на 2xl в светлой теме градиент не нужен (у PNG свой белый переход),
-            в тёмной остаётся, чтобы погасить белую кромку. */}
-        <div
-          className="absolute inset-0 [background:linear-gradient(90deg,var(--bg)_42%,rgb(var(--bg-rgb)/0.82)_58%,rgb(var(--bg-rgb)/0)_80%)] lg:[background:linear-gradient(90deg,var(--bg)_34%,rgb(var(--bg-rgb)/0.8)_50%,rgb(var(--bg-rgb)/0)_72%)] xl:[background:linear-gradient(90deg,var(--bg)_26%,rgb(var(--bg-rgb)/0.8)_42%,rgb(var(--bg-rgb)/0)_64%)] 2xl:hidden dark:2xl:block dark:2xl:[background:linear-gradient(90deg,var(--bg)_22%,rgb(var(--bg-rgb)/0.75)_36%,rgb(var(--bg-rgb)/0)_58%)]"
-        />
-      </div>
+    <section ref={sectionRef} className="relative bg-bg overflow-hidden md:pt-[110px]">
+      {/* ── Сплит 40/60: текст слева, фото справа. Колонки растянуты на одну
+             высоту (items-stretch): фото заполняет всю высоту секции целиком
+             (object-cover), высоту секции задаёт текстовая колонка. ── */}
+      <div className="flex flex-col md:flex-row md:items-stretch">
+        {/* ── Text column ── */}
+        <div className="relative z-10 w-full md:w-2/5 flex flex-col justify-center px-6 md:pl-12 md:pr-8 lg:pl-16 lg:pr-10 xl:pl-20 xl:pr-12 pt-[48px] pb-[76px] md:pt-[76px] md:pb-[76px]">
+          <div className="max-w-[520px]">
+            {/* Accent line */}
+            <div ref={accentLineRef} className="h-[3px] bg-red mb-6" style={{ width: 0 }} />
 
-      {/* ── Content ── */}
-      <div className="relative z-10 max-w-[1440px] mx-auto px-6 md:px-12 lg:px-16 xl:px-20 pt-[120px] pb-10 md:pt-[140px] md:pb-16 lg:pt-[160px] lg:pb-20 min-h-0 md:min-h-[520px] lg:min-h-[580px] xl:min-h-[640px] flex flex-col justify-center 2xl:absolute 2xl:inset-0 2xl:max-w-none 2xl:min-h-0 2xl:pt-[110px] 2xl:pb-10">
-        <div className="max-w-[640px]">
-          {/* Accent line */}
-          <div ref={accentLineRef} className="h-[3px] bg-red mb-6" style={{ width: 0 }} />
+            {/* Headline: последняя строка — акцентная красная в светлой теме,
+                в тёмной остаётся основным цветом текста (как в макетах) */}
+            <h1 className="hero-reveal font-formular text-[28px] sm:text-[34px] md:text-[36px] lg:text-[42px] xl:text-[46px] font-bold text-text-base leading-[1.1] tracking-tight mb-6">
+              {titleLines.map((line, i) => (
+                <span
+                  key={i}
+                  className={i === titleLines.length - 1 && titleLines.length > 1 ? 'text-accent-brand dark:text-text-base' : undefined}
+                >
+                  {line}
+                  {i < titleLines.length - 1 && <br />}
+                </span>
+              ))}
+            </h1>
 
-          {/* Headline: последняя строка — акцентная красная в светлой теме,
-              в тёмной остаётся основным цветом текста (как в макетах) */}
-          <h1 className="hero-reveal font-formular text-[34px] sm:text-[44px] md:text-[48px] lg:text-[56px] xl:text-[64px] font-bold text-text-base leading-[1.08] tracking-tight mb-6">
-            {titleLines.map((line, i) => (
-              <span
-                key={i}
-                className={i === titleLines.length - 1 && titleLines.length > 1 ? 'text-accent-brand dark:text-text-base' : undefined}
-              >
-                {line}
-                {i < titleLines.length - 1 && <br />}
-              </span>
-            ))}
-          </h1>
+            {/* Subtitle */}
+            <p className="hero-reveal text-[16px] md:text-[18px] font-light text-text-muted mb-10 max-w-[480px] leading-relaxed">
+              {subtitle}
+            </p>
 
-          {/* Subtitle */}
-          <p className="hero-reveal text-[16px] md:text-[18px] font-light text-text-muted mb-10 max-w-[480px] leading-relaxed">
-            {subtitle}
-          </p>
-
-          {/* CTAs */}
-          <div className="hero-reveal flex flex-col sm:flex-row gap-3">
-            <Link to={cta1Href}>
-              <PrimaryButton className="sm:w-auto">{cta1Label}</PrimaryButton>
-            </Link>
-            <Link to={cta2Href}>
-              <OutlinedButton className="sm:w-auto">{cta2Label}</OutlinedButton>
-            </Link>
+            {/* CTAs */}
+            <div className="hero-reveal flex flex-col sm:flex-row gap-3">
+              <Link to={cta1Href}>
+                <PrimaryButton className="sm:w-auto">{cta1Label}</PrimaryButton>
+              </Link>
+              <Link to={cta2Href}>
+                <OutlinedButton className="sm:w-auto">{cta2Label}</OutlinedButton>
+              </Link>
+            </div>
           </div>
+        </div>
+
+        {/* ── Photo column: 60% ширины, фото заполняет всю высоту секции ── */}
+        <div className="hero-right hidden md:block md:w-3/5 relative overflow-hidden">
+          <img
+            src={desktopImageUrl}
+            alt="Народная партия Казахстана"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
         </div>
       </div>
 
-      {/* ── Mobile: картинка отдельным блоком; кадрируем только пустую
-             белую зону слева (якорь к правому краю), люди не обрезаются ── */}
-      <div className="hero-right md:hidden relative w-full aspect-[16/9] overflow-hidden">
+      {/* ── Mobile: картинка отдельным блоком под текстом, во всю ширину, целиком ── */}
+      <div className="hero-right md:hidden w-full">
         <img
-          src={imageUrl}
+          src={mobileImageUrl}
           alt="Народная партия Казахстана"
-          className="absolute right-0 top-0 h-full w-auto max-w-none"
+          className="w-full h-auto"
         />
       </div>
     </section>

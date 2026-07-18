@@ -136,32 +136,30 @@
   flex-direction: column;
   justify-content: space-between;
 }
-.npo-hero__stat--red {
-  background: linear-gradient(135deg, #db1f26, #b81920);
-}
+.npo-hero__stat--red,
 .npo-hero__stat--dark {
-  background: linear-gradient(135deg, #111, #0a0a0a);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: var(--surface);
+  border: 1px solid var(--line);
 }
 .npo-hero__stat-num {
   font-size: 36px;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.02em;
+  color: var(--text);
 }
 .npo-hero__stat-label {
   font-size: 13px;
   font-weight: 600;
-  opacity: 0.8;
+  color: var(--text-muted);
   margin-top: 8px;
 }
 .npo-hero__stat-link {
   font-size: 13px;
   font-weight: 700;
-  opacity: 0.9;
   margin-top: auto;
   padding-top: 12px;
-  color: inherit;
+  color: var(--accent-brand);
   text-decoration: none;
 }
 
@@ -253,8 +251,8 @@
   gap: 16px;
   padding: 20px;
   border-radius: 18px;
-  background: linear-gradient(135deg, #111, #0a0a0a);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--surface);
+  border: 1px solid var(--line);
   transition: all 0.25s;
 }
 .npo-feature:hover {
@@ -277,10 +275,11 @@
   font-size: 15px;
   font-weight: 700;
   margin: 0 0 4px;
+  color: var(--text);
 }
 .npo-feature__desc {
   font-size: 13px;
-  color: rgba(255,255,255,0.45);
+  color: var(--text-muted);
   line-height: 1.5;
   margin: 0;
 }
@@ -324,23 +323,22 @@
   flex-direction: column;
   justify-content: center;
 }
-.npo-bento2__card--dark {
-  background: linear-gradient(135deg, #111, #0a0a0a);
-  border: 1px solid rgba(255,255,255,0.08);
-}
+.npo-bento2__card--dark,
 .npo-bento2__card--red {
-  background: linear-gradient(135deg, #db1f26, #b81920);
+  background: var(--surface);
+  border: 1px solid var(--line);
 }
 .npo-bento2__title {
   font-size: 22px;
   font-weight: 700;
   margin: 0 0 12px;
   letter-spacing: -0.01em;
+  color: var(--text);
 }
 .npo-bento2__text {
   font-size: 14px;
   line-height: 1.65;
-  opacity: 0.85;
+  color: var(--text-muted);
   margin: 0 0 20px;
 }
 .npo-bento2__cta {
@@ -352,12 +350,9 @@
   text-decoration: none;
   width: fit-content;
 }
-.npo-bento2__cta--white {
-  color: #fff;
-  opacity: 0.9;
-}
+.npo-bento2__cta--white,
 .npo-bento2__cta--red {
-  color: #db1f26;
+  color: var(--accent-brand);
 }
 
 /* --- AREAS 2x2 --- */
@@ -370,12 +365,10 @@
   border-radius: 24px;
   padding: 36px;
 }
-.npo-area--red {
-  background: linear-gradient(135deg, #db1f26, #b81920);
-}
+.npo-area--red,
 .npo-area--dark {
-  background: linear-gradient(135deg, #111, #0a0a0a);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: var(--surface);
+  border: 1px solid var(--line);
 }
 .npo-area__icon {
   width: 48px;
@@ -389,15 +382,11 @@
   margin-bottom: 20px;
   color: #db1f26;
 }
-.npo-area--red .npo-area__icon {
-  background: rgba(255,255,255,0.12);
-  border-color: rgba(255,255,255,0.2);
-  color: #fff;
-}
 .npo-area__title {
   font-size: 20px;
   font-weight: 700;
   margin: 0 0 16px;
+  color: var(--text);
 }
 .npo-area__list {
   list-style: none;
@@ -413,10 +402,7 @@
   gap: 10px;
   font-size: 13px;
   line-height: 1.5;
-  color: rgba(255,255,255,0.75);
-}
-.npo-area--red .npo-area__item {
-  color: rgba(255,255,255,0.9);
+  color: var(--text-muted);
 }
 .npo-area__bullet {
   width: 5px;
@@ -425,9 +411,6 @@
   background: #db1f26;
   flex-shrink: 0;
   margin-top: 6px;
-}
-.npo-area--red .npo-area__bullet {
-  background: rgba(255,255,255,0.5);
 }
 
 /* --- GOAL SPLIT --- */

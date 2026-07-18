@@ -117,23 +117,22 @@
   flex-direction: column;
   justify-content: space-between;
 }
-.npf-hero__stat--red {
-  background: linear-gradient(135deg, #db1f26, #b81920);
-}
+.npf-hero__stat--red,
 .npf-hero__stat--dark {
-  background: linear-gradient(135deg, #111, #0a0a0a);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: var(--surface);
+  border: 1px solid var(--line);
 }
 .npf-hero__stat-num {
   font-size: 36px;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.02em;
+  color: var(--text);
 }
 .npf-hero__stat-label {
   font-size: 13px;
   font-weight: 600;
-  opacity: 0.8;
+  color: var(--text-muted);
   margin-top: 8px;
 }
 
@@ -210,12 +209,10 @@
   text-align: center;
   transition: all 0.25s;
 }
-.npf-num--red {
-  background: linear-gradient(135deg, #db1f26, #b81920);
-}
+.npf-num--red,
 .npf-num--dark {
-  background: linear-gradient(135deg, #111, #0a0a0a);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: var(--surface);
+  border: 1px solid var(--line);
 }
 .npf-num:hover {
   transform: translateY(-4px);
@@ -225,15 +222,13 @@
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.03em;
+  color: var(--text);
 }
 .npf-num__label {
   font-size: 14px;
   font-weight: 600;
   margin-top: 12px;
-  opacity: 0.85;
-}
-.npf-num--dark .npf-num__label {
-  color: rgba(255,255,255,0.55);
+  color: var(--text-muted);
 }
 
 /* --- ABOUT SECTION --- */
@@ -281,12 +276,10 @@
   padding: 32px;
   transition: all 0.25s;
 }
-.npf-achieve__card--red {
-  background: linear-gradient(135deg, #db1f26, #b81920);
-}
+.npf-achieve__card--red,
 .npf-achieve__card--dark {
-  background: linear-gradient(135deg, #111, #0a0a0a);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: var(--surface);
+  border: 1px solid var(--line);
 }
 .npf-achieve__card--wide {
   grid-column: span 2;
@@ -306,19 +299,11 @@
   margin-bottom: 20px;
   color: #db1f26;
 }
-.npf-achieve__card--red .npf-achieve__icon {
-  background: rgba(255,255,255,0.12);
-  border-color: rgba(255,255,255,0.2);
-  color: #fff;
-}
 .npf-achieve__text {
   font-size: 15px;
   line-height: 1.65;
   margin: 0;
-  opacity: 0.9;
-}
-.npf-achieve__card--dark .npf-achieve__text {
-  color: rgba(255,255,255,0.75);
+  color: var(--text-muted);
 }
 
 /* --- CTA --- */
