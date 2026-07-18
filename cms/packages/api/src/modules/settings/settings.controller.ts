@@ -16,6 +16,9 @@ const PUBLIC_SETTING_KEYS = [
   'homepage_members_count',
   'homepage_branches_count',
   'homepage_appeals_resolved',
+  'reception_avg_response_time',
+  'reception_branches_accepting',
+  'video_preview_image',
 ];
 
 // GET /api/v1/settings — только публично разрешённые ключи

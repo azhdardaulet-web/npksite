@@ -81,12 +81,20 @@ export function fetchAppealTopics() {
   return api.get<AppealTopic[]>('/api/v1/appeal-topics');
 }
 
+export interface AppealAttachment {
+  url: string;
+  fileName: string;
+  fileSize: number;
+  kind: 'statement' | 'additional';
+}
+
 export interface AppealPayload {
   fullName: string;
   phone: string;
   email?: string;
   topicId: string;
   message: string;
+  attachments?: AppealAttachment[];
 }
 
 export function submitAppeal(payload: AppealPayload) {
@@ -94,6 +102,23 @@ export function submitAppeal(payload: AppealPayload) {
     ...payload,
     hCaptchaToken: DEV_HCAPTCHA_TOKEN,
   });
+}
+
+// Загрузка заявления/доп. документов к письменному обращению — без авторизации,
+// файл сразу уходит в MinIO, ссылка прикладывается к submitAppeal.
+export async function uploadAppealAttachment(file: File): Promise<{ url: string; fileName: string; fileSize: number }> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await fetch(`${API_URL}/api/v1/appeals/attachments`, { method: 'POST', body: formData });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new ApiError(data?.error ?? 'Не удалось загрузить файл', data?.details);
+  return data;
+}
+
+// Счётчик «обращений решено» на /priemnaya — считается на бэкенде из БД
+// (статусы «Принята»/«Решено»), кэш на 1 час.
+export function fetchAppealsResolvedCount() {
+  return api.get<{ count: number }>('/api/v1/appeals/resolved-count');
 }
 
 // ─── Подписка на открытие магазина (/magazin) ──────────────────────────────────
@@ -268,7 +293,7 @@ export function fetchMediaPublications() {
 
 // ─── Документы (/mediakits — пресс-кит) ────────────────────────────────────────
 
-export type DocumentType = 'ustav' | 'deputy_request' | 'press_kit' | 'other';
+export type DocumentType = 'ustav' | 'deputy_request' | 'press_kit' | 'appeal_sample' | 'other';
 
 export interface PublicDocument {
   id: string;
@@ -298,6 +323,26 @@ export function fetchTestimonials() {
   return api.get<PublicTestimonial[]>('/api/v1/testimonials');
 }
 
+// ─── Филиалы (/filialy, /priemnaya — выбор филиала) ────────────────────────────
+
+export interface PublicBranch {
+  id: string;
+  cityRu: string;
+  cityKz: string;
+  addressRu: string;
+  addressKz: string;
+  phone: string;
+  email: string;
+  chairman: string | null;
+  lng: number | null;
+  lat: number | null;
+  sortOrder: number;
+}
+
+export function fetchBranches() {
+  return api.get<PublicBranch[]>('/api/v1/branches');
+}
+
 // ─── Страницы (блоки для CMS-редактируемых секций, /pages/:slug) ───────────────
 
 export interface PublicPageBlock {
@@ -314,4 +359,10 @@ export interface PublicPage {
 
 export function fetchPage(slug: string, lang = 'ru') {
   return api.get<PublicPage>(`/api/v1/pages/${slug}`, { lang });
+}
+
+// ─── Настройки сайта (публично разрешённые ключи, /priemnaya и т.д.) ───────────
+
+export function fetchSettings() {
+  return api.get<Record<string, string>>('/api/v1/settings');
 }

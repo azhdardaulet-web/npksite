@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Общественная приёмная — прототип</title>
+<style>
+  :root{
+    --bg:#0d0e12; --surface:#16181d; --surface-2:#1c1f25; --surface-3:#22252c;
+    --border:#282b32; --border-strong:#383c45;
+    --text:#f2f3f5; --text-secondary:#a8adb6; --text-muted:#6f7580;
+    --accent:#e5383f; --accent-dark:#b32a30; --accent-soft:#3a1518;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    line-height:1.5;}
+  .page{max-width:1180px; margin:0 auto; padding:40px 24px 80px;}
+  .dev-note{background:var(--surface-3); border:1px dashed var(--border-strong); border-radius:8px;
+    padding:10px 14px; font-size:12px; color:var(--text-muted); margin-bottom:24px;}
+  .eyebrow{color:var(--accent); font-size:13px; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;}
+  h1{font-size:38px; font-weight:700; margin:0 0 8px;}
+  .subtitle{color:var(--text-secondary); font-size:15px; margin:0 0 28px; max-width:560px;}
+
+  .steps{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px;}
+  .step-card{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 16px;}
+  .step-card .label{font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px;}
+  .step-card .title{font-size:14px; font-weight:600; display:flex; align-items:center; gap:8px;}
+
+  .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:28px;}
+  .stat-card{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px;}
+  .stat-num{font-size:26px; font-weight:700; color:var(--accent); margin-right:6px;}
+  .stat-num.plain{color:var(--text);}
+  .stat-label{font-size:13px; color:var(--text-secondary);}
+
+  .main-grid{display:grid; grid-template-columns:1.4fr 1fr; gap:16px; align-items:start; margin-bottom:32px;}
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px;}
+
+  .tabs{display:flex; gap:8px; margin-bottom:16px;}
+  .tab{flex:1; border:1px solid var(--border); border-radius:10px; padding:10px 12px;
+    font-size:14px; font-weight:600; color:var(--text-secondary); cursor:pointer;
+    display:flex; align-items:center; gap:8px; background:transparent; transition:.15s;}
+  .tab.active{border:2px solid var(--accent); color:var(--text); padding:9px 11px;}
+  .tab svg{width:18px; height:18px; flex-shrink:0;}
+
+  input[type=text], textarea{
+    width:100%; background:var(--surface-2); border:1px solid var(--border); border-radius:8px;
+    color:var(--text); font-size:14px; padding:11px 12px; font-family:inherit; margin-bottom:10px;
+  }
+  input::placeholder, textarea::placeholder{color:var(--text-muted);}
+  textarea{resize:vertical; min-height:80px;}
+
+  .upload-row{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;}
+  .dropzone{border:1.5px dashed var(--border-strong); border-radius:10px; padding:14px;
+    font-size:13px; color:var(--text-secondary); cursor:pointer; transition:.15s;}
+  .dropzone:hover{border-color:var(--accent); background:var(--surface-2);}
+  .dropzone .dz-title{display:flex; align-items:center; gap:8px; font-weight:600; color:var(--text); margin-bottom:2px;}
+  .dropzone .dz-sub{font-size:11px; color:var(--text-muted); margin-left:26px;}
+  .dropzone svg{width:16px; height:16px; color:var(--accent); flex-shrink:0;}
+
+  .samples-label{font-size:12px; color:var(--text-muted); margin:0 0 8px;}
+  .samples-row{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;}
+  .sample-card{display:flex; align-items:center; gap:10px; background:var(--surface-2);
+    border:1px solid var(--border); border-radius:10px; padding:10px 12px; cursor:pointer; transition:.15s;}
+  .sample-card:hover{border-color:var(--accent); background:var(--surface-3);}
+  .sample-icon{width:36px; height:36px; border-radius:8px; background:var(--accent-soft);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .sample-icon svg{width:18px; height:18px; color:var(--accent);}
+  .sample-text .t1{font-size:13px; font-weight:600; line-height:1.3;}
+  .sample-text .t2{font-size:11px; color:var(--text-muted); display:flex; align-items:center; gap:4px; margin-top:2px;}
+  .sample-text .t2 svg{width:12px; height:12px;}
+
+  .checkline{display:flex; align-items:flex-start; gap:8px; font-size:12px; color:var(--text-muted); margin-bottom:14px;}
+  .checkline input{margin-top:2px;}
+
+  .btn-primary{width:100%; background:var(--accent); color:#fff; border:none; border-radius:9px;
+    padding:13px; font-size:14px; font-weight:700; cursor:pointer; text-align:center;}
+  .btn-primary:hover{background:var(--accent-dark);}
+  .btn-secondary{width:100%; background:transparent; border:1px solid var(--border-strong); color:var(--text);
+    border-radius:9px; padding:11px; font-size:13px; font-weight:600; cursor:pointer; margin-top:8px;
+    display:flex; align-items:center; justify-content:center; gap:8px;}
+  .btn-secondary:hover{background:var(--surface-2);}
+  .btn-secondary svg{width:16px; height:16px;}
+  .wa-caption{text-align:center; font-size:11px; color:var(--text-muted); margin-top:8px;}
+
+  .video-card .vc-head{display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; margin-bottom:12px;}
+  .video-card .vc-head svg{width:18px; height:18px; color:var(--accent);}
+  .video-frame{background:var(--surface-2); border-radius:10px; height:200px; display:flex;
+    align-items:center; justify-content:center; color:var(--text-muted); font-size:12px; text-align:center; padding:16px;}
+  .video-card .vc-note{font-size:12px; color:var(--text-secondary); margin-top:12px; line-height:1.5;}
+
+  .section-title{font-size:16px; font-weight:700; margin:0 0 14px;}
+
+  .slider-wrap{overflow:hidden; margin-bottom:36px; -webkit-mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent);
+    mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent);}
+  .slider-track{display:flex; gap:12px; width:max-content; animation:scroll 38s linear infinite;}
+  .slider-wrap:hover .slider-track{animation-play-state:paused;}
+  @keyframes scroll{from{transform:translateX(0);} to{transform:translateX(-50%);}}
+  .quote-card{min-width:260px; max-width:260px; background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:16px;}
+  .quote-card p{font-style:italic; font-size:13px; line-height:1.6; margin:0 0 10px; color:var(--text);}
+  .quote-card .author{font-size:12px; color:var(--text-muted);}
+
+  .branch-card{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px;}
+  .branch-card h3{font-size:17px; font-weight:700; margin:0 0 4px;}
+  .branch-card .bc-sub{font-size:13px; color:var(--text-secondary); margin:0 0 16px; max-width:520px;}
+  select{width:100%; max-width:420px; background:var(--surface-2); border:1px solid var(--border);
+    color:var(--text); font-size:14px; padding:11px 12px; border-radius:8px; margin-bottom:14px;}
+  #branch-result{display:none; background:var(--surface-2); border-radius:10px; padding:16px;
+    grid-template-columns:1.2fr 1fr; gap:16px;}
+  #branch-result.show{display:grid;}
+  .bc-field{font-size:13px; color:var(--text-secondary); margin-bottom:6px; display:flex; gap:8px;}
+  .bc-field svg{width:15px; height:15px; color:var(--accent); flex-shrink:0; margin-top:2px;}
+  .bc-name{font-size:14px; font-weight:700; color:var(--text); margin-bottom:8px;}
+  .bc-map{background:var(--surface-3); border-radius:8px; min-height:120px; display:flex;
+    align-items:center; justify-content:center; color:var(--text-muted); font-size:12px;}
+  .btn-route{margin-top:10px; background:transparent; border:1px solid var(--border-strong); color:var(--text);
+    font-size:12px; padding:8px 12px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;}
+  .btn-route svg{width:14px; height:14px;}
+
+  @media (max-width:860px){
+    .main-grid{grid-template-columns:1fr;}
+    .steps{grid-template-columns:repeat(2,1fr);}
+    .stats{grid-template-columns:1fr;}
+    .upload-row, .samples-row{grid-template-columns:1fr;}
+    #branch-result{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="dev-note">Прототип для разработки. Данные-заглушки → см. комментарии &lt;!-- data: ... --&gt; в разметке, они указывают на таблицы Supabase из docs/PRAVKI.md и docs/VIDEOPRIEM.md.</div>
+
+  <div class="eyebrow">Приёмная</div>
+  <h1>Общественная приёмная</h1>
+  <!-- data: page_blocks.reception_subtitle -->
+  <p class="subtitle">Направьте обращение в Народную партию Казахстана — письменно или на видеоприёме</p>
+
+  <!-- data: page_blocks.reception_steps (4 шага) -->
+  <div class="steps">
+    <div class="step-card"><div class="label">Шаг 1</div><div class="title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h11l5 5v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M14 4v6h6"/></svg>
+      Заполните форму</div></div>
+    <div class="step-card"><div class="label">Шаг 2</div><div class="title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 9h14M5 15h14M10 4L8 20M16 4l-2 16"/></svg>
+      Обращение регистрируется, вы получаете номер</div></div>
+    <div class="step-card"><div class="label">Шаг 3</div><div class="title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Ответ или назначение видеоприёма</div></div>
+    <div class="step-card"><div class="label">Шаг 4</div><div class="title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+      Решение вопроса</div></div>
+  </div>
+
+  <!-- data: count(appeals where status in (Принята, Решено)) + site_settings -->
+  <div class="stats">
+    <div class="stat-card"><span class="stat-num">847</span><span class="stat-label">обращений решено</span></div>
+    <div class="stat-card"><span class="stat-num plain">5 дней</span><span class="stat-label">средний срок ответа</span></div>
+    <div class="stat-card"><span class="stat-num plain">20</span><span class="stat-label">филиалов принимают</span></div>
+  </div>
+
+  <div class="main-grid">
+    <div class="card">
+      <div class="tabs">
+        <div class="tab active" id="tab-written" onclick="setFormat('written')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>
+          Письменное обращение
+        </div>
+        <div class="tab" id="tab-video" onclick="setFormat('video')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          Видеоприём
+        </div>
+      </div>
+
+      <input type="text" placeholder="Асель Нурланова" aria-label="Ваше имя">
+      <input type="text" placeholder="+7 7__ ___ __ __" aria-label="Телефон">
+      <input type="text" placeholder="Тема обращения" aria-label="Тема обращения">
+      <textarea placeholder="Опишите вашу ситуацию" aria-label="Ситуация"></textarea>
+
+      <div id="written-only">
+        <div class="upload-row">
+          <div class="dropzone">
+            <div class="dz-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95L9.64 17.61a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              Прикрепить заявление
+            </div>
+            <div class="dz-sub">PDF, JPG · до 10 МБ</div>
+          </div>
+          <div class="dropzone">
+            <div class="dz-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M13 2v7h7"/></svg>
+              Дополнительные документы
+            </div>
+            <div class="dz-sub">до 3 файлов</div>
+          </div>
+        </div>
+
+        <!-- data: documents where category = appeal_sample -->
+        <p class="samples-label">Нужен готовый шаблон?</p>
+        <div class="samples-row">
+          <a href="#" class="sample-card" style="text-decoration:none; color:inherit;">
+            <div class="sample-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h1M9 17h6M9 15h6"/></svg>
+            </div>
+            <div class="sample-text">
+              <div class="t1">Образец обращения</div>
+              <div class="t2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+                PDF · қазақша
+              </div>
+            </div>
+          </a>
+          <a href="#" class="sample-card" style="text-decoration:none; color:inherit;">
+            <div class="sample-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h1M9 17h6M9 15h6"/></svg>
+            </div>
+            <div class="sample-text">
+              <div class="t1">Образец обращения</div>
+              <div class="t2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+                PDF · на русском
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <div id="video-only" style="display:none;">
+        <div style="background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:14px; font-size:12px; color:var(--text-secondary);">
+          Укажите удобное время и, если хотите, с кем именно — мы согласуем дату видеовстречи и пришлём ссылку на почту и по SMS.
+        </div>
+      </div>
+
+      <label class="checkline">
+        <input type="checkbox">
+        Согласен с политикой конфиденциальности
+      </label>
+
+      <button class="btn-primary">Отправить обращение</button>
+
+      <button class="btn-secondary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Написать в WhatsApp
+      </button>
+      <div class="wa-caption">+7 700 088 19 17 · ответ обычно в течение дня</div>
+    </div>
+
+    <div class="card video-card">
+      <div class="vc-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        Как проходит видеоприём
+      </div>
+      <!-- data: site_settings.video_preview_image -->
+      <div class="video-frame">Фото/скриншот видеозвонка<br>(заменить реальным кадром после первого приёма)</div>
+      <div class="vc-note">Ссылка на видеовстречу придёт на почту и по SMS после согласования времени с депутатом.</div>
+    </div>
+  </div>
+
+  <!-- data: testimonials where approved = true, до 10 -->
+  <div class="section-title">Отзывы обратившихся</div>
+  <div class="slider-wrap">
+    <div class="slider-track" id="slider-track"></div>
+  </div>
+
+  <!-- data: branches (20 филиалов), см. filialy.md -->
+  <div class="branch-card">
+    <h3>Или посетите филиал лично</h3>
+    <p class="bc-sub">Приёмные работают во всех регионах Казахстана. Выберите свой город — покажем адрес, контакты и как добраться.</p>
+    <select id="branch-select" onchange="showBranch(this.value)">
+      <option value="">Выберите филиал или город</option>
+    </select>
+    <div id="branch-result">
+      <div>
+        <div class="bc-name" id="b-name"></div>
+        <div class="bc-field" id="b-chairman"></div>
+        <div class="bc-field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span id="b-address"></span></div>
+        <div class="bc-field" id="b-phone-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92z"/></svg><span id="b-phone"></span></div>
+        <div class="bc-field" id="b-email-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M22 6l-10 7L2 6"/></svg><span id="b-email"></span></div>
+        <button class="btn-route" onclick="return false;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Построить маршрут
+        </button>
+      </div>
+      <div class="bc-map">Мини-карта филиала</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function setFormat(f){
+  document.getElementById('tab-written').classList.toggle('active', f==='written');
+  document.getElementById('tab-video').classList.toggle('active', f==='video');
+  document.getElementById('written-only').style.display = f==='written' ? 'block':'none';
+  document.getElementById('video-only').style.display = f==='video' ? 'block':'none';
+}
+
+var quotes = [
+  ["Помогли решить вопрос с отоплением в нашем доме за 3 дня. Настоящая народная партия!","Айгуль К., Алматы"],
+  ["Благодаря приёмной получил положенную льготу на лекарства. Спасибо за помощь.","Бауыржан М., Астана"],
+  ["Обратилась по вопросу детского сада — через неделю проблема была решена.","Гульмира Т., Шымкент"],
+  ["Депутат лично приехал на встречу с жителями двора.","Марат С., Караганда"],
+  ["Помогли оформить документы на социальную выплату.","Динара Ж., Тараз"],
+  ["Ответ на письменное обращение пришёл через два дня.","Ержан А., Актобе"]
+];
+var track = document.getElementById('slider-track');
+function renderQuotes(){
+  var html = '';
+  for(var i=0;i<2;i++){
+    quotes.forEach(function(q){
+      html += '<div class="quote-card"><p>«'+q[0]+'»</p><div class="author">'+q[1]+'</div></div>';
+    });
+  }
+  track.innerHTML = html;
+}
+renderQuotes();
+
+var branches = [
+  {name:"Алматинский городской филиал", chairman:"Кусаинов Бейбут Булатович", phone:"8 778 788 20 34", email:"halykparty_almaty@qhp.kz", address:"050000, г. Алматы, ул. Қазыбек би 22, БЦ Жан-Ер, офис 222"},
+  {name:"Астанинский городской филиал", chairman:"Оразханов Нұрдәулет Амантайұлы", phone:"8 702 796 45 70", email:"halykparty_astana@qhp.kz", address:"010000, г. Астана, ул. Желтоксан, 16, НП 2"},
+  {name:"Шымкентский городской филиал", chairman:"Умаров Баймырза Абденбаевич (и.о.)", phone:"", email:"halykparty_shymkent@qhp.kz", address:"160011, г. Шымкент, ул. Д. Кунаева 20/1"},
+  {name:"Акмолинский областной филиал", chairman:"Тастамбеков Арман Зейнуллаевич", phone:"8 775 212 92 93", email:"halykparty_akmola@mail.ru", address:"020000, г. Кокшетау, ул. М. Дулатулы, 31"},
+  {name:"Актюбинский областной филиал", chairman:"Курмангазин Бауыржан Олжашевич", phone:"8 778 803 38 48", email:"halykparty_aktobe@qhp.kz", address:"030002, г. Актобе, ул. Мангилик Ел, здание 7 «Б», 603 кабинет"},
+  {name:"Алматинский областной филиал", chairman:"Дудабаев Еркебулан Бакытович (и.о.)", phone:"", email:"halykparty_almaty_obl@qhp.kz", address:"040800, город Конаев, улица Достык дом 5, 20 каб"},
+  {name:"Атырауский областной филиал", chairman:"Досмухамбетова Балжан Ибатовна", phone:"8 778 485 44 37", email:"halykparty_atyrau@qhp.kz", address:"060000, г. Атырау, ул. М. Утемисова 134 А, БЦ «Евразия», 5 этаж"},
+  {name:"Восточно-Казахстанский областной филиал", chairman:"Мусин Кайрат Маратович", phone:"8 7232 24 46 48", email:"halykparty_vko@qhp.kz", address:"070000, г. Усть-Каменогорск, ул. М. Горького, 46, офис 211"},
+  {name:"Жетысуский областной филиал", chairman:"Ибраимов Олжас Бекдаулетович", phone:"8 701 149 95 55", email:"halykparty_taldykorgan@qhp.kz", address:"040000, г. Талдыкорган, пр. Н. Назарбаева, 44, каб. 22"},
+  {name:"Жамбылский областной филиал", chairman:"Аккозиев Рахман Сейлханович", phone:"", email:"halykparty_zhambyl@qhp.kz", address:"080000, г. Тараз, ул. Казыбек би, 109А, офис 3"},
+  {name:"Западно-Казахстанский областной филиал", chairman:"Лаврентьев Борис Георгиевич", phone:"8 7112 25 34 45", email:"halykparty_zko@mail.ru", address:"090000, г. Уральск, ул. Ихсанова, 38, каб. 207"},
+  {name:"Карагандинский областной филиал", chairman:"Максутов Калел Мухатаевич", phone:"8 701 512 51 29", email:"halykparty_karaganda@qhp.kz", address:"100000, г. Караганда, ул. Алиханова, 5, каб. 300-302"},
+  {name:"Костанайский областной филиал", chairman:"Березуцкая Ольга Ивановна", phone:"8 7142 53 45 71", email:"halykparty.kostanai@mail.ru", address:"110000, г. Костанай, ул. Байтурсынова, 95, каб. 332, 333"},
+  {name:"Филиал области Абай", chairman:"", phone:"", email:"halykparty.semey@mail.ru", address:"г. Семей, ул. Мәңгілік ел 9, 310 кабинет"},
+  {name:"Кызылординский областной филиал", chairman:"Ерназаров Кайрат Шаршыбекович", phone:"8 700 500 34 84", email:"halykparty_kyzylorda@qhp.kz", address:"120000, г. Кызылорда, улица Кунаева 10, 1 этаж, офис 1, 2"},
+  {name:"Мангистауский областной филиал", chairman:"Тулеугалиев Рашид Бектурович (и.о.)", phone:"8 778 572 00 73", email:"halykparty_mangistau@qhp.kz", address:"130000, г. Актау, 14 микрорайон, здание 61/1, БЦ «Звезда Актау», 305 кабинет"},
+  {name:"Павлодарский областной филиал", chairman:"Агибаев Алимбек Тулегенович (и.о.)", phone:"8 701 756 97 63", email:"halykparty.pavlodar@mail.ru", address:"140000, г. Павлодар, ул. Маргулана, 110, офис 4"},
+  {name:"Северо-Казахстанский областной филиал", chairman:"Жумагулов Ергали Сергалиевич", phone:"8 7152 36 59 16", email:"halykparty_sko@mail.ru", address:"150000, г. Петропавловск, ул. Ы. Алтынсарина 166, офис 405"},
+  {name:"Туркестанский областной филиал", chairman:"Камбарова Зухра Медеуовна", phone:"8 775 315 20 07", email:"halykparty_turkestan@qhp.kz", address:"161200, г. Туркестан, ул. Б. Саттарханова, 45"},
+  {name:"Областной филиал Улытау", chairman:"Максутов Калел Мухатаевич", phone:"8 777 629 54 54", email:"halykparty_ulytau@mail.ru", address:"100600, г. Жезказган, проспект Алаша-Хана 37А, 2 этаж, Офис 2"}
+];
+
+var sel = document.getElementById('branch-select');
+branches.forEach(function(b,i){
+  var o = document.createElement('option');
+  o.value = i; o.textContent = b.name;
+  sel.appendChild(o);
+});
+
+function showBranch(idx){
+  var box = document.getElementById('branch-result');
+  if(idx===''){ box.classList.remove('show'); return; }
+  var b = branches[idx];
+  document.getElementById('b-name').textContent = b.name;
+  var chairmanRow = document.getElementById('b-chairman');
+  if(b.chairman){ chairmanRow.style.display='flex'; chairmanRow.textContent = 'Председатель: ' + b.chairman; }
+  else{ chairmanRow.style.display='none'; }
+  document.getElementById('b-address').textContent = b.address;
+  var phoneRow = document.getElementById('b-phone-row');
+  if(b.phone){ phoneRow.style.display='flex'; document.getElementById('b-phone').textContent = b.phone; }
+  else{ phoneRow.style.display='none'; }
+  document.getElementById('b-email').textContent = b.email;
+  box.classList.add('show');
+}
+</script>
+</body>
+</html>

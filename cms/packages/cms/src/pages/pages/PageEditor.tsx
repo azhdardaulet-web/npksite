@@ -21,6 +21,7 @@ const SITE_PAGES: Record<string, { label: string; description: string }> = {
   'press-center': { label: 'Пресс-центр', description: 'Страница /narodnoe-media — «О портале «Халық үні Қазақстан»» (герой, о студии, призыв подписаться). Остальные материалы — в разделах ниже' },
   contacts: { label: 'Контакты', description: 'Страница /kontakty — дополнительная информация, помимо филиалов' },
   footer: { label: 'Футер', description: 'Блоки, отображаемые в подвале сайта на всех страницах' },
+  priemnaya: { label: 'Приёмная', description: 'Страница /priemnaya — шапка, шаги «Как это работает», форма обращения и мокап видеоприёма. Статистика — из счётчика обращений (авто) и раздела «Настройки»; отзывы — отдельный CRUD ниже' },
 };
 
 // ─── Дерево навигации мини-панели «Страницы» ──────────────────────────────────
@@ -53,6 +54,11 @@ const PAGE_NAV_TREE: PageNavNode[] = [
     ],
   },
   { label: 'Филиалы', route: '/filialy' },
+  {
+    label: 'Приёмная',
+    pageSlug: 'priemnaya',
+    children: [{ label: 'Отзывы', route: '/testimonials' }],
+  },
   {
     label: 'Пресс-центр',
     pageSlug: 'press-center',
@@ -93,6 +99,8 @@ const BLOCK_TYPES: Record<PageBlock['type'], string> = {
   candidates_intro: '«Главная»: Лица партии (заголовок)',
   program_intro: '«Главная»: Программа (заголовок)',
   join: '«Главная»: Вступить в партию',
+  reception_header: '«Приёмная»: шапка, WhatsApp, мокап видеоприёма',
+  reception_steps: '«Приёмная»: шаги «Как это работает»',
 };
 
 type Lang = 'ru' | 'kz';
@@ -141,6 +149,21 @@ interface ReceptionContent {
   whatsappNumber?: string; whatsappLabelRu?: string; whatsappLabelKz?: string;
   counterValue?: string; counterLabelRu?: string; counterLabelKz?: string;
 }
+
+interface ReceptionHeaderContent {
+  headingRu?: string; headingKz?: string;
+  subtitleRu?: string; subtitleKz?: string;
+  whatsappNumber?: string;
+  whatsappNoteRu?: string; whatsappNoteKz?: string;
+  counterLabelRu?: string; counterLabelKz?: string;
+  stat2LabelRu?: string; stat2LabelKz?: string;
+  stat3LabelRu?: string; stat3LabelKz?: string;
+  mockupImageUrl?: string;
+  mockupCaptionRu?: string; mockupCaptionKz?: string;
+}
+
+interface ReceptionStepItem { titleRu: string; titleKz: string; textRu: string; textKz: string; }
+interface ReceptionStepsContent { items: ReceptionStepItem[]; }
 
 interface HomeHeroContent {
   titleRu?: string; titleKz?: string;
@@ -194,6 +217,14 @@ function defaultContent(type: PageBlock['type']): Record<string, unknown> {
     case 'program_intro':
       return { headingRu: '', headingKz: '', textRu: '', textKz: '' } satisfies TextImageContent;
     case 'join': return { titleRu: '', titleKz: '', subtitleRu: '', subtitleKz: '', imageUrl: '' } satisfies HeroContent;
+    case 'reception_header':
+      return {
+        headingRu: '', headingKz: '', subtitleRu: '', subtitleKz: '',
+        whatsappNumber: '', whatsappNoteRu: '', whatsappNoteKz: '',
+        counterLabelRu: '', counterLabelKz: '', stat2LabelRu: '', stat2LabelKz: '', stat3LabelRu: '', stat3LabelKz: '',
+        mockupImageUrl: '', mockupCaptionRu: '', mockupCaptionKz: '',
+      } satisfies ReceptionHeaderContent;
+    case 'reception_steps': return { items: [] } satisfies ReceptionStepsContent;
   }
 }
 
@@ -424,6 +455,72 @@ function ReceptionEditor({ content, onChange }: { content: ReceptionContent; onC
   );
 }
 
+function ReceptionHeaderEditor({ content, onChange }: { content: ReceptionHeaderContent; onChange: (c: ReceptionHeaderContent) => void }) {
+  const set = <K extends keyof ReceptionHeaderContent>(key: K, val: ReceptionHeaderContent[K]) => onChange({ ...content, [key]: val });
+  const { open, element } = useMediaPicker();
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        <TextField label="Заголовок (RU)" value={content.headingRu ?? ''} onChange={v => set('headingRu', v)} />
+        <TextField label="Заголовок (KZ)" value={content.headingKz ?? ''} onChange={v => set('headingKz', v)} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <TextField label="Подзаголовок (RU)" value={content.subtitleRu ?? ''} onChange={v => set('subtitleRu', v)} textarea />
+        <TextField label="Подзаголовок (KZ)" value={content.subtitleKz ?? ''} onChange={v => set('subtitleKz', v)} textarea />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <TextField label="WhatsApp номер" value={content.whatsappNumber ?? ''} onChange={v => set('whatsappNumber', v)} placeholder="+7 700 088 19 17" />
+        <TextField label="Подпись под номером (RU)" value={content.whatsappNoteRu ?? ''} onChange={v => set('whatsappNoteRu', v)} placeholder="ответ обычно в течение дня" />
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        <TextField label="Подпись счётчика 1 — обращений решено (RU)" value={content.counterLabelRu ?? ''} onChange={v => set('counterLabelRu', v)} />
+        <TextField label="Подпись счётчика 2 — срок ответа (RU)" value={content.stat2LabelRu ?? ''} onChange={v => set('stat2LabelRu', v)} />
+        <TextField label="Подпись счётчика 3 — филиалов (RU)" value={content.stat3LabelRu ?? ''} onChange={v => set('stat3LabelRu', v)} />
+      </div>
+      <p className="text-[10px] text-[#89837E] -mt-2">Значения счётчиков — не здесь: «обращений решено» считается автоматически из БД, остальные два берутся из раздела «Настройки» (ключи reception_avg_response_time, reception_branches_accepting)</p>
+      <div>
+        <label className="block text-[11px] font-bold text-[#89837E] uppercase tracking-wider mb-1">Мокап видеоприёма (картинка справа)</label>
+        <div className="flex items-center gap-2">
+          {content.mockupImageUrl ? (
+            <img src={content.mockupImageUrl} alt="" className="w-14 h-14 rounded-lg object-cover border border-[#DFDFDF]" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          ) : (
+            <div className="w-14 h-14 rounded-lg bg-[#F2EBE3] flex items-center justify-center text-[#89837E]"><ImageIcon size={18} /></div>
+          )}
+          <button type="button" onClick={() => open((url) => set('mockupImageUrl', url), 'image/*')} className="px-3 py-2 text-xs bg-[#F2EBE3] text-[#383233] rounded-lg hover:bg-[#DFDFDF]">Выбрать</button>
+        </div>
+        {element}
+      </div>
+      <TextField label="Подпись под мокапом (RU)" value={content.mockupCaptionRu ?? ''} onChange={v => set('mockupCaptionRu', v)} textarea />
+    </div>
+  );
+}
+
+function ReceptionStepsEditor({ content, onChange }: { content: ReceptionStepsContent; onChange: (c: ReceptionStepsContent) => void }) {
+  const items = content.items ?? [];
+  const update = (i: number, patch: Partial<ReceptionStepItem>) => {
+    onChange({ items: items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)) });
+  };
+  return (
+    <div className="space-y-3">
+      {items.map((item, i) => (
+        <div key={i} className="grid grid-cols-[80px_1fr_32px] gap-2 items-start bg-[#F9F8F6] p-2.5 rounded-lg border border-[#DFDFDF]">
+          <input value={item.titleRu} onChange={e => update(i, { titleRu: e.target.value })} placeholder="Шаг 1" className="px-2 py-1.5 border border-[#DFDFDF] rounded text-sm bg-white" />
+          <input value={item.textRu} onChange={e => update(i, { textRu: e.target.value })} placeholder="Заполните форму" className="px-2 py-1.5 border border-[#DFDFDF] rounded text-sm bg-white" />
+          <button onClick={() => onChange({ items: items.filter((_, idx) => idx !== i) })} className="text-[#89837E] hover:text-red-600 p-1.5">
+            <Trash2 size={14} />
+          </button>
+        </div>
+      ))}
+      <button
+        onClick={() => onChange({ items: [...items, { titleRu: `Шаг ${items.length + 1}`, titleKz: '', textRu: '', textKz: '' }] })}
+        className="w-full flex items-center justify-center gap-2 py-2 border-2 border-dashed border-[#DFDFDF] rounded-lg text-xs text-[#89837E] hover:border-[#D64338] hover:text-[#D64338] transition-colors"
+      >
+        <Plus size={14} /> Добавить шаг
+      </button>
+    </div>
+  );
+}
+
 // Список строк — по одной на строку (для анимируемых слов, бегущей строки).
 function StringListField({ label, value, onChange, placeholder }: {
   label: string; value: string[]; onChange: (v: string[]) => void; placeholder?: string;
@@ -579,6 +676,8 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (content
     case 'program_intro':
       return <TextImageEditor content={block.content as unknown as TextImageContent} onChange={asChange<TextImageContent>(onChange)} />;
     case 'join': return <HeroEditor content={block.content as unknown as HeroContent} onChange={asChange<HeroContent>(onChange)} />;
+    case 'reception_header': return <ReceptionHeaderEditor content={block.content as unknown as ReceptionHeaderContent} onChange={asChange<ReceptionHeaderContent>(onChange)} />;
+    case 'reception_steps': return <ReceptionStepsEditor content={block.content as unknown as ReceptionStepsContent} onChange={asChange<ReceptionStepsContent>(onChange)} />;
   }
 }
 

@@ -62,7 +62,7 @@ async function main() {
   }
 
   // ─── Default pages ───────────────────────────────────────────────────────
-  const pageSlugs = ['home', 'about', 'faction', 'press-center', 'contacts', 'footer'];
+  const pageSlugs = ['home', 'about', 'faction', 'press-center', 'contacts', 'footer', 'priemnaya'];
   for (const slug of pageSlugs) {
     const existingPage = await prisma.page.findUnique({ where: { slug } });
     if (!existingPage) {
@@ -136,28 +136,32 @@ async function main() {
     console.log('ℹ️  Candidate уже заполнены');
   }
 
-  // Филиалы (app/src/lib/data.ts → regions, объединены в Branch)
+  // Филиалы (app/src/pages/BranchesPage.tsx использует хардкод regions;
+  // модель Branch — источник для /api/v1/branches, сейчас только приёмная
+  // на /priemnaya). Реальные данные — priemnaya-prototype/filialy.md
+  // (председатели/адреса/телефоны/email), phone='' и chairman=null —
+  // сознательно пусто в оригинале, фронт скрывает такие поля.
   const branchesData = [
-    { id: 'astana', name: 'Астана', chairman: 'Нурлан Сагинтаев', address: 'пр. Кабанбай батыра, 18', phone: '+7 7172 70 12 34' },
-    { id: 'almaty', name: 'Алматы', chairman: 'Бахытжан Жумагулов', address: 'пр. Назарбаева, 127', phone: '+7 727 330 45 67' },
-    { id: 'shymkent', name: 'Шымкент', chairman: 'Габит Сыздыков', address: 'ул. Тауке хана, 42', phone: '+7 7252 41 89 01' },
-    { id: 'abay', name: 'Абайская обл.', chairman: 'Серик Утегенов', address: 'г. Семей, пр. Независимости, 8', phone: '+7 7222 33 45 67' },
-    { id: 'akmola', name: 'Акмолинская обл.', chairman: 'Ермек Кошербаев', address: 'г. Кокшетау, ул. Ауэзова, 93', phone: '+7 7162 25 67 89' },
-    { id: 'aktobe', name: 'Актюбинская обл.', chairman: 'Онласын Укишев', address: 'г. Актобе, пр. Абилкайыр хана, 47', phone: '+7 7132 78 90 12' },
-    { id: 'almaty-obl', name: 'Алматинская обл.', chairman: 'Канат Бозумбаев', address: 'г. Талдыкорган, пр. Бокейхана, 21', phone: '+7 7282 44 56 78' },
-    { id: 'atyrau', name: 'Атырауская обл.', chairman: 'Нурлан Ногаев', address: 'г. Атырау, ул. Сатпаева, 15', phone: '+7 7122 31 23 45' },
-    { id: 'vko', name: 'Восточно-Казахстанская обл.', chairman: 'Даниал Ахметов', address: 'г. Усть-Каменогорск, пр. Независимости, 45', phone: '+7 7232 65 43 21' },
-    { id: 'zhambyl', name: 'Жамбылская обл.', chairman: 'Бердибек Сапарбаев', address: 'г. Тараз, пр. Тауелсиздик, 33', phone: '+7 7262 54 32 10' },
-    { id: 'jetisu', name: 'Жетысуская обл.', chairman: 'Бейбит Искаков', address: 'г. Талгар, ул. Жетысу, 12', phone: '+7 72737 12 34 56' },
-    { id: 'zko', name: 'Западно-Казахстанская обл.', chairman: 'Гали Искалиев', address: 'г. Уральск, пр. Назарбаева, 102', phone: '+7 7112 87 65 43' },
-    { id: 'karaganda', name: 'Карагандинская обл.', chairman: 'Женис Касымбек', address: 'г. Караганда, бул. Нуркена, 11', phone: '+7 7212 43 21 09' },
-    { id: 'kostanay', name: 'Костанайская обл.', chairman: 'Архимед Мухамбетов', address: 'г. Костанай, ул. Алтынсарина, 55', phone: '+7 7142 76 54 32' },
-    { id: 'kyzylorda', name: 'Кызылординская обл.', chairman: 'Гульшара Абдыкаликова', address: 'г. Кызылорда, ул. Кырыкмольда, 28', phone: '+7 7242 98 76 54' },
-    { id: 'mangistau', name: 'Мангистауская обл.', chairman: 'Нурлан Ногаев', address: 'г. Актау, 14 мкр, 32', phone: '+7 7292 34 56 78' },
-    { id: 'pavlodar', name: 'Павлодарская обл.', chairman: 'Абылкаир Скаков', address: 'г. Павлодар, ул. Торайгырова, 61', phone: '+7 7182 56 78 90' },
-    { id: 'nko', name: 'Северо-Казахстанская обл.', chairman: 'Кумар Аксакалов', address: 'г. Петропавловск, ул. Назарбаева, 140', phone: '+7 7152 67 89 01' },
-    { id: 'turkestan', name: 'Туркестанская обл.', chairman: 'Умирзак Шукеев', address: 'г. Туркестан, пр. Б. Саттарханова, 7', phone: '+7 7253 45 67 89' },
-    { id: 'ulytau', name: 'Улытауская обл.', chairman: 'Берик Уали', address: 'г. Жезказган, ул. Шугыла, 3', phone: '+7 7102 23 45 67' },
+    { name: 'Астана', chairman: 'Оразханов Нұрдәулет Амантайұлы', address: '010000, г. Астана, ул. Желтоксан, 16, НП 2', phone: '8 702 796 45 70', email: 'halykparty_astana@qhp.kz' },
+    { name: 'Алматы', chairman: 'Кусаинов Бейбут Булатович', address: '050000, г. Алматы, ул. Қазыбек би 22, БЦ Жан-Ер, офис 222', phone: '8 778 788 20 34', email: 'halykparty_almaty@qhp.kz' },
+    { name: 'Шымкент', chairman: 'Умаров Баймырза Абденбаевич (и.о.)', address: '160011, г. Шымкент, ул. Д. Кунаева 20/1', phone: '', email: 'halykparty_shymkent@qhp.kz' },
+    { name: 'Абайская обл.', chairman: null, address: 'г. Семей, ул. Мәңгілік ел 9, 310 кабинет', phone: '', email: 'halykparty.semey@mail.ru' },
+    { name: 'Акмолинская обл.', chairman: 'Тастамбеков Арман Зейнуллаевич', address: '020000, г. Кокшетау, ул. М. Дулатулы, 31', phone: '8 775 212 92 93', email: 'halykparty_akmola@mail.ru' },
+    { name: 'Актюбинская обл.', chairman: 'Курмангазин Бауыржан Олжашевич', address: '030002, г. Актобе, ул. Мангилик Ел, здание 7 «Б», 603 кабинет', phone: '8 778 803 38 48', email: 'halykparty_aktobe@qhp.kz' },
+    { name: 'Алматинская обл.', chairman: 'Дудабаев Еркебулан Бакытович (и.о.)', address: '040800, город Конаев, улица Достык дом 5, 20 каб', phone: '', email: 'halykparty_almaty_obl@qhp.kz' },
+    { name: 'Атырауская обл.', chairman: 'Досмухамбетова Балжан Ибатовна', address: '060000, г. Атырау, ул. М. Утемисова 134 А, БЦ «Евразия», 5 этаж', phone: '8 778 485 44 37', email: 'halykparty_atyrau@qhp.kz' },
+    { name: 'Восточно-Казахстанская обл.', chairman: 'Мусин Кайрат Маратович', address: '070000, г. Усть-Каменогорск, ул. М. Горького, 46, офис 211', phone: '8 7232 24 46 48', email: 'halykparty_vko@qhp.kz' },
+    { name: 'Жамбылская обл.', chairman: 'Аккозиев Рахман Сейлханович', address: '080000, г. Тараз, ул. Казыбек би, 109А, офис 3', phone: '', email: 'halykparty_zhambyl@qhp.kz' },
+    { name: 'Жетысуская обл.', chairman: 'Ибраимов Олжас Бекдаулетович', address: '040000, г. Талдыкорган, пр. Н. Назарбаева, 44, каб. 22', phone: '8 701 149 95 55', email: 'halykparty_taldykorgan@qhp.kz' },
+    { name: 'Западно-Казахстанская обл.', chairman: 'Лаврентьев Борис Георгиевич', address: '090000, г. Уральск, ул. Ихсанова, 38, каб. 207', phone: '8 7112 25 34 45', email: 'halykparty_zko@mail.ru' },
+    { name: 'Карагандинская обл.', chairman: 'Максутов Калел Мухатаевич', address: '100000, г. Караганда, ул. Алиханова, 5, каб. 300-302', phone: '8 701 512 51 29', email: 'halykparty_karaganda@qhp.kz' },
+    { name: 'Костанайская обл.', chairman: 'Березуцкая Ольга Ивановна', address: '110000, г. Костанай, ул. Байтурсынова, 95, каб. 332, 333', phone: '8 7142 53 45 71', email: 'halykparty.kostanai@mail.ru' },
+    { name: 'Кызылординская обл.', chairman: 'Ерназаров Кайрат Шаршыбекович', address: '120000, г. Кызылорда, улица Кунаева 10, 1 этаж, офис 1, 2', phone: '8 700 500 34 84', email: 'halykparty_kyzylorda@qhp.kz' },
+    { name: 'Мангистауская обл.', chairman: 'Тулеугалиев Рашид Бектурович (и.о.)', address: '130000, г. Актау, 14 микрорайон, здание 61/1, БЦ «Звезда Актау», 305 кабинет', phone: '8 778 572 00 73', email: 'halykparty_mangistau@qhp.kz' },
+    { name: 'Павлодарская обл.', chairman: 'Агибаев Алимбек Тулегенович (и.о.)', address: '140000, г. Павлодар, ул. Маргулана, 110, офис 4', phone: '8 701 756 97 63', email: 'halykparty.pavlodar@mail.ru' },
+    { name: 'Северо-Казахстанская обл.', chairman: 'Жумагулов Ергали Сергалиевич', address: '150000, г. Петропавловск, ул. Ы. Алтынсарина 166, офис 405', phone: '8 7152 36 59 16', email: 'halykparty_sko@mail.ru' },
+    { name: 'Туркестанская обл.', chairman: 'Камбарова Зухра Медеуовна', address: '161200, г. Туркестан, ул. Б. Саттарханова, 45', phone: '8 775 315 20 07', email: 'halykparty_turkestan@qhp.kz' },
+    { name: 'Улытауская обл.', chairman: 'Максутов Калел Мухатаевич', address: '100600, г. Жезказган, проспект Алаша-Хана 37А, 2 этаж, Офис 2', phone: '8 777 629 54 54', email: 'halykparty_ulytau@mail.ru' },
   ];
   if ((await prisma.branch.count()) === 0) {
     for (const [i, b] of branchesData.entries()) {
@@ -168,7 +172,7 @@ async function main() {
           addressRu: b.address,
           addressKz: b.address,
           phone: b.phone,
-          email: `${b.id}@npk.kz`,
+          email: b.email,
           chairman: b.chairman,
           sortOrder: i,
         },
@@ -176,7 +180,15 @@ async function main() {
     }
     console.log(`✅ Branch seeded: ${branchesData.length}`);
   } else {
-    console.log('ℹ️  Branch уже заполнены');
+    let updatedBranches = 0;
+    for (const b of branchesData) {
+      const res = await prisma.branch.updateMany({
+        where: { cityRu: b.name },
+        data: { addressRu: b.address, addressKz: b.address, phone: b.phone, email: b.email, chairman: b.chairman },
+      });
+      updatedBranches += res.count;
+    }
+    console.log(`✅ Branch (реальные данные из filialy.md) обновлены: ${updatedBranches}/${branchesData.length}`);
   }
 
   // Руководство партии (app/src/pages/LeadershipPage.tsx → TeamMember, group=LEADERSHIP)
@@ -571,6 +583,35 @@ async function main() {
     console.log('ℹ️  Document (deputy_request) уже заполнены');
   }
 
+  // Образцы обращения (app/src/sections/ReceptionFull.tsx, /priemnaya) — исходные
+  // .docx из priemnaya-prototype (не PDF: пользователь должен уметь заполнить
+  // бланк текстом прямо в Word), загруженные в MinIO один раз.
+  const appealSamplesData = [
+    {
+      title: 'Образец обращения (на русском)',
+      fileUrl: 'http://localhost:9000/darrail-media/documents/appeal-sample-ru.docx',
+      fileName: 'obrashcheniya-v-partiyu-1-12.docx',
+      fileSize: 13149,
+    },
+    {
+      title: 'Үлгі өтініш (қазақша)',
+      fileUrl: 'http://localhost:9000/darrail-media/documents/appeal-sample-kz.docx',
+      fileName: 'obrazes_kz.docx',
+      fileSize: 11788,
+    },
+  ];
+  const hasAppealSamples = await prisma.document.count({ where: { type: 'appeal_sample' } });
+  if (hasAppealSamples === 0) {
+    for (const d of appealSamplesData) {
+      await prisma.document.create({
+        data: { title: d.title, type: 'appeal_sample', fileUrl: d.fileUrl, fileName: d.fileName, fileSize: d.fileSize, publishedAt: new Date() },
+      });
+    }
+    console.log(`✅ Document (appeal_sample) seeded: ${appealSamplesData.length}`);
+  } else {
+    console.log('ℹ️  Document (appeal_sample) уже заполнены');
+  }
+
   // Блоки главной страницы (app/src/sections/HeroSection.tsx, TickerSection.tsx,
   // TrustCountersSection.tsx, StatsVideoSection.tsx → Page(slug=home).blocks) —
   // ровно то же самое, что сейчас захардкожено на сайте, чтобы при переключении
@@ -851,21 +892,71 @@ async function main() {
     }
   }
 
+  // Блоки страницы «Общественная приёмная» (app/src/pages/ReceptionPage.tsx →
+  // Page(slug=priemnaya).blocks) — шапка + мокап видеоприёма и шаги «Как это работает».
+  const priemnayaPage = await prisma.page.findUnique({ where: { slug: 'priemnaya' } });
+  if (priemnayaPage) {
+    const existingReceptionBlocks = await prisma.pageBlock.count({ where: { pageId: priemnayaPage.id } });
+    if (existingReceptionBlocks === 0) {
+      await prisma.pageBlock.createMany({
+        data: [
+          {
+            pageId: priemnayaPage.id,
+            type: 'reception_header',
+            sortOrder: 0,
+            content: {
+              headingRu: 'Общественная приёмная', headingKz: '',
+              subtitleRu: 'Направьте обращение в Народную партию Казахстана — письменно или на видеоприёме', subtitleKz: '',
+              whatsappNumber: '+7 700 088 19 17',
+              whatsappNoteRu: 'ответ обычно в течение дня', whatsappNoteKz: '',
+              counterLabelRu: 'обращений решено', counterLabelKz: '',
+              stat2LabelRu: 'средний срок ответа', stat2LabelKz: '',
+              stat3LabelRu: 'филиалов принимают', stat3LabelKz: '',
+              mockupImageUrl: '/images/reception-mockup.png',
+              mockupCaptionRu: 'Ссылка на видеовстречу придёт на почту и по SMS после согласования времени.', mockupCaptionKz: '',
+            },
+          },
+          {
+            pageId: priemnayaPage.id,
+            type: 'reception_steps',
+            sortOrder: 1,
+            content: {
+              items: [
+                { titleRu: 'Шаг 1', titleKz: '', textRu: 'Заполните форму', textKz: '' },
+                { titleRu: 'Шаг 2', titleKz: '', textRu: 'Обращение регистрируется, вы получаете номер', textKz: '' },
+                { titleRu: 'Шаг 3', titleKz: '', textRu: 'Ответ или назначение видеоприёма', textKz: '' },
+                { titleRu: 'Шаг 4', titleKz: '', textRu: 'Решение вопроса', textKz: '' },
+              ],
+            },
+          },
+        ],
+      });
+      console.log('✅ Page(priemnaya) blocks seeded: 2 (reception_header, reception_steps)');
+    } else {
+      console.log('ℹ️  Page(priemnaya) blocks уже заполнены');
+    }
+  }
+
   // Соцсети (app/src/pages/MediaPage.tsx SOCIALS → Setting, публично читаемые ключи)
-  const socialSettings: Array<[string, string]> = [
+  const kvSettings: Array<[string, string]> = [
     ['social_youtube', 'https://www.youtube.com/channel/UCYq_KOlsxp8H2r3GIq6hWtA'],
     ['social_tiktok', 'https://www.tiktok.com/@halyk_partiyasy'],
     ['social_instagram', 'https://www.instagram.com/halyk_partiyasy/'],
     ['social_facebook', 'https://www.facebook.com/halykpartiyasy'],
     ['social_telegram', 'https://t.me/halykparty'],
+    // Статистика общественной приёмной (app/src/pages/ReceptionPage.tsx) — «обращений
+    // решено» считается из БД (см. GET /api/v1/appeals/resolved-count), эти два —
+    // редактируются вручную через CMS → Настройки.
+    ['reception_avg_response_time', '5 дней'],
+    ['reception_branches_accepting', '20'],
   ];
-  for (const [key, value] of socialSettings) {
+  for (const [key, value] of kvSettings) {
     const existingSetting = await prisma.setting.findUnique({ where: { key } });
     if (!existingSetting) {
       await prisma.setting.create({ data: { key, value } });
     }
   }
-  console.log(`✅ Setting (соцсети) проверены/созданы: ${socialSettings.length}`);
+  console.log(`✅ Setting (соцсети + приёмная) проверены/созданы: ${kvSettings.length}`);
 
   console.log('\n✨ Seed completed successfully');
 }

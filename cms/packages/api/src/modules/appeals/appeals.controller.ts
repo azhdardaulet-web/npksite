@@ -1,10 +1,14 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
+import multer from 'multer';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 import { prisma } from '../../lib/prisma';
 import { authenticateToken, requireRole } from '../../middleware/auth';
 import { verifyHCaptcha } from '../../lib/hcaptcha';
 import { sendMail } from '../../lib/mailer';
 import { getSetting } from '../../lib/settings';
+import { minioClient, MINIO_BUCKET, objectUrl } from '../../lib/minio';
 import { kzPhoneSchema } from '@dar-rail/shared';
 import { Prisma } from '@prisma/client';
 
@@ -24,6 +28,13 @@ function handleError(err: unknown, res: Response): void {
   res.status(e.status ?? 500).json({ error: e.message ?? 'Внутренняя ошибка' });
 }
 
+const AttachmentSchema = z.object({
+  url: z.string().url(),
+  fileName: z.string().min(1),
+  fileSize: z.number().int().min(0),
+  kind: z.enum(['statement', 'additional']),
+});
+
 const AppealInputSchema = z.object({
   fullName: z.string().min(1),
   phone: kzPhoneSchema,
@@ -31,6 +42,7 @@ const AppealInputSchema = z.object({
   topicId: z.string().uuid(),
   message: z.string().min(10),
   fileUrl: z.string().url().optional(),
+  attachments: z.array(AttachmentSchema).max(4).optional(),
   hCaptchaToken: z.string().min(1, 'Пройдите проверку hCaptcha'),
 });
 
@@ -82,6 +94,71 @@ appealsRouter.post('/', async (req: Request, res: Response): Promise<void> => {
     }
 
     res.status(201).json({ message: 'Обращение принято', appealNumber: appeal.appealNumber, id: appeal.id });
+  } catch (err) {
+    handleError(err, res);
+  }
+});
+
+// ─── Public: POST /api/v1/appeals/attachments ──────────────────────────────────
+// Загрузка заявления/доп. документов к письменному обращению ДО отправки формы.
+// Без авторизации (гражданин на сайте не залогинен) — поэтому строгий белый
+// список MIME-типов и лимит размера вместо auth.
+
+const ATTACHMENT_MIME = new Set(['application/pdf', 'image/jpeg', 'image/png']);
+
+const attachmentUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (ATTACHMENT_MIME.has(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Недопустимый тип файла: ${file.mimetype}. Разрешены PDF, JPG, PNG`));
+    }
+  },
+});
+
+appealsRouter.post(
+  '/attachments',
+  (req: Request, res: Response, next) => {
+    attachmentUpload.single('file')(req, res, (err) => {
+      if (err) { res.status(400).json({ error: err.message ?? 'Ошибка загрузки файла' }); return; }
+      next();
+    });
+  },
+  async (req: Request, res: Response): Promise<void> => {
+    if (!req.file) {
+      res.status(400).json({ error: 'Файл не передан' });
+      return;
+    }
+    try {
+      const ext = path.extname(req.file.originalname).toLowerCase() || `.${req.file.mimetype.split('/')[1]}`;
+      const objectName = `appeals/attachments/${uuidv4()}${ext}`;
+      await minioClient.putObject(MINIO_BUCKET, objectName, req.file.buffer, req.file.size, {
+        'Content-Type': req.file.mimetype,
+      });
+      res.status(201).json({ url: objectUrl(objectName), fileName: req.file.originalname, fileSize: req.file.size });
+    } catch (err) {
+      handleError(err, res);
+    }
+  }
+);
+
+// ─── Public: GET /api/v1/appeals/resolved-count ────────────────────────────────
+// «Обращений решено» на /priemnaya — статусы «Принята» (IN_PROGRESS) и «Решено»
+// (RESOLVED). Считать на каждый запрос дорого при росте таблицы, поэтому
+// кэшируем результат на 1 час в памяти процесса.
+
+const RESOLVED_COUNT_TTL_MS = 60 * 60 * 1000;
+let resolvedCountCache: { value: number; expiresAt: number } | null = null;
+
+appealsRouter.get('/resolved-count', async (_req: Request, res: Response): Promise<void> => {
+  try {
+    if (!resolvedCountCache || resolvedCountCache.expiresAt < Date.now()) {
+      const count = await prisma.appeal.count({ where: { status: { in: ['IN_PROGRESS', 'RESOLVED'] } } });
+      resolvedCountCache = { value: count, expiresAt: Date.now() + RESOLVED_COUNT_TTL_MS };
+    }
+    res.json({ count: resolvedCountCache.value });
   } catch (err) {
     handleError(err, res);
   }

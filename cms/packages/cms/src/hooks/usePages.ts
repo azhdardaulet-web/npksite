@@ -4,7 +4,7 @@ import { api } from '@/lib/api';
 
 export interface PageBlock {
   id: string;
-  type: 'hero' | 'home_hero' | 'text_image' | 'kpi' | 'quote' | 'pdf_list' | 'contacts_block' | 'ticker' | 'stats' | 'video' | 'about_hero' | 'about_community' | 'about_methods' | 'about_structure' | 'about_goal' | 'press_hero' | 'press_studio' | 'press_cta' | 'reception' | 'candidates_intro' | 'program_intro' | 'join';
+  type: 'hero' | 'home_hero' | 'text_image' | 'kpi' | 'quote' | 'pdf_list' | 'contacts_block' | 'ticker' | 'stats' | 'video' | 'about_hero' | 'about_community' | 'about_methods' | 'about_structure' | 'about_goal' | 'press_hero' | 'press_studio' | 'press_cta' | 'reception' | 'candidates_intro' | 'program_intro' | 'join' | 'reception_header' | 'reception_steps';
   sortOrder: number;
   content: Record<string, unknown>;
 }
