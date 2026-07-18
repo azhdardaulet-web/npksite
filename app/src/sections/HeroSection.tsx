@@ -57,26 +57,29 @@ export function HeroSection() {
 
   return (
     <section ref={sectionRef} className="relative bg-bg overflow-hidden">
-      {/* ── Desktop/tablet: изображение якорится к правому краю на всю высоту
-             секции; его левая часть уходит под градиент цвета фона, поэтому
-             при сужении экрана кадрируется пустая зона, а не люди. ── */}
-      <div className="hero-right absolute inset-y-0 right-0 hidden md:block w-full pointer-events-none" aria-hidden="true">
+      {/* ── Desktop/tablet (md–xl): изображение якорится к правому краю на всю
+             высоту секции; его левая часть уходит под градиент цвета фона,
+             поэтому при сужении экрана кадрируется пустая зона, а не люди.
+             На 2xl (≥1536) картинка идёт в потоке с натуральными пропорциями
+             (композиция как в макете) — люди не «моются» градиентом. ── */}
+      <div className="hero-right hidden md:block absolute inset-y-0 right-0 w-full pointer-events-none 2xl:static 2xl:inset-auto" aria-hidden="true">
         <img
           src={imageUrl}
           alt=""
-          className="absolute right-0 top-0 h-full w-auto max-w-none"
+          className="absolute right-0 top-0 h-full w-auto max-w-none 2xl:static 2xl:w-full 2xl:h-auto"
         />
         {/* Градиент в цвет фона поверх левого края картинки: в светлой теме
             сливается с белым краем PNG, в тёмной — гасит его в тёмный фон.
-            На md–lg картинка занимает почти всю ширину, поэтому градиент
-            сильнее; на xl композиция как в макете — градиент легче. */}
+            На md–lg картинка занимает почти всю ширину — градиент сильнее;
+            на 2xl в светлой теме градиент не нужен (у PNG свой белый переход),
+            в тёмной остаётся, чтобы погасить белую кромку. */}
         <div
-          className="absolute inset-0 [background:linear-gradient(90deg,var(--bg)_42%,rgb(var(--bg-rgb)/0.82)_58%,rgb(var(--bg-rgb)/0)_80%)] lg:[background:linear-gradient(90deg,var(--bg)_34%,rgb(var(--bg-rgb)/0.8)_50%,rgb(var(--bg-rgb)/0)_72%)] xl:[background:linear-gradient(90deg,var(--bg)_26%,rgb(var(--bg-rgb)/0.8)_42%,rgb(var(--bg-rgb)/0)_64%)]"
+          className="absolute inset-0 [background:linear-gradient(90deg,var(--bg)_42%,rgb(var(--bg-rgb)/0.82)_58%,rgb(var(--bg-rgb)/0)_80%)] lg:[background:linear-gradient(90deg,var(--bg)_34%,rgb(var(--bg-rgb)/0.8)_50%,rgb(var(--bg-rgb)/0)_72%)] xl:[background:linear-gradient(90deg,var(--bg)_26%,rgb(var(--bg-rgb)/0.8)_42%,rgb(var(--bg-rgb)/0)_64%)] 2xl:hidden dark:2xl:block dark:2xl:[background:linear-gradient(90deg,var(--bg)_22%,rgb(var(--bg-rgb)/0.75)_36%,rgb(var(--bg-rgb)/0)_58%)]"
         />
       </div>
 
       {/* ── Content ── */}
-      <div className="relative z-10 max-w-[1440px] mx-auto px-6 md:px-12 lg:px-16 xl:px-20 pt-[120px] pb-10 md:pt-[140px] md:pb-16 lg:pt-[160px] lg:pb-20 min-h-0 md:min-h-[520px] lg:min-h-[580px] xl:min-h-[640px] flex flex-col justify-center">
+      <div className="relative z-10 max-w-[1440px] mx-auto px-6 md:px-12 lg:px-16 xl:px-20 pt-[120px] pb-10 md:pt-[140px] md:pb-16 lg:pt-[160px] lg:pb-20 min-h-0 md:min-h-[520px] lg:min-h-[580px] xl:min-h-[640px] flex flex-col justify-center 2xl:absolute 2xl:inset-0 2xl:max-w-none 2xl:min-h-0 2xl:pt-[110px] 2xl:pb-10">
         <div className="max-w-[640px]">
           {/* Accent line */}
           <div ref={accentLineRef} className="h-[3px] bg-red mb-6" style={{ width: 0 }} />
