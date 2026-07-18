@@ -9,6 +9,7 @@ import { verifyHCaptcha } from '../../lib/hcaptcha';
 import { sendMail } from '../../lib/mailer';
 import { getSetting } from '../../lib/settings';
 import { minioClient, MINIO_BUCKET, objectUrl } from '../../lib/minio';
+import { createGoogleMeetEvent, cancelGoogleMeetEvent } from '../../lib/googleCalendar';
 import { kzPhoneSchema } from '@dar-rail/shared';
 import { Prisma } from '@prisma/client';
 
@@ -43,6 +44,7 @@ const AppealInputSchema = z.object({
   message: z.string().min(10),
   fileUrl: z.string().url().optional(),
   attachments: z.array(AttachmentSchema).max(4).optional(),
+  format: z.enum(['WRITTEN', 'VIDEO']).default('WRITTEN'),
   hCaptchaToken: z.string().min(1, 'Пройдите проверку hCaptcha'),
 });
 
@@ -210,7 +212,10 @@ cmsAppealsRouter.get('/', ...requireCms, async (req: Request, res: Response): Pr
     };
 
     const [data, total] = await Promise.all([
-      prisma.appeal.findMany({ where, skip, take: limit, orderBy: { createdAt: 'desc' }, include: { topic: true } }),
+      prisma.appeal.findMany({
+        where, skip, take: limit, orderBy: { createdAt: 'desc' },
+        include: { topic: true, meeting: { include: { deputy: { include: { translations: true } } } } },
+      }),
       prisma.appeal.count({ where }),
     ]);
 
@@ -220,11 +225,36 @@ cmsAppealsRouter.get('/', ...requireCms, async (req: Request, res: Response): Pr
   }
 });
 
+// ─── CMS: GET /cms/api/v1/appeals/deputies ─────────────────────────────────────
+// Список депутатов (TeamMember, group=FACTION) для выбора при назначении
+// видеозвонка. Отдельный узкий эндпоинт вместо /cms/api/v1/team — тому нужна
+// роль FACTION/CHIEF_EDITOR/SECTION_EDITOR, а не RECEPTION_MANAGER. Должен
+// стоять ДО GET /:id — иначе Express примет «deputies» за :id.
+
+cmsAppealsRouter.get('/deputies', ...requireCms, async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const deputies = await prisma.teamMember.findMany({
+      where: { group: 'FACTION' },
+      orderBy: { sortOrder: 'asc' },
+      include: { translations: true },
+    });
+    res.json(deputies.map(d => ({
+      id: d.id,
+      name: d.translations.find(t => t.lang === 'ru')?.name ?? d.translations[0]?.name ?? '',
+      position: d.translations.find(t => t.lang === 'ru')?.position ?? d.translations[0]?.position ?? '',
+      email: d.email,
+      photoUrl: d.photoUrl,
+    })));
+  } catch (err) {
+    handleError(err, res);
+  }
+});
+
 cmsAppealsRouter.get('/:id', ...requireCms, async (req: Request, res: Response): Promise<void> => {
   try {
     const appeal = await prisma.appeal.findUnique({
       where: { id: String(req.params['id']) },
-      include: { topic: true },
+      include: { topic: true, meeting: { include: { deputy: { include: { translations: true } } } } },
     });
     if (!appeal) {
       res.status(404).json({ error: 'Обращение не найдено' });
@@ -267,6 +297,124 @@ cmsAppealsRouter.put('/:id', ...requireCms, async (req: Request, res: Response):
     }
 
     res.json(appeal);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
+
+// ─── CMS: PUT /cms/api/v1/appeals/:id/meeting — назначить/перенести видеозвонок ─
+//
+// Создаёт (или переназначает) AppealMeeting и пытается создать реальное
+// событие в Google Calendar через createGoogleMeetEvent(). Пока эта функция
+// не реализована (см. googleCalendar.ts) — она бросает исключение, здесь
+// это ожидаемо: встреча всё равно сохраняется со status=PENDING и текстом
+// ошибки в lastError, ответ 201/200 остаётся успешным (сами данные менеджер
+// ввёл верно), а фронт показывает предупреждение через поле warning.
+// Как только партнёр-разработчик подключит API — тот же PUT (кнопка
+// «Повторить попытку» в CMS) отработает уже до конца и проставит SCHEDULED.
+
+const ScheduleMeetingSchema = z.object({
+  deputyId: z.string().uuid(),
+  scheduledAt: z.coerce.date(),
+  durationMinutes: z.number().int().min(10).max(180).default(30),
+});
+
+cmsAppealsRouter.put('/:id/meeting', ...requireCms, async (req: Request, res: Response): Promise<void> => {
+  const parsed = ScheduleMeetingSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'Ошибка валидации', details: parsed.error.flatten() });
+    return;
+  }
+
+  try {
+    const appealId = String(req.params['id']);
+    const [appeal, deputy] = await Promise.all([
+      prisma.appeal.findUnique({ where: { id: appealId } }),
+      prisma.teamMember.findUnique({ where: { id: parsed.data.deputyId }, include: { translations: true } }),
+    ]);
+    if (!appeal) { res.status(404).json({ error: 'Обращение не найдено' }); return; }
+    if (!deputy) { res.status(404).json({ error: 'Депутат не найден' }); return; }
+
+    // Если у предыдущей попытки уже было реальное событие в календаре — удаляем его,
+    // чтобы при переносе времени не оставался дубль.
+    const existing = await prisma.appealMeeting.findUnique({ where: { appealId } });
+    if (existing?.calendarEventId) {
+      await cancelGoogleMeetEvent(existing.calendarEventId).catch(() => {});
+    }
+
+    const deputyName = deputy.translations.find(t => t.lang === 'ru')?.name ?? deputy.translations[0]?.name ?? 'Депутат';
+    const attendeeEmails = [appeal.email, deputy.email].filter((e): e is string => !!e);
+
+    let meetLink: string | null = null;
+    let calendarEventId: string | null = null;
+    let status: 'PENDING' | 'SCHEDULED' = 'PENDING';
+    let lastError: string | null = null;
+
+    try {
+      const result = await createGoogleMeetEvent({
+        summary: `Видеоприём: обращение ${appeal.appealNumber}`,
+        description: `Тема: ${appeal.message.slice(0, 200)}\nЗаявитель: ${appeal.fullName}, ${appeal.phone}`,
+        startTime: parsed.data.scheduledAt,
+        durationMinutes: parsed.data.durationMinutes,
+        attendeeEmails,
+      });
+      meetLink = result.meetLink;
+      calendarEventId = result.calendarEventId;
+      status = 'SCHEDULED';
+    } catch (err) {
+      lastError = (err as Error).message;
+    }
+
+    const meeting = await prisma.appealMeeting.upsert({
+      where: { appealId },
+      create: {
+        appealId, deputyId: parsed.data.deputyId, scheduledAt: parsed.data.scheduledAt,
+        durationMinutes: parsed.data.durationMinutes, status, meetLink, calendarEventId, lastError,
+      },
+      update: {
+        deputyId: parsed.data.deputyId, scheduledAt: parsed.data.scheduledAt,
+        durationMinutes: parsed.data.durationMinutes, status, meetLink, calendarEventId, lastError,
+        reminderSentAt: null,
+      },
+      include: { deputy: { include: { translations: true } } },
+    });
+
+    if (status === 'SCHEDULED' && appeal.email) {
+      await sendMail({
+        to: appeal.email,
+        subject: `Видеоприём назначен — обращение ${appeal.appealNumber}`,
+        html: `
+          <p>Здравствуйте, ${appeal.fullName}!</p>
+          <p>Вам назначен видеоприём с ${deputyName} на ${parsed.data.scheduledAt.toLocaleString('ru-RU', { timeZone: 'Asia/Almaty' })}.</p>
+          <p>Ссылка на встречу: <a href="${meetLink}">${meetLink}</a></p>
+        `,
+      });
+    }
+
+    res.json({
+      meeting,
+      warning: status === 'PENDING'
+        ? 'Данные сохранены, но Google Calendar ещё не подключён — ссылка появится автоматически после настройки интеграции (см. docs/GOOGLE_MEET_SETUP.md).'
+        : undefined,
+    });
+  } catch (err) {
+    handleError(err, res);
+  }
+});
+
+// ─── CMS: DELETE /cms/api/v1/appeals/:id/meeting — отменить видеозвонок ────────
+
+cmsAppealsRouter.delete('/:id/meeting', ...requireCms, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const appealId = String(req.params['id']);
+    const existing = await prisma.appealMeeting.findUnique({ where: { appealId } });
+    if (!existing) { res.status(404).json({ error: 'Видеозвонок не найден' }); return; }
+
+    if (existing.calendarEventId) {
+      await cancelGoogleMeetEvent(existing.calendarEventId).catch(() => {});
+    }
+    const meeting = await prisma.appealMeeting.update({ where: { appealId }, data: { status: 'CANCELLED' } });
+    res.json({ meeting });
   } catch (err) {
     handleError(err, res);
   }

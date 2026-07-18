@@ -85,7 +85,7 @@ const MOBILE_STYLES = `
 export function ProgramSection() {
   const { getBlock } = useHomeBlocks();
   const cms = getBlock<ProgramIntroBlock>('program_intro');
-  const heading = cms?.headingRu?.trim() || 'Программа, которая касается каждого';
+  const heading = cms?.headingRu?.trim() || 'Предвыборная программа Народной партии Казахстана';
   const subtitle = cms?.textRu?.trim() || 'Мы собрали ключевые акценты новой политической программы Народной партии Казахстана: человек труда, справедливые возможности, ответственная власть, экономика для людей, поддержка семьи и будущее детей.';
 
   return (

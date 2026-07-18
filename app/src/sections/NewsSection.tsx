@@ -1,9 +1,10 @@
 import { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ArrowUpRight, Play } from 'lucide-react';
-import { fetchNews, NEWS_FORMAT_LABELS, type PublicNewsItem } from '@/lib/api';
+import { fetchNews, fetchYoutubeFeed, NEWS_FORMAT_LABELS, type PublicNewsItem } from '@/lib/api';
 
-const VIDEOS = [
+// Хардкод-фолбэк на случай недоступности YouTube API/ключа — не белый экран.
+const FALLBACK_VIDEOS = [
   { id: 'McSNWo1FcuU', title: 'Нурсұлтан Шоқанов Қазақстан Халық партиясының төрағасы болып сайланды', date: '27.06.2026' },
   { id: 'pSagR2BBiYk', title: 'Ермухамет Ертысбаев покинул пост председателя НПК', date: '27.06.2026' },
   { id: 'aA85tRgDRdo', title: 'ТӨРЕШ ТАҒЫ ТРЕНДТЕ. АБАЙ БЕГЕЙДІҢ ӘЙЕЛІ ЕЛ АУЫЗЫНДА', date: '28.06.2026' },
@@ -188,6 +189,18 @@ export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } =
 export function NarodnoeMediaSection({ videoRef: externalRef }: { videoRef?: React.RefObject<HTMLDivElement | null> } = {}) {
   const ownRef = useRef<HTMLDivElement>(null);
   const ref = externalRef ?? ownRef;
+  const [videos, setVideos] = useState(FALLBACK_VIDEOS);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchYoutubeFeed()
+      .then((res) => {
+        if (cancelled || res.videos.length === 0) return;
+        setVideos(res.videos.map((v) => ({ id: v.id, title: v.title, date: formatDate(v.publishedAt) })));
+      })
+      .catch(() => { /* остаёмся на демо-данных */ });
+    return () => { cancelled = true; };
+  }, []);
 
   return (
         <div className="mt-12 pt-10 border-t border-line">
@@ -203,7 +216,7 @@ export function NarodnoeMediaSection({ videoRef: externalRef }: { videoRef?: Rea
             className="flex gap-4 overflow-x-auto scrollbar-hide pb-2"
             style={{ scrollSnapType: 'x mandatory' }}
           >
-            {VIDEOS.map((v) => (
+            {videos.map((v) => (
               <a
                 key={v.id}
                 href={`https://www.youtube.com/watch?v=${v.id}`}

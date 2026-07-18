@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 import { prisma } from '../../lib/prisma';
 import { authenticateToken, requireRole } from '../../middleware/auth';
 import { LangSchema } from '@dar-rail/shared';
@@ -15,6 +16,8 @@ const TranslationSchema = z.object({
 
 const TeamMemberInputSchema = z.object({
   photoUrl: z.string().url().optional().nullable(),
+  // Нужен депутатам (group=FACTION) — приглашение на Google Meet при видеоприёме.
+  email: z.string().email().optional().nullable(),
   group: z.enum(['LEADERSHIP', 'MEDIA_TEAM', 'FACTION']).optional(),
   sortOrder: z.number().int().min(0).optional(),
   translations: z.array(TranslationSchema).min(1),
@@ -100,6 +103,7 @@ teamRouter.post('/', ...requireContent, async (req: Request, res: Response): Pro
     const member = await prisma.teamMember.create({
       data: {
         photoUrl: parsed.data.photoUrl ?? null,
+        email: parsed.data.email ?? null,
         group: parsed.data.group ?? 'LEADERSHIP',
         sortOrder: parsed.data.sortOrder ?? nextOrder,
         translations: {
@@ -178,6 +182,11 @@ teamRouter.delete('/:id', ...requireAdmin, async (req: Request, res: Response): 
     await prisma.teamMember.delete({ where: { id } });
     res.status(204).send();
   } catch (err) {
+    // P2003 — на депутата ссылается AppealMeeting (история видеозвонков).
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2003') {
+      res.status(400).json({ error: 'Нельзя удалить — у депутата есть история видеозвонков в приёмной' });
+      return;
+    }
     handleError(err, res);
   }
 });

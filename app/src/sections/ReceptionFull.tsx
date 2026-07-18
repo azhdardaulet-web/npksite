@@ -81,7 +81,7 @@ export function ReceptionFull() {
 
   // Form state
   const [mode, setMode] = useState<'letter' | 'video'>('letter');
-  const [formData, setFormData] = useState({ name: '', phone: '', topic: '', message: '', consent: false });
+  const [formData, setFormData] = useState({ name: '', phone: '', email: '', topic: '', message: '', consent: false });
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -167,6 +167,7 @@ export function ReceptionFull() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!KZ_PHONE_RE.test(formData.phone.trim())) { setError('Формат телефона: +7 7XX XXX XX XX'); return; }
+    if (mode === 'video' && !formData.email.trim()) { setError('Укажите email — на него придёт ссылка на видеовстречу'); return; }
     if (!formData.topic) { setError('Выберите тему обращения'); return; }
     setError(null); setSubmitting(true);
     try {
@@ -175,8 +176,10 @@ export function ReceptionFull() {
         ...additionalFiles.map(f => ({ ...f, kind: 'additional' as const })),
       ];
       const result = await submitAppeal({
-        fullName: formData.name, phone: formData.phone.trim(), topicId: formData.topic, message: formData.message,
+        fullName: formData.name, phone: formData.phone.trim(), email: formData.email.trim() || undefined,
+        topicId: formData.topic, message: formData.message,
         attachments: attachments.length > 0 ? attachments : undefined,
+        format: mode === 'video' ? 'VIDEO' : 'WRITTEN',
       });
       setAppealNumber(result.appealNumber);
       setSubmitted(true);
@@ -275,6 +278,10 @@ export function ReceptionFull() {
                     onChange={e => setFormData({ ...formData, name: e.target.value })} className={inputCls} />
                   <input type="tel" placeholder="Ваш номер телефона" required value={formData.phone}
                     onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputCls} />
+                  {mode === 'video' && (
+                    <input type="email" placeholder="Email — на него придёт ссылка на видеовстречу" required value={formData.email}
+                      onChange={e => setFormData({ ...formData, email: e.target.value })} className={inputCls} />
+                  )}
                   <select value={formData.topic} onChange={e => setFormData({ ...formData, topic: e.target.value })} className={inputCls + ' appearance-none cursor-pointer'}>
                     <option value="">Тема обращения</option>
                     {(topics.length > 0

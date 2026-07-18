@@ -94,6 +94,24 @@ enum AppealStatus {
   REJECTED
 }
 
+// Формат обращения — гражданин выбирает на /priemnaya. VIDEO помечает
+// обращения, для которых менеджер приёмной должен назначить видеозвонок
+// (см. AppealMeeting) — без этого поля их не отличить от письменных.
+enum AppealFormat {
+  WRITTEN
+  VIDEO
+}
+
+// Статус видеозвонка. PENDING — менеджер выбрал депутата/время, но вызов
+// Google Calendar API ещё не подключён/не выполнен (см.
+// cms/packages/api/src/lib/googleCalendar.ts, docs/GOOGLE_MEET_SETUP.md).
+// SCHEDULED — событие реально создано, meetLink заполнен.
+enum MeetingStatus {
+  PENDING
+  SCHEDULED
+  CANCELLED
+}
+
 // ─── Users & Auth ─────────────────────────────────────────────────────────────
 
 model User {
@@ -233,9 +251,11 @@ model Gallery {
 model TeamMember {
   id           String                  @id @default(uuid())
   photoUrl     String?
+  email        String?                 // нужен депутатам (group=FACTION) — приглашение на Google Meet
   group        TeamMemberGroup         @default(LEADERSHIP)
   sortOrder    Int                     @default(0)
   translations TeamMemberTranslation[]
+  meetings     AppealMeeting[]
   createdAt    DateTime                @default(now())
   updatedAt    DateTime                @updatedAt
 
@@ -389,24 +409,53 @@ model AppealTopic {
 }
 
 model Appeal {
-  id            String       @id @default(uuid())
-  appealNumber  String       @unique
+  id            String        @id @default(uuid())
+  appealNumber  String        @unique
   fullName      String
   phone         String
   email         String?
   topicId       String
-  topic         AppealTopic  @relation(fields: [topicId], references: [id])
-  message       String       @db.Text
+  topic         AppealTopic   @relation(fields: [topicId], references: [id])
+  message       String        @db.Text
   fileUrl       String?
   attachments   Json?
-  status        AppealStatus @default(NEW)
-  internalNotes String?      @db.Text
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  format        AppealFormat  @default(WRITTEN)
+  status        AppealStatus  @default(NEW)
+  internalNotes String?       @db.Text
+  meeting       AppealMeeting?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   @@index([status])
   @@index([appealNumber])
   @@index([createdAt])
+  @@index([format])
+}
+
+// Видеозвонок (Google Meet) по обращению format=VIDEO. Одно обращение —
+// максимум одна активная запись (appealId уникален): переназначение
+// перезаписывает deputyId/scheduledAt и сбрасывает статус в PENDING.
+// meetLink/calendarEventId заполняются только после успешного вызова
+// createGoogleMeetEvent() — до подключения интеграции остаются null,
+// а status — PENDING (см. googleCalendar.ts, docs/GOOGLE_MEET_SETUP.md).
+model AppealMeeting {
+  id               String        @id @default(uuid())
+  appealId         String        @unique
+  appeal           Appeal        @relation(fields: [appealId], references: [id], onDelete: Cascade)
+  deputyId         String
+  deputy           TeamMember    @relation(fields: [deputyId], references: [id])
+  scheduledAt      DateTime
+  durationMinutes  Int           @default(30)
+  status           MeetingStatus @default(PENDING)
+  meetLink         String?
+  calendarEventId  String?
+  lastError        String?       @db.Text
+  reminderSentAt   DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([status])
+  @@index([scheduledAt])
 }
 
 // ─── CRM: SMS-верификация ───────────────────────────────────────────────────────

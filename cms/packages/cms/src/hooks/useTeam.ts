@@ -16,6 +16,8 @@ export type TeamMemberGroup = 'LEADERSHIP' | 'MEDIA_TEAM' | 'FACTION';
 export interface TeamMember {
   id: string;
   photoUrl: string | null;
+  /** Нужен депутатам (group=FACTION) — приглашение на Google Meet при видеоприёме */
+  email: string | null;
   group: TeamMemberGroup;
   sortOrder: number;
   translations: TeamTranslation[];
@@ -25,6 +27,7 @@ export interface TeamMember {
 
 export interface TeamMemberInput {
   photoUrl?: string | null;
+  email?: string | null;
   group?: TeamMemberGroup;
   sortOrder?: number;
   translations: Array<{

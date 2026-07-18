@@ -120,16 +120,20 @@ function SortableMemberRow({
 
 function MemberModal({
   initial,
+  group,
   onSave,
   onClose,
   loading,
 }: {
   initial?: TeamMember;
+  group?: TeamMemberGroup;
   onSave: (data: TeamMemberInput) => void;
   onClose: () => void;
   loading: boolean;
 }) {
   const [photoUrl, setPhotoUrl] = useState(initial?.photoUrl ?? '');
+  const [email, setEmail] = useState(initial?.email ?? '');
+  const isDeputy = (initial?.group ?? group) === 'FACTION';
   const [activeLang, setActiveLang] = useState('ru');
   const [translations, setTranslations] = useState<Record<string, { name: string; position: string; bio: string }>>(
     () => {
@@ -153,7 +157,7 @@ function MemberModal({
       position: translations[code].position,
       bio: translations[code].bio || null,
     }));
-    onSave({ photoUrl: photoUrl || null, translations: trs });
+    onSave({ photoUrl: photoUrl || null, email: email || null, translations: trs });
   }
 
   const cur = translations[activeLang];
@@ -189,6 +193,21 @@ function MemberModal({
               />
             )}
           </div>
+
+          {isDeputy && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email (для приглашения на видеоприём Google Meet)
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="deputy@example.com"
+              />
+            </div>
+          )}
 
           <div>
             <div className="flex gap-2 mb-3">
@@ -406,6 +425,7 @@ export default function TeamPage({
       {modal.open && (
         <MemberModal
           initial={modal.editing}
+          group={group}
           onSave={handleSave}
           onClose={() => setModal({ open: false })}
           loading={createMut.isPending || updateMut.isPending}

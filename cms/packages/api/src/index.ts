@@ -25,8 +25,10 @@ import { publicMediaPublicationsRouter, cmsMediaPublicationsRouter } from './mod
 import { publicTestimonialsRouter, cmsTestimonialsRouter } from './modules/testimonials/testimonials.controller';
 import { publicMenuItemsRouter, cmsMenuItemsRouter } from './modules/menu-items/menu-items.controller';
 import { publicFaqRouter, cmsFaqRouter } from './modules/faq/faq.controller';
+import { publicYoutubeRouter } from './modules/youtube/youtube.controller';
 import { logger } from './lib/logger';
 import { ensureBucketExists } from './lib/minio';
+import { startReminderScheduler } from './lib/reminders';
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
@@ -117,6 +119,7 @@ app.use('/api/v1/media-publications', publicMediaPublicationsRouter);
 app.use('/api/v1/testimonials', publicTestimonialsRouter);
 app.use('/api/v1/menu-items', publicMenuItemsRouter);
 app.use('/api/v1/faq', publicFaqRouter);
+app.use('/api/v1/youtube', publicYoutubeRouter);
 
 // ─── CMS API routes (require auth — enforced per-router) ──────────────────────
 app.use('/cms/api/v1/users', usersRouter);
@@ -167,6 +170,7 @@ app.listen(PORT, async () => {
   } catch {
     logger.warn('MinIO not available at startup — bucket check skipped');
   }
+  startReminderScheduler();
 });
 
 export default app;

@@ -95,6 +95,9 @@ export interface AppealPayload {
   topicId: string;
   message: string;
   attachments?: AppealAttachment[];
+  /** Помечает обращения с запросом на видеоприём — на них менеджер в CMS
+   *  назначает звонок (см. AppealMeeting/Google Calendar в cms/packages/api). */
+  format?: 'WRITTEN' | 'VIDEO';
 }
 
 export function submitAppeal(payload: AppealPayload) {
@@ -365,4 +368,16 @@ export function fetchPage(slug: string, lang = 'ru') {
 
 export function fetchSettings() {
   return api.get<Record<string, string>>('/api/v1/settings');
+}
+
+// ─── YouTube-лента (NarodnoeMediaSection на главной) ───────────────────────────
+
+export interface PublicYoutubeVideo {
+  id: string;
+  title: string;
+  publishedAt: string;
+}
+
+export function fetchYoutubeFeed() {
+  return api.get<{ videos: PublicYoutubeVideo[] }>('/api/v1/youtube/feed');
 }
