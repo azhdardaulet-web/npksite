@@ -87,7 +87,7 @@ export function ReceptionSection() {
   };
 
   return (
-    <section className="bg-bg py-20 md:py-28">
+    <section className="bg-bg py-20 md:py-28 overflow-hidden">
       <div className="max-w-[1280px] mx-auto px-4 md:px-10">
         <div className="mb-12">
           <p className="text-label text-accent-brand font-medium mb-3 uppercase tracking-wider">Приёмная</p>
