@@ -19,6 +19,8 @@ const TeamMemberInputSchema = z.object({
   photoUrl: z.string().url().optional().nullable(),
   // Нужен депутатам (group=FACTION) — приглашение на Google Meet при видеоприёме.
   email: z.string().email().optional().nullable(),
+  // Для персональной страницы /rukovodstvo/:slug (LEADERSHIP).
+  slug: z.string().min(1).optional().nullable(),
   group: z.enum(['LEADERSHIP', 'MEDIA_TEAM', 'FACTION']).optional(),
   sortOrder: z.number().int().min(0).optional(),
   translations: z.array(TranslationSchema).min(1),
@@ -60,6 +62,7 @@ teamRouter.get('/', async (req: Request, res: Response): Promise<void> => {
       return {
         id: m.id,
         photoUrl: m.photoUrl,
+        slug: m.slug,
         group: m.group,
         sortOrder: m.sortOrder,
         name: t?.name ?? '',
@@ -106,6 +109,7 @@ teamRouter.post('/', ...requireContent, async (req: Request, res: Response): Pro
       data: {
         photoUrl: parsed.data.photoUrl ?? null,
         email: parsed.data.email ?? null,
+        slug: parsed.data.slug ?? null,
         group: parsed.data.group ?? 'LEADERSHIP',
         sortOrder: parsed.data.sortOrder ?? nextOrder,
         translations: {

@@ -11,6 +11,7 @@ import { JoinPage } from '@/pages/JoinPage';
 import { BranchesPage } from '@/pages/BranchesPage';
 import { NewsPage } from '@/pages/NewsPage';
 import { LeadershipPage } from '@/pages/LeadershipPage';
+import { LeadershipDetailPage } from '@/pages/LeadershipDetailPage';
 import { FactionPage } from '@/pages/FactionPage';
 import { PressKitPage } from '@/pages/PressKitPage';
 import { SearchPage } from '@/pages/SearchPage';
@@ -45,6 +46,7 @@ function App() {
         <Route path="/filialy" element={<VisiblePageRoute slug="branches"><BranchesPage /></VisiblePageRoute>} />
         <Route path="/novosti" element={<VisiblePageRoute slug="news"><NewsPage /></VisiblePageRoute>} />
         <Route path="/rukovodstvo" element={<VisiblePageRoute slug="leadership"><LeadershipPage /></VisiblePageRoute>} />
+        <Route path="/rukovodstvo/:slug" element={<VisiblePageRoute slug="leadership"><LeadershipDetailPage /></VisiblePageRoute>} />
         <Route path="/frakciya" element={<VisiblePageRoute slug="faction"><FactionPage /></VisiblePageRoute>} />
         <Route path="/frakciya/sostav" element={<VisiblePageRoute slug="faction"><FactionCompositionPage /></VisiblePageRoute>} />
         <Route path="/frakciya/zaprosy" element={<VisiblePageRoute slug="faction"><FactionRequestsPage /></VisiblePageRoute>} />

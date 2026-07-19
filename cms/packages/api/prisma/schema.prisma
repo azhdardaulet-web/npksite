@@ -251,6 +251,7 @@ model TeamMember {
   id           String                  @id @default(uuid())
   photoUrl     String?
   email        String?                 // нужен депутатам (group=FACTION) — приглашение на Google Meet
+  slug         String?                 @unique // для персональной страницы /rukovodstvo/:slug (LEADERSHIP)
   group        TeamMemberGroup         @default(LEADERSHIP)
   sortOrder    Int                     @default(0)
   translations TeamMemberTranslation[]
