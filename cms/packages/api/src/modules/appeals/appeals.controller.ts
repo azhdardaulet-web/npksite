@@ -379,16 +379,33 @@ cmsAppealsRouter.put('/:id/meeting', ...requireCms, async (req: Request, res: Re
       include: { deputy: { include: { translations: true } } },
     });
 
-    if (status === 'SCHEDULED' && appeal.email) {
-      await sendMail({
-        to: appeal.email,
-        subject: `Видеоприём назначен — обращение ${appeal.appealNumber}`,
-        html: `
-          <p>Здравствуйте, ${appeal.fullName}!</p>
-          <p>Вам назначен видеоприём с ${deputyName} на ${parsed.data.scheduledAt.toLocaleString('ru-RU', { timeZone: 'Asia/Almaty' })}.</p>
-          <p>Ссылка на встречу: <a href="${meetLink}">${meetLink}</a></p>
-        `,
-      });
+    if (status === 'SCHEDULED') {
+      const whenStr = parsed.data.scheduledAt.toLocaleString('ru-RU', { timeZone: 'Asia/Almaty' });
+      if (appeal.email) {
+        await sendMail({
+          to: appeal.email,
+          subject: `Видеоприём назначен — обращение ${appeal.appealNumber}`,
+          html: `
+            <p>Здравствуйте, ${appeal.fullName}!</p>
+            <p>Вам назначен видеоприём с ${deputyName} на ${whenStr}.</p>
+            <p>Ссылка на встречу: <a href="${meetLink}">${meetLink}</a></p>
+          `,
+        });
+      }
+      // Депутату — отдельное письмо (план правок №2, E2): не полагаемся только на
+      // приглашение из Google Calendar, т.к. до подключения Calendar API его не будет.
+      if (deputy.email) {
+        await sendMail({
+          to: deputy.email,
+          subject: `Видеоприём назначен — обращение ${appeal.appealNumber}`,
+          html: `
+            <p>Здравствуйте, ${deputyName}!</p>
+            <p>Вам назначен видеоприём по обращению ${appeal.appealNumber} на ${whenStr}.</p>
+            <p>Заявитель: ${appeal.fullName}, ${appeal.phone}</p>
+            <p>Ссылка на встречу: <a href="${meetLink}">${meetLink}</a></p>
+          `,
+        });
+      }
     }
 
     res.json({

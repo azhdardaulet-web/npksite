@@ -233,8 +233,26 @@ function AppealModal({ item, onClose }: { item: AppealItem; onClose: () => void 
           </div>
 
           <div>
-            <p className="text-gray-500 mb-1 text-sm">Прикреплённый файл</p>
-            {item.fileUrl ? (
+            <p className="text-gray-500 mb-1 text-sm">Приложенные материалы</p>
+            {item.attachments && item.attachments.length > 0 ? (
+              <div className="space-y-1.5">
+                {item.attachments.map((a, i) => (
+                  <a
+                    key={a.url + i}
+                    href={a.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
+                  >
+                    <Paperclip size={14} className="shrink-0" />
+                    <span className="truncate">{a.fileName}</span>
+                    <span className="text-gray-400 shrink-0">
+                      ({a.kind === 'statement' ? 'заявление' : 'доп. файл'}, {(a.fileSize / 1024).toFixed(0)} КБ)
+                    </span>
+                  </a>
+                ))}
+              </div>
+            ) : item.fileUrl ? (
               <a
                 href={item.fileUrl}
                 target="_blank"
@@ -245,7 +263,7 @@ function AppealModal({ item, onClose }: { item: AppealItem; onClose: () => void 
                 Открыть файл
               </a>
             ) : (
-              <p className="text-sm text-gray-400">Файл не прикреплён</p>
+              <p className="text-sm text-gray-400">Файлы не прикреплены</p>
             )}
           </div>
 
@@ -343,13 +361,14 @@ export default function AppealsPage() {
                   <th className="font-medium text-gray-500 px-4 py-3 w-44">Дата</th>
                   <th className="font-medium text-gray-500 px-4 py-3 min-w-[180px]">ФИО</th>
                   <th className="font-medium text-gray-500 px-4 py-3 min-w-[160px]">Тема</th>
+                  <th className="font-medium text-gray-500 px-4 py-3 w-28">Формат</th>
                   <th className="font-medium text-gray-500 px-4 py-3 w-40">Статус</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {data?.data.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="text-center text-gray-400 py-12">Обращений не найдено</td>
+                    <td colSpan={6} className="text-center text-gray-400 py-12">Обращений не найдено</td>
                   </tr>
                 )}
                 {data?.data.map((item) => (
@@ -370,6 +389,9 @@ export default function AppealsPage() {
                     </td>
                     <td className="px-4 py-3 text-gray-600 cursor-pointer" onClick={() => setSelected(item)}>
                       <div className="line-clamp-1" title={item.topic.nameRu}>{item.topic.nameRu}</div>
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 cursor-pointer" onClick={() => setSelected(item)}>
+                      {item.format === 'VIDEO' ? 'Видео' : 'Письменное'}
                     </td>
                     <td className="px-4 py-3">
                       <select
