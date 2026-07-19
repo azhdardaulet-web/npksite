@@ -43,7 +43,6 @@ function formatDate(iso: string | null) {
 export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } = {}) {
   const [mainIdx, setMainIdx] = useState(0);
   const [paused, setPaused] = useState(false);
-  const videoScrollRef = useRef<HTMLDivElement>(null);
   const [news, setNews] = useState<PublicNewsItem[]>(FALLBACK_NEWS);
 
   useEffect(() => {

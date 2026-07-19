@@ -27,19 +27,6 @@ interface StatsBlock {
   items?: Array<{ value: string; suffix?: string; labelRu: string; decimals?: number }>;
 }
 
-// Scattered collage positions — replicate Figma's Frame 27 layout
-// Each photo is absolutely positioned; positions are % of container width/height
-const collagePhotos = [
-  { src: '/images/marquee-1.jpg', style: { left: '0%',   top: '5%',  width: '22%', height: '70%', objectPosition: 'top' } },
-  { src: '/images/marquee-2.jpg', style: { left: '20%',  top: '0%',  width: '32%', height: '85%', objectPosition: 'center' } },
-  { src: '/images/marquee-3.jpg', style: { left: '50%',  top: '10%', width: '18%', height: '65%', objectPosition: 'top' } },
-  { src: '/images/marquee-4.jpg', style: { left: '66%',  top: '0%',  width: '20%', height: '75%', objectPosition: 'center' } },
-  { src: '/images/marquee-5.jpg', style: { left: '84%',  top: '8%',  width: '16%', height: '60%', objectPosition: 'top' } },
-  { src: '/images/candidate-1.jpg', style: { left: '5%',  top: '35%', width: '28%', height: '65%', objectPosition: 'center' } },
-  { src: '/images/candidate-2.jpg', style: { left: '55%', top: '30%', width: '24%', height: '70%', objectPosition: 'top' } },
-  { src: '/images/candidate-3.jpg', style: { left: '78%', top: '25%', width: '22%', height: '75%', objectPosition: 'center' } },
-];
-
 export function TrustCountersSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const sloganRef = useRef<HTMLDivElement>(null);

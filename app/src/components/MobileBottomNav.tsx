@@ -249,7 +249,7 @@ export function MobileBottomNav() {
         }}>
           {TABS.map((tab, idx) => {
             /* Center FAB */
-            if (tab.isCenter) return (
+            if ('isCenter' in tab && tab.isCenter) return (
               <button key={idx} className="npk-tab"
                 onClick={() => setJoinOpen(true)}
                 style={{
@@ -277,7 +277,7 @@ export function MobileBottomNav() {
             );
 
             /* Menu button */
-            if (tab.isMenu) return (
+            if ('isMenu' in tab && tab.isMenu) return (
               <button key={idx} className="npk-tab"
                 onClick={() => setMenuOpen(true)}
                 style={{

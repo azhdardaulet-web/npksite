@@ -62,7 +62,6 @@ class GlobeController {
   private _fullZoom   = 1.32;
   private drag = { on:false, x:0, y:0, l:0, p:0 };
   private parallax = { x:0, y:0, tx:0, ty:0 };
-  private lastUser = 0;
   private hoverFeat = -1;
   private hoverMarker = -1;
   private _moved = false;
@@ -82,7 +81,6 @@ class GlobeController {
   private _labelEls: {el:SVGTextElement,o:{t:string,lng:number,lat:number,big?:boolean},kind:string,lines:string[]}[] = [];
   private _markerEls: any[] = [];
   private _ro: ResizeObserver | null = null;
-  private svg: SVGSVGElement | null = null;
   private els: Record<string,any> = {};
 
   constructor(host: HTMLElement, onChange: (s: GlobeState) => void) {
@@ -153,7 +151,7 @@ class GlobeController {
   }
 
   private _limb(A: any, B: any) {
-    const V=this.view, D=this.D2R, tol=1e-4; let lo=0,hi=1;
+    const V=this.view, tol=1e-4; let lo=0,hi=1;
     for(let k=0;k<14;k++){ const m=(lo+hi)/2, lm=A.rx+m*(B.rx-A.rx); lm<tol?hi=m:lo=m; }
     const t=(lo+hi)/2;
     const Ry=A.ry+t*(B.ry-A.ry), Rz=A.rz+t*(B.rz-A.rz), n=Math.sqrt(Ry*Ry+Rz*Rz);
@@ -267,7 +265,7 @@ class GlobeController {
     const gLabels=this._S('g',{'pointer-events':'none'}); svg.appendChild(gLabels);
     const gMarkers=this._S('g'); svg.appendChild(gMarkers);
 
-    this.host.innerHTML=''; this.host.appendChild(svg); this.svg=svg;
+    this.host.innerHTML=''; this.host.appendChild(svg);
     this.els={ svg,defs,clipC,gStars,atmBlur,atmBlur2,ocean,gWorld,gLights,gRegions,shade,rim,gLabels,gMarkers };
 
     svg.addEventListener('pointerdown', e=>this._down(e));
@@ -355,7 +353,7 @@ class GlobeController {
     const g=this.els.gLights; if(!g||!this._world) return; g.innerHTML=''; this._lightPts=[]; this._lightEls=[];
     const feats=this._world.map(f=>{ let mnx=180,mxx=-180,mny=90,mxy=-90; const rings: number[][][] = [];
       const visit=(r: number[][])=>{ rings.push(r); for(const p of r){ if(p[0]<mnx)mnx=p[0]; if(p[0]>mxx)mxx=p[0]; if(p[1]<mny)mny=p[1]; if(p[1]>mxy)mxy=p[1]; } };
-      if(f.type==='Polygon') (f.coords as number[][][]).forEach(visit); else (f.coords as number[][][][]).forEach(p=>(p as number[][][]).forEach(visit));
+      if(f.type==='Polygon') (f.coords as unknown as number[][][]).forEach(visit); else (f.coords as number[][][][]).forEach(p=>p.forEach(visit));
       return {rings,mnx,mxx,mny,mxy}; });
     let s=0x4d2a; const rnd=()=>{ s=(s*16807+12345)&0x7fffffff; return (s%100000)/100000; };
     const warm=['rgba(255,196,128,','rgba(255,224,170,','rgba(190,214,255,','rgba(255,170,120,'];
@@ -428,7 +426,7 @@ class GlobeController {
     V.phi=Math.max(-20,Math.min(78,this.drag.p+(m.y-this.drag.y)*0.32));
   }
 
-  private _up() { if(this.drag.on){ this.drag.on=false; this.lastUser=performance.now(); this.host.style.cursor='grab'; } }
+  private _up() { if(this.drag.on){ this.drag.on=false; this.host.style.cursor='grab'; } }
 
   onWheel(deltaY: number) {
     // Called by parent React component — always pass to Lenis

@@ -176,7 +176,6 @@ function ProjectCard({ p }: { p: typeof PROJECTS[0] }) {
 /* ─── Page ───────────────────────────────────────────────────────────── */
 export function NarodnoeMediaPage() {
   const totalRef = useCountUp(270000);
-  const [hovSocial, setHovSocial] = useState<number | null>(null);
 
   const { getBlock } = usePageBlocks('press-center');
 
@@ -270,7 +269,7 @@ export function NarodnoeMediaPage() {
       {/* ── Marquee ── */}
       <div style={{ marginTop: 'clamp(48px,7vw,90px)', padding: 'clamp(20px,3vw,44px) 0', borderTop: '1px solid rgba(255,255,255,.07)', borderBottom: '1px solid rgba(255,255,255,.07)', overflow: 'hidden' }}>
         <div style={{ display: 'flex', width: 'max-content', animation: 'marq 30s linear infinite' }}>
-          {[tickerText, tickerText].map((t, i) => (
+          {[tickerText, tickerText].map((_, i) => (
             <span key={i} aria-hidden={i > 0} style={{ flexShrink: 0, fontSize: 'clamp(34px,6vw,72px)', fontWeight: 800, letterSpacing: '-.02em', color: 'transparent', WebkitTextStroke: '1.3px rgba(255,255,255,.32)', whiteSpace: 'nowrap', paddingRight: '.3em' }}>
               {TICKER.map((item, j) => (
                 <span key={j}>{item} <span style={{ color: '#db1f26', WebkitTextStroke: '0' }}>•</span> </span>
@@ -340,7 +339,7 @@ export function NarodnoeMediaPage() {
               {ctaText}
             </p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
-              {SOCIALS.map((s, i) => (
+              {SOCIALS.map((s) => (
                 <a key={s.name} href={s.url} target="_blank" rel="noopener noreferrer"
                   onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-3px)')}
                   onMouseLeave={e => (e.currentTarget.style.transform = 'none')}
