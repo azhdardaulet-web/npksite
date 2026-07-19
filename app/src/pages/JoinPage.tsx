@@ -316,7 +316,7 @@ export function JoinPage() {
   const birthDateLabel = birthDate ? new Date(birthDate).toLocaleDateString('ru-RU') : '__________';
 
   return (
-    <div className="pt-[104px] pb-16">
+    <div className="pb-16">
       <div className="max-w-[960px] mx-auto px-4 md:px-10">
         <SectionHeader light="Вступить в" bold="партию" centered />
 

@@ -26,7 +26,7 @@ export function VerifyPage() {
   }, [id]);
 
   return (
-    <div className="pt-[104px] pb-16 min-h-[60vh] flex items-center justify-center">
+    <div className="pb-16 min-h-[60vh] flex items-center justify-center">
       <div className="max-w-[480px] mx-auto px-4 text-center">
         {loading ? (
           <p className="text-body text-text-muted">Проверяем…</p>

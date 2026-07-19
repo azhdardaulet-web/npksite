@@ -6,10 +6,12 @@ import { MobileBottomNav } from './MobileBottomNav';
 import { MobileHeader } from './MobileHeader';
 import { Footer } from './Footer';
 import { CustomCursor } from './CustomCursor';
+import { SiteBreadcrumbs } from './SiteBreadcrumbs';
 
 export function PageLayout() {
   useLenis();
   const location = useLocation();
+  const isHome = location.pathname === '/';
 
   useEffect(() => {
     const lenis = getLenis();
@@ -27,8 +29,11 @@ export function PageLayout() {
       <CustomCursor />
       <DesktopHeader />
       <MobileHeader />
-      <main className="pb-14 md:pb-0 pt-[56px] md:pt-0">
-        <Outlet />
+      <main className={`pb-14 md:pb-0 ${isHome ? 'pt-[56px] md:pt-0' : 'pt-[104px] md:pt-[156px]'}`}>
+        {!isHome && <SiteBreadcrumbs />}
+        <div className={isHome ? undefined : 'internal-page-content'}>
+          <Outlet />
+        </div>
       </main>
       <Footer />
       <MobileBottomNav />

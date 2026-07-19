@@ -22,7 +22,7 @@ export function LeadershipDetailPage() {
 
   if (loading) {
     return (
-      <div className="pt-[104px] pb-16">
+      <div className="pb-16">
         <div className="max-w-[1280px] mx-auto px-4 md:px-10 grid lg:grid-cols-[340px_1fr] gap-12 animate-pulse">
           <div className="aspect-[4/5] bg-surface-2" />
           <div className="pt-8">
@@ -37,7 +37,7 @@ export function LeadershipDetailPage() {
 
   if (!leader) {
     return (
-      <div className="pt-[104px] pb-16 text-center">
+      <div className="pb-16 text-center">
         <h1 className="text-heading font-bold text-text-base mb-2">Не найдено</h1>
         <p className="text-body text-text-muted mb-6">Такой страницы руководства не существует.</p>
         <Link to="/rukovodstvo" className="text-accent-brand font-medium">← Всё руководство</Link>

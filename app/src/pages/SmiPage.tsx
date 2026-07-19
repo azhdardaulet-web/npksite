@@ -217,7 +217,7 @@ export function SmiPage() {
     <div style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh' }}>
 
       {/* Breadcrumbs */}
-      <div style={{ paddingTop: 108 }}>
+      <div>
         <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 clamp(16px,4vw,40px) 20px', borderBottom: '1px solid var(--line)' }}>
           <Breadcrumbs />
         </div>

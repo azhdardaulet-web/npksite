@@ -44,7 +44,7 @@ export function SearchPage() {
   const hasResults = candidates.length > 0 || news.length > 0;
 
   return (
-    <div className="pt-[104px] pb-16">
+    <div className="pb-16">
       <div className="max-w-[800px] mx-auto px-4 md:px-10">
         <SectionHeader light="Поиск по" bold="сайту" centered />
 

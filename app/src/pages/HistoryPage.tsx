@@ -114,7 +114,7 @@ export function HistoryPage() {
 
   if (loading) {
     return (
-      <div style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh', paddingTop: 160, textAlign: 'center' }}>
+      <div style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh', textAlign: 'center' }}>
         <p style={{ color: 'var(--text-muted)' }}>Загрузка...</p>
       </div>
     );
@@ -123,7 +123,7 @@ export function HistoryPage() {
   return (
     <div style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       {/* BREADCRUMBS */}
-      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '128px 40px 0' }}>
+      <section style={{ maxWidth: 1200, margin: '0 auto' }}>
         <Breadcrumb>
           <BreadcrumbList style={{ color: 'var(--text-muted)' }}>
             <BreadcrumbItem>

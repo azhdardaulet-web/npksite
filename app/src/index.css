@@ -10,6 +10,20 @@
   font-style: normal;
   font-display: swap;
 }
+
+/* Единый верх внутренних страниц: PageLayout ставит контент через 48px после
+   фиксированного хедера и показывает общие хлебные крошки. Старые локальные
+   крошки временно скрыты, чтобы на страницах не было дублей. */
+.internal-page-content nav[aria-label="breadcrumb"] {
+  display: none;
+}
+
+.internal-page-content .npo-crumbs,
+.internal-page-content .npf-crumbs,
+.internal-page-content .npp-crumbs,
+.internal-page-content .npd-crumbs {
+  display: none;
+}
 @font-face {
   font-family: 'Formular';
   src: url('/fonts/Formular.otf') format('opentype');

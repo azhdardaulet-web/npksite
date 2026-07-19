@@ -31,7 +31,7 @@ export function FactionCompositionPage() {
   return (
     <div className="bg-bg min-h-screen">
       {/* ===== BREADCRUMBS ===== */}
-      <div className="max-w-[1280px] mx-auto px-4 md:px-10" style={{ paddingTop: 128 }}>
+      <div className="max-w-[1280px] mx-auto px-4 md:px-10">
         <Breadcrumb>
           <BreadcrumbList style={{ color: 'var(--text-muted)' }}>
             <BreadcrumbItem>

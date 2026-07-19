@@ -30,7 +30,7 @@ export function UstavPage() {
   }, []);
 
   return (
-    <div className="pt-[104px] pb-16">
+    <div className="pb-16">
       <div className="max-w-[1280px] mx-auto px-4 md:px-10">
         <SectionHeader
           light="Устав"

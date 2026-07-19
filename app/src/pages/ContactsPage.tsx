@@ -4,7 +4,7 @@ import { ScrollReveal } from '@/components/ScrollReveal';
 
 export function ContactsPage() {
   return (
-    <div className="pt-[104px] pb-16">
+    <div className="pb-16">
       <div className="max-w-[800px] mx-auto px-4 md:px-10">
         <SectionHeader light="Наши" bold="контакты" centered />
 

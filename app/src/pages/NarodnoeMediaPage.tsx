@@ -204,7 +204,7 @@ export function NarodnoeMediaPage() {
       `}</style>
 
       {/* ── Breadcrumbs ── */}
-      <div style={{ paddingTop: 108 }}>
+      <div>
         <div style={{ maxWidth: 1180, margin: '0 auto', padding: '0 clamp(16px,4vw,44px) 20px', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
           <Breadcrumbs />
         </div>

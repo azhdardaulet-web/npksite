@@ -152,7 +152,7 @@ export function FactionRequestsPage() {
     <div style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh' }}>
 
       {/* BREADCRUMBS */}
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '128px 40px 0' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <Breadcrumb>
           <BreadcrumbList style={{ color: 'var(--text-muted)' }}>
             <BreadcrumbItem>

@@ -21,12 +21,12 @@ export function FactionDetailPage() {
   const member = members.find((item) => item.slug === slug);
 
   if (loading) {
-    return <div className="pt-[104px] pb-16 min-h-[60vh]" />;
+    return <div className="pb-16 min-h-[60vh]" />;
   }
 
   if (!member) {
     return (
-      <div className="pt-[104px] pb-16 text-center">
+      <div className="pb-16 text-center">
         <h1 className="text-heading font-bold text-text-base mb-2">Не найдено</h1>
         <p className="text-body text-text-muted mb-6">Такой страницы депутата не существует.</p>
         <Link to="/frakciya/sostav" className="text-accent-brand font-medium">← Состав фракции</Link>

@@ -145,7 +145,7 @@ export function NewsArticlePage() {
 
   if (loading) {
     return (
-      <div style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh', paddingTop: 160, textAlign: 'center' }}>
+      <div style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh', textAlign: 'center' }}>
         <p style={{ color: 'var(--text-muted)' }}>Загрузка...</p>
       </div>
     );
@@ -153,7 +153,7 @@ export function NewsArticlePage() {
 
   if (notFound || (apiDown && !article)) {
     return (
-      <div style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh', paddingTop: 160, textAlign: 'center' }}>
+      <div style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh', textAlign: 'center' }}>
         <p style={{ fontSize: 18, color: 'var(--text-muted)', marginBottom: 20 }}>
           {notFound ? 'Материал не найден' : 'Не удалось загрузить материал — попробуйте позже'}
         </p>
@@ -170,7 +170,7 @@ export function NewsArticlePage() {
     <div style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh' }}>
 
       {/* Breadcrumbs */}
-      <div style={{ paddingTop: 108 }}>
+      <div>
         <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 clamp(16px,4vw,40px) 20px', borderBottom: '1px solid var(--line)' }}>
           <nav style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, letterSpacing: '.04em', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
             <Link to="/" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}
