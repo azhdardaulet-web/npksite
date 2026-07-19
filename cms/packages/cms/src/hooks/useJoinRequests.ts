@@ -11,6 +11,9 @@ export interface JoinRequestItem {
   fullName: string;
   birthDate: string | null;
   gender: 'male' | 'female' | null;
+  iin: string | null;
+  idDocNumber: string | null;
+  address: string | null;
   phone: string;
   email: string | null;
   city: string | null;

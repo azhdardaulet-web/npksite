@@ -62,6 +62,14 @@ function JoinRequestModal({ item, onClose }: { item: JoinRequestItem; onClose: (
               </p>
             </div>
             <div>
+              <p className="text-gray-500 mb-1">ИИН</p>
+              <p className="font-medium text-gray-900">{item.iin || '—'}</p>
+            </div>
+            <div>
+              <p className="text-gray-500 mb-1">Номер удостоверения</p>
+              <p className="font-medium text-gray-900">{item.idDocNumber || '—'}</p>
+            </div>
+            <div>
               <p className="text-gray-500 mb-1">Телефон</p>
               <p className="font-medium text-gray-900">
                 {item.phone} {item.phoneVerified && <span className="text-green-600 text-xs">(подтверждён)</span>}
@@ -74,6 +82,10 @@ function JoinRequestModal({ item, onClose }: { item: JoinRequestItem; onClose: (
             <div>
               <p className="text-gray-500 mb-1">Город</p>
               <p className="font-medium text-gray-900">{item.city || '—'}</p>
+            </div>
+            <div>
+              <p className="text-gray-500 mb-1">Адрес</p>
+              <p className="font-medium text-gray-900">{item.address || '—'}</p>
             </div>
             <div>
               <p className="text-gray-500 mb-1">Адрес доставки мерча</p>

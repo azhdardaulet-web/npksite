@@ -24,7 +24,7 @@ const DEFAULT_COUNTERS: Counter[] = [
 interface StatsBlock {
   headingRu?: string;
   introRu?: string;
-  items?: Array<{ value: string; suffix?: string; labelRu: string }>;
+  items?: Array<{ value: string; suffix?: string; labelRu: string; decimals?: number }>;
 }
 
 // Scattered collage positions — replicate Figma's Frame 27 layout
@@ -49,7 +49,7 @@ export function TrustCountersSection() {
   const cms = getBlock<StatsBlock>('stats');
   const heading = cms?.headingRu?.trim() || 'Народная партия в цифрах';
   const counters: Counter[] = cms?.items?.length
-    ? cms.items.map((it) => ({ label: it.labelRu, target: parseInt(it.value, 10) || 0, suffix: it.suffix ?? '' }))
+    ? cms.items.map((it) => ({ label: it.labelRu, target: parseInt(it.value, 10) || 0, suffix: it.suffix ?? '', decimals: it.decimals }))
     : DEFAULT_COUNTERS;
 
   useEffect(() => {

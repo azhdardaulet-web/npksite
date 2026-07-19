@@ -57,9 +57,17 @@ export const DEV_HCAPTCHA_TOKEN = 'dev-bypass';
 export interface JoinRequestPayload {
   role?: 'member' | 'volunteer' | 'observer';
   fullName: string;
+  birthDate?: string;
+  iin?: string;
+  idDocNumber?: string;
+  address?: string;
   phone: string;
   email?: string;
   city?: string;
+  branchId?: string;
+  article8Consent?: boolean;
+  dataConsent?: boolean;
+  smsCode?: string;
 }
 
 export function submitJoinRequest(payload: JoinRequestPayload) {
@@ -67,6 +75,15 @@ export function submitJoinRequest(payload: JoinRequestPayload) {
     ...payload,
     hCaptchaToken: DEV_HCAPTCHA_TOKEN,
   });
+}
+
+// SMS-подпись заявления (шаг 4 визарда /vstupit)
+export function sendJoinSmsCode(phone: string) {
+  return api.post<{ message: string; expiresInSeconds: number }>('/api/v1/join-requests/send-code', { phone });
+}
+
+export function verifyJoinSmsCode(phone: string, code: string) {
+  return api.post<{ valid: boolean }>('/api/v1/join-requests/verify-code', { phone, code });
 }
 
 // ─── Обращения в приёмную (/priemnaya) ─────────────────────────────────────────
@@ -221,6 +238,7 @@ export interface PublicTeamMember {
   name: string;
   position: string;
   bio: string | null;
+  fullBio: string | null;
 }
 
 export function fetchTeam(group?: TeamGroup, lang = 'ru') {

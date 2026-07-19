@@ -12,6 +12,7 @@ const TranslationSchema = z.object({
   name: z.string().min(1),
   position: z.string().min(1),
   bio: z.string().optional().nullable(),
+  fullBio: z.string().optional().nullable(),
 });
 
 const TeamMemberInputSchema = z.object({
@@ -64,6 +65,7 @@ teamRouter.get('/', async (req: Request, res: Response): Promise<void> => {
         name: t?.name ?? '',
         position: t?.position ?? '',
         bio: t?.bio ?? null,
+        fullBio: t?.fullBio ?? null,
       };
     });
 
@@ -112,6 +114,7 @@ teamRouter.post('/', ...requireContent, async (req: Request, res: Response): Pro
             name: t.name,
             position: t.position,
             bio: t.bio ?? null,
+            fullBio: t.fullBio ?? null,
           })),
         },
       },
@@ -152,11 +155,13 @@ teamRouter.put('/:id', ...requireContent, async (req: Request, res: Response): P
               name: t.name,
               position: t.position,
               bio: t.bio ?? null,
+              fullBio: t.fullBio ?? null,
             },
             update: {
               name: t.name,
               position: t.position,
               bio: t.bio ?? null,
+              fullBio: t.fullBio ?? null,
             },
           });
         }

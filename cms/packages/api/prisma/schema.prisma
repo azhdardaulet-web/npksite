@@ -271,6 +271,9 @@ model TeamMemberTranslation {
   name      String
   position  String
   bio       String?
+  // Полное резюме (образование, карьера) — показывается в модалке при клике на карточку;
+  // bio выше — короткая подпись под именем в самой карточке.
+  fullBio   String?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
@@ -378,6 +381,11 @@ model JoinRequest {
   fullName      String
   birthDate     DateTime?
   gender        Gender?
+  // ИИН и номер удостоверения — персональные данные, наравне с телефоном/email
+  // видны в админке только роли ADMIN (см. join-requests.controller.ts requireCms).
+  iin           String?
+  idDocNumber   String?
+  address       String?
   phone         String
   email         String?
   city          String?
