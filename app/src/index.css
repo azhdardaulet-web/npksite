@@ -383,3 +383,70 @@
     display: none;
   }
 }
+
+/* ─── Версия для слабовидящих (План правок №2, Этап 8, H1) ──────────────────
+   Классы навешиваются на <html> из A11yContext поверх системы токенов темы
+   (--bg/--text/--surface/...), а не переопределяют конкретные компоненты —
+   поэтому работают одинаково в светлой и тёмной теме. */
+
+/* Размер шрифта: Tailwind text-* использует rem, поэтому масштаб корневого
+   font-size пересчитывает большую часть текста сайта автоматически. */
+html.a11y-font-large {
+  font-size: 118%;
+}
+html.a11y-font-xlarge {
+  font-size: 137.5%;
+}
+
+/* Высокий контраст: предельные чёрный/белый вместо приглушённых оттенков
+   темы. html.a11y-contrast (specificity 0,1,1) весомее .dark (0,1,0), а
+   html.dark.a11y-contrast — весомее обоих, поэтому порядок в файле не важен. */
+html.a11y-contrast {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f0f0f0;
+  --text: #000000;
+  --text-muted: #000000;
+  --line: #000000;
+  --accent-brand: #a3001a;
+  --accent-brand-text: #ffffff;
+}
+html.dark.a11y-contrast {
+  --bg: #000000;
+  --surface: #000000;
+  --surface-2: #111111;
+  --text: #ffffff;
+  --text-muted: #ffffff;
+  --line: #ffffff;
+  --accent-brand: #ff4d4d;
+  --accent-brand-text: #000000;
+}
+
+/* Ч/б изображения */
+html.a11y-grayscale img,
+html.a11y-grayscale picture,
+html.a11y-grayscale video,
+html.a11y-grayscale canvas,
+html.a11y-grayscale [style*="background-image"] {
+  filter: grayscale(100%);
+}
+
+/* Подчёркивание ссылок */
+html.a11y-underline-links a {
+  text-decoration: underline !important;
+  text-underline-offset: 3px;
+}
+
+/* Отключение анимаций — переключается вручную из панели, независимо от
+   системной настройки prefers-reduced-motion (см. блок выше). */
+html.a11y-reduce-motion *,
+html.a11y-reduce-motion *::before,
+html.a11y-reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+html.a11y-reduce-motion .cursor-dot,
+html.a11y-reduce-motion .cursor-ring {
+  display: none;
+}

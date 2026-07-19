@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { usePageVisibility } from '@/contexts/PageVisibilityContext';
+import { useA11y } from '@/contexts/A11yContext';
 
 /* ─── Dropdown nav structure ───────────────────────────────────────── */
 type SubLink = { label: string; href: string; desc?: string };
@@ -273,6 +274,7 @@ function NavMenuItem({ item }: { item: NavItem }) {
 export function DesktopHeader() {
   const [lang, setLang] = useState<'ru' | 'kz'>('ru');
   const { isVisible } = usePageVisibility();
+  const { openPanel } = useA11y();
   const visibleNav = NAV
     .filter((item) => isVisible(PATH_TO_PAGE_SLUG[item.href] ?? item.href))
     .map((item) => ({
@@ -344,7 +346,7 @@ export function DesktopHeader() {
             <ThemeToggle />
             <button
               aria-label="Версия для слабовидящих"
-              onClick={() => document.documentElement.classList.toggle('a11y-mode')}
+              onClick={openPanel}
               className="w-9 h-9 flex items-center justify-center text-text-muted hover:text-text-base hover:bg-surface-2 rounded-none transition-all duration-150"
             >
               <IconAccessibility />

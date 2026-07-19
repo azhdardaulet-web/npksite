@@ -7,6 +7,7 @@ import { MobileHeader } from './MobileHeader';
 import { Footer } from './Footer';
 import { CustomCursor } from './CustomCursor';
 import { SiteBreadcrumbs } from './SiteBreadcrumbs';
+import { A11yPanel } from './A11yPanel';
 
 export function PageLayout() {
   useLenis();
@@ -29,6 +30,7 @@ export function PageLayout() {
       <CustomCursor />
       <DesktopHeader />
       <MobileHeader />
+      <A11yPanel />
       <main className={`pb-14 md:pb-0 ${isHome ? 'pt-[56px] md:pt-0' : 'pt-[104px] md:pt-[156px]'}`}>
         {!isHome && <SiteBreadcrumbs />}
         <div className={isHome ? undefined : 'internal-page-content'}>

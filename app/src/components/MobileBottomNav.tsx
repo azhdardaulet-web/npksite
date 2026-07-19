@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Newspaper, Play, Menu, X, ChevronRight, Youtube, Send, Instagram, Facebook, Globe, Search, Glasses } from 'lucide-react';
+import { useA11y } from '@/contexts/A11yContext';
 
 /* ─── Menu sections ─────────────────────────────────────────────── */
 const MENU_SECTIONS = [
@@ -49,6 +50,7 @@ function MenuDrawer({ onClose }: { onClose: () => void }) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [lang, setLang] = useState<'ru' | 'kz'>('ru');
   const location = useLocation();
+  const { openPanel } = useA11y();
 
   return (
     <div style={{ position: 'fixed', inset: 0, bottom: 68, display: 'flex', flexDirection: 'column', background: 'var(--bg)', zIndex: 9998 }}>
@@ -67,7 +69,7 @@ function MenuDrawer({ onClose }: { onClose: () => void }) {
           </Link>
           <button
             aria-label="Версия для слабовидящих"
-            onClick={() => document.documentElement.classList.toggle('a11y-mode')}
+            onClick={() => { onClose(); openPanel(); }}
             style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
           >
             <Glasses size={18} />
