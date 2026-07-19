@@ -9,6 +9,7 @@ import { ReceptionPage } from '@/pages/ReceptionPage';
 import { ContactsPage } from '@/pages/ContactsPage';
 import { JoinPage } from '@/pages/JoinPage';
 import { BranchesPage } from '@/pages/BranchesPage';
+import { BranchDetailPage } from '@/pages/BranchDetailPage';
 import { NewsPage } from '@/pages/NewsPage';
 import { LeadershipPage } from '@/pages/LeadershipPage';
 import { LeadershipDetailPage } from '@/pages/LeadershipDetailPage';
@@ -48,6 +49,7 @@ function App() {
         <Route path="/kontakty" element={<VisiblePageRoute slug="contacts"><ContactsPage /></VisiblePageRoute>} />
         <Route path="/vstupit" element={<VisiblePageRoute slug="join"><JoinPage /></VisiblePageRoute>} />
         <Route path="/filialy" element={<VisiblePageRoute slug="branches"><BranchesPage /></VisiblePageRoute>} />
+        <Route path="/filialy/:slug" element={<VisiblePageRoute slug="branches"><BranchDetailPage /></VisiblePageRoute>} />
         <Route path="/novosti" element={<VisiblePageRoute slug="news"><NewsPage /></VisiblePageRoute>} />
         <Route path="/rukovodstvo" element={<VisiblePageRoute slug="leadership"><LeadershipPage /></VisiblePageRoute>} />
         <Route path="/rukovodstvo/:slug" element={<VisiblePageRoute slug="leadership"><LeadershipDetailPage /></VisiblePageRoute>} />

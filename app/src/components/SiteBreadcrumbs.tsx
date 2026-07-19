@@ -45,6 +45,7 @@ function crumbsFor(pathname: string): SiteCrumb[] {
   if (pathname === '/frakciya/zaprosy') return [{ label: 'Фракция', href: '/frakciya' }, { label: 'Депутатские запросы' }];
 
   if (pathname.startsWith('/rukovodstvo/')) return [{ label: 'Руководство партии', href: '/rukovodstvo' }, { label: 'Профиль руководителя' }];
+  if (pathname.startsWith('/filialy/')) return [{ label: 'Филиалы', href: '/filialy' }, { label: 'Страница филиала' }];
   if (pathname.startsWith('/novosti/')) return [{ label: 'Новости', href: '/novosti' }, { label: 'Материал' }];
   if (pathname.startsWith('/proekty/')) return [{ label: 'Проекты', href: '/proekty' }, { label: 'О проекте' }];
   if (pathname.startsWith('/verify/')) return [{ label: 'Проверка партбилета' }];

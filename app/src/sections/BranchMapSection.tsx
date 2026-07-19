@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { getLenis } from '@/hooks/useLenis';
+import { branchProfiles } from '@/lib/branchProfiles';
 
 // ─── Branch data ──────────────────────────────────────────────────────────────
 const BRANCHES = [
@@ -24,6 +26,11 @@ const BRANCHES = [
   { name:'Туркестанский областной филиал',          short:'Туркестанская область',         city:false, lng:68.252, lat:43.297, chairman:'Камбарова Зухра Медеуовна',              email:'halykparty_turkestan@qhp.kz',       address:'161200, г. Туркестан, ул. Б. Саттарханова, 45',                          phone:'+7 775 315 2007' },
   { name:'Областной филиал Улытау',                 short:'Улытауская область',            city:false, lng:67.707, lat:47.803, chairman:'Максутов Калел Мухатаевич',             email:'halykparty_ulytau@mail.ru',         address:'100600, г. Жезказган, пр. Алаша-Хана 37А, 2 этаж, офис 2',            phone:'+7 777 629 5454' },
 ];
+
+function branchHref(branch: (typeof BRANCHES)[number]) {
+  const profile = branchProfiles.find((item) => item.title === branch.name);
+  return profile ? `/filialy/${profile.slug}` : '/filialy';
+}
 
 
 const GEO_LABELS: {t:string,lng:number,lat:number,big?:boolean}[] = [];
@@ -713,11 +720,11 @@ function BranchMapMobile() {
               <div style={{fontSize:9,letterSpacing:'0.12em',color:'var(--text-muted)',textTransform:'uppercase',marginBottom:2}}>Телефон</div>
               <div style={{fontSize:13,fontWeight:600,color:'var(--text)'}}>{selBranch.phone}</div>
             </div>
-            <a href="#" style={{
+            <Link to={branchHref(selBranch)} style={{
               display:'block',marginTop:4,padding:'10px 0',textAlign:'center',
               background:'#db1f26',borderRadius:0,fontSize:13,fontWeight:700,
               color:'#fff',textDecoration:'none',letterSpacing:'0.02em'
-            }}>Подробнее →</a>
+            }}>Подробнее →</Link>
           </div>
         )}
       </div>
@@ -831,11 +838,11 @@ export function BranchMapSection() {
                 <div><div style={{fontSize:10,letterSpacing:'0.08em',color:'var(--text-muted)',marginBottom:2,textTransform:'uppercase'}}>Адрес</div><div style={{fontSize:12,color:'var(--text)',lineHeight:1.45}}>{selBranch.address}</div></div>
                 <div><div style={{fontSize:10,letterSpacing:'0.08em',color:'var(--text-muted)',marginBottom:2,textTransform:'uppercase'}}>Телефон</div><div style={{fontSize:13,fontWeight:600,color:'var(--text)'}}>{selBranch.phone}</div></div>
               </div>
-              <a href="#" style={{display:'block',marginTop:16,padding:'9px 0',textAlign:'center',background:'#db1f26',borderRadius:0,fontSize:13,fontWeight:700,color:'#fff',textDecoration:'none',letterSpacing:'0.02em',transition:'background .2s'}}
+              <Link to={branchHref(selBranch)} style={{display:'block',marginTop:16,padding:'9px 0',textAlign:'center',background:'#db1f26',borderRadius:0,fontSize:13,fontWeight:700,color:'#fff',textDecoration:'none',letterSpacing:'0.02em',transition:'background .2s'}}
                 onMouseEnter={e=>(e.currentTarget.style.background='#b91721')}
                 onMouseLeave={e=>(e.currentTarget.style.background='#db1f26')}>
                 Подробнее →
-              </a>
+              </Link>
               <div style={{position:'absolute',bottom:-9,left:'50%',transform:'translateX(-50%)',width:0,height:0,borderLeft:'9px solid transparent',borderRight:'9px solid transparent',borderTop:'9px solid rgb(var(--globe-panel-rgb) / .92)'}}/>
             </div>
           );

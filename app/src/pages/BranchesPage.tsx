@@ -1,80 +1,64 @@
-import { useState } from 'react';
-import { regions } from '@/lib/data';
+import { Link } from 'react-router-dom';
+import { ArrowUpRight, Mail, MapPin, Phone } from 'lucide-react';
 import { SectionHeader } from '@/components/SectionHeader';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { BranchMapSection } from '@/sections/BranchMapSection';
-import { Phone, MapPin, X, ChevronRight } from 'lucide-react';
-import type { Region } from '@/types';
+import { branchProfiles, type BranchProfile } from '@/lib/branchProfiles';
+
+function BranchPhoto({ branch }: { branch: BranchProfile }) {
+  return (
+    <div className="relative min-h-[250px] bg-surface-2 overflow-hidden flex items-center justify-center">
+      <span className="absolute text-6xl font-bold text-accent-brand/30">{branch.title[0]}</span>
+      {branch.image && (
+        <img
+          src={branch.image}
+          alt={branch.chairman || branch.title}
+          className="relative w-full h-full min-h-[250px] object-cover object-top"
+          loading="lazy"
+        />
+      )}
+    </div>
+  );
+}
 
 export function BranchesPage() {
-  const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
-
   return (
     <div className="pb-16">
       <div className="max-w-[1280px] mx-auto px-4 md:px-10">
-        <SectionHeader light="Наши" bold="филиалы" subtitle="20 филиалов по всему Казахстану" />
+        <SectionHeader light="Наши" bold="филиалы" subtitle="20 региональных филиалов по всему Казахстану" />
       </div>
 
-      {/* Карта — тот же компонент, что и на главной (глобус с интерактивными филиалами) */}
-      <div className="mb-10">
+      <div className="mb-12">
         <BranchMapSection />
       </div>
 
       <div className="max-w-[1280px] mx-auto px-4 md:px-10">
-        {/* Region cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {regions.map((region, index) => (
-            <ScrollReveal key={region.id} delay={index * 0.03}>
-              <button
-                onClick={() => setSelectedRegion(selectedRegion?.id === region.id ? null : region)}
-                className={`w-full flex items-center justify-between p-5 rounded-card border text-left transition-all duration-200 ${
-                  selectedRegion?.id === region.id
-                    ? 'border-red bg-red/[0.08]'
-                    : 'border-line bg-surface hover:border-text-muted'
-                }`}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {branchProfiles.map((branch, index) => (
+            <ScrollReveal key={branch.slug} delay={index * 0.03} className="h-full">
+              <Link
+                to={`/filialy/${branch.slug}`}
+                className="group h-full bg-surface border border-line grid sm:grid-cols-[38%_minmax(0,1fr)] hover:border-text-muted transition-colors overflow-hidden"
               >
-                <div>
-                  <h4 className="text-body-lg font-bold text-text-base">{region.name}</h4>
-                  <p className="text-label text-text-muted">{region.chairman}</p>
+                <BranchPhoto branch={branch} />
+                <div className="p-5 md:p-7 flex flex-col min-w-0">
+                  <h2 className="text-heading-sm font-bold text-text-base leading-tight">{branch.title}</h2>
+                  <p className="text-label text-accent-brand font-semibold mt-3">
+                    {branch.chairman || 'Председатель не указан'}
+                  </p>
+                  <div className="space-y-2 mt-5 text-label text-text-muted">
+                    <p className="flex items-start gap-2"><MapPin size={15} className="shrink-0 mt-0.5" />{branch.address}</p>
+                    {branch.phone && <p className="flex items-center gap-2"><Phone size={15} className="shrink-0" />{branch.phone}</p>}
+                    {branch.email && <p className="flex items-center gap-2 break-all"><Mail size={15} className="shrink-0" />{branch.email}</p>}
+                  </div>
+                  <span className="inline-flex items-center gap-2 text-label font-medium text-text-base mt-auto pt-6">
+                    Подробнее <ArrowUpRight size={15} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                  </span>
                 </div>
-                <ChevronRight size={20} className="text-text-muted shrink-0" />
-              </button>
+              </Link>
             </ScrollReveal>
           ))}
         </div>
-
-        {/* Detail modal */}
-        {selectedRegion && (
-          <ScrollReveal>
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedRegion(null)}>
-              <div className="bg-surface rounded-card p-6 border border-line max-w-md w-full relative" onClick={e => e.stopPropagation()}>
-                <button onClick={() => setSelectedRegion(null)} className="absolute top-4 right-4 text-text-muted hover:text-text-base transition-colors" aria-label="Закрыть">
-                  <X size={20} />
-                </button>
-                <h4 className="text-heading font-bold text-text-base mb-4">НПК — {selectedRegion.name}</h4>
-                <div className="space-y-3">
-                  <p className="text-body text-text-base"><span className="text-text-muted">Председатель:</span> {selectedRegion.chairman}</p>
-                  <p className="text-body text-text-muted flex items-start gap-2"><MapPin size={14} className="shrink-0 mt-1" />{selectedRegion.address}</p>
-                  {selectedRegion.phone && selectedRegion.phone !== '—' ? (
-                    <a href={`tel:${selectedRegion.phone.replace(/[\s()\-]/g, '')}`} className="text-body text-red font-medium flex items-center gap-2 hover:underline">
-                      <Phone size={14} className="shrink-0" />{selectedRegion.phone}
-                    </a>
-                  ) : (
-                    <p className="text-body text-text-muted flex items-center gap-2">
-                      <Phone size={14} className="shrink-0" />Телефон не указан
-                    </p>
-                  )}
-                  {selectedRegion.email && (
-                    <a href={`mailto:${selectedRegion.email}`} className="text-body text-text-muted flex items-center gap-2 hover:text-text-base transition-colors break-all">
-                      <span className="shrink-0 text-xs opacity-60">@</span>{selectedRegion.email}
-                    </a>
-                  )}
-                </div>
-              </div>
-            </div>
-          </ScrollReveal>
-        )}
-
       </div>
     </div>
   );
