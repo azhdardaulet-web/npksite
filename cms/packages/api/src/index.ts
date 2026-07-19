@@ -49,7 +49,12 @@ app.use(
   })
 );
 
-const allowedOrigins = (process.env.CORS_ORIGINS ?? '').split(',').map((o) => o.trim());
+const allowedOrigins = (process.env.CORS_ORIGINS ?? '').split(',').map((o) => o.trim()).filter(Boolean);
+// Dev-серверы проекта запускаются на разных локальных портах; разрешаем их
+// только вне production, не ослабляя боевой allowlist из CORS_ORIGINS.
+if (process.env.NODE_ENV !== 'production') {
+  allowedOrigins.push('http://localhost:3000', 'http://localhost:5190');
+}
 app.use(
   cors({
     origin: (origin, callback) => {

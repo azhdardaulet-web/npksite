@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma';
 import { authenticateToken, requireRole } from '../../middleware/auth';
+import { writeAudit } from '../../lib/audit';
 
 export const cmsSettingsRouter = Router();
 export const publicSettingsRouter = Router();
@@ -43,6 +44,33 @@ cmsSettingsRouter.get('/', authenticateToken, requireRole('ADMIN'), async (_req,
   }
 });
 
+// GET /cms/api/v1/settings/audit — реальный журнал действий администраторов.
+cmsSettingsRouter.get('/audit', authenticateToken, requireRole('ADMIN'), async (_req, res, next) => {
+  try {
+    const entries = await prisma.auditLog.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+    });
+    res.json(entries);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /cms/api/v1/settings/integrations/status — только признаки настройки,
+// секреты из окружения никогда не возвращаются в браузер.
+cmsSettingsRouter.get('/integrations/status', authenticateToken, requireRole('ADMIN'), (_req, res) => {
+  const all = (...keys: string[]) => keys.every((key) => Boolean(process.env[key]?.trim()));
+  res.json({
+    smtp: all('SMTP_USER', 'SMTP_PASS'),
+    sms: all('SMS_API_KEY', 'SMS_API_URL'),
+    twoGis: all('TWOGIS_API_KEY'),
+    googleMeet: all('GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_REFRESH_TOKEN', 'GOOGLE_CALENDAR_ID'),
+    telegram: all('TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHANNEL_ID'),
+    claude: all('ANTHROPIC_API_KEY'),
+  });
+});
+
 // PUT /cms/api/v1/settings/:key
 cmsSettingsRouter.put('/:key', authenticateToken, requireRole('ADMIN'), async (req, res, next) => {
   try {
@@ -54,6 +82,12 @@ cmsSettingsRouter.put('/:key', authenticateToken, requireRole('ADMIN'), async (r
       where: { key },
       update: { value },
       create: { key, value },
+    });
+    await writeAudit(req, {
+      action: 'UPDATE',
+      entity: 'Настройки сайта',
+      entityId: key,
+      details: `Обновлён параметр «${key}»`,
     });
     res.json(setting);
   } catch (err) {

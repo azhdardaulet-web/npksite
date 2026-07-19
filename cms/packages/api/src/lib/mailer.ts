@@ -23,7 +23,7 @@ export async function sendMail(opts: {
   }
   try {
     await transporter.sendMail({
-      from: process.env.SMTP_FROM ?? 'DAR Rail <noreply@darrail.com>',
+      from: process.env.SMTP_FROM ?? 'НПК <noreply@halykparty.kz>',
       to: opts.to,
       subject: opts.subject,
       html: opts.html,

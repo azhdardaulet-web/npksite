@@ -4,6 +4,7 @@ import { prisma } from '../../lib/prisma';
 import { hashPassword } from '../auth/auth.service';
 import { requireAdmin } from '../../middleware/auth';
 import { CreateUserSchema } from '@dar-rail/shared';
+import { writeAudit } from '../../lib/audit';
 
 export const usersRouter = Router();
 
@@ -64,6 +65,13 @@ usersRouter.post('/', async (req: Request, res: Response) => {
     },
   });
 
+  await writeAudit(req, {
+    action: 'CREATE',
+    entity: 'Пользователь CMS',
+    entityId: user.id,
+    details: `Создан пользователь ${user.email}`,
+  });
+
   res.status(201).json(user);
 });
 
@@ -111,6 +119,13 @@ usersRouter.put('/:id', async (req: Request, res: Response) => {
     return;
   }
 
+  await writeAudit(req, {
+    action: parsed.data.status === 'BLOCKED' ? 'BLOCK' : parsed.data.status === 'ACTIVE' ? 'UNBLOCK' : 'UPDATE',
+    entity: 'Пользователь CMS',
+    entityId: user.id,
+    details: `Обновлён пользователь ${user.email}`,
+  });
+
   res.json(user);
 });
 
@@ -131,6 +146,13 @@ usersRouter.delete('/:id', async (req: Request, res: Response) => {
     res.status(404).json({ error: 'Пользователь не найден' });
     return;
   }
+
+  await writeAudit(req, {
+    action: 'BLOCK',
+    entity: 'Пользователь CMS',
+    entityId: user.id,
+    details: 'Пользователь CMS деактивирован',
+  });
 
   res.json({ message: 'Пользователь заблокирован' });
 });

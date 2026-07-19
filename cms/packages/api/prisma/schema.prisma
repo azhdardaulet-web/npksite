@@ -349,6 +349,22 @@ model Setting {
   updatedAt DateTime @updatedAt
 }
 
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  userName  String
+  userRole  String
+  action    String
+  entity    String
+  entityId  String?
+  details   String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId])
+  @@index([entity])
+}
+
 // ─── Branches / Филиалы (было Office) ─────────────────────────────────────────
 
 model Branch {

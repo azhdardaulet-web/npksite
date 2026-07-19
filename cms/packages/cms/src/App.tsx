@@ -12,7 +12,6 @@ import BranchesPage from '@/pages/offices/BranchesPage';
 import PageEditor from '@/pages/pages/PageEditor';
 import PagesLayout from '@/pages/pages/PagesLayout';
 import SettingsPage from '@/pages/SettingsPage';
-import UsersPage from '@/pages/UsersPage';
 import JoinRequestsPage from '@/pages/join-requests/JoinRequestsPage';
 import AppealsPage from '@/pages/appeals/AppealsPage';
 import CandidatesPage from '@/pages/content/CandidatesPage';
@@ -66,7 +65,6 @@ export default function App() {
           <Route path="/smi" element={<MediaPublicationsPage />} />
           <Route path="/testimonials" element={<TestimonialsPage />} />
           <Route path="/menu" element={<MenuItemsPage />} />
-          <Route path="/users" element={<UsersPage />} />
         </Route>
         <Route path="/podderzhka" element={<PrivateRoute><PlaceholderPage title="Поддержка" note="Раздел поддержки — контакты разработчика и документация появятся здесь." /></PrivateRoute>} />
         <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
