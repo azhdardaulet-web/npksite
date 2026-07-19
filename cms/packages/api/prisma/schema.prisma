@@ -284,8 +284,10 @@ model TeamMemberTranslation {
 
 model Document {
   id          String       @id @default(uuid())
-  title       String
-  description String?
+  title       String       // русская версия и fallback для старых документов
+  description String?      // русская версия и fallback для старых документов
+  titleKz       String?
+  descriptionKz String?
   type        DocumentType
   fileUrl     String
   fileName    String

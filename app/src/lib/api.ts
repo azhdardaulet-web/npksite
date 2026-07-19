@@ -329,8 +329,8 @@ export interface PublicDocument {
   publishedAt: string | null;
 }
 
-export function fetchDocuments(type?: DocumentType) {
-  return api.get<PublicDocument[]>('/api/v1/documents', { type });
+export function fetchDocuments(type?: DocumentType, lang: 'ru' | 'kz' = 'ru') {
+  return api.get<PublicDocument[]>('/api/v1/documents', { type, lang });
 }
 
 // ─── Отзывы граждан (главная, /priemnaya) ──────────────────────────────────────

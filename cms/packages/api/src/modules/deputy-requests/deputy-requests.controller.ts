@@ -11,12 +11,34 @@ import { authenticateToken, requireRole } from '../../middleware/auth';
 
 export const cmsDeputyRequestsRouter = Router();
 
-const DeputyRequestInputSchema = z.object({
+const DeputyTranslationSchema = z.object({
+  lang: z.enum(['ru', 'kz']),
   title: z.string().min(1),
-  description: z.string().min(1).optional(),
+  content: z.string().optional(),
+});
+
+const DeputyRequestInputSchema = z.object({
+  translations: z.array(DeputyTranslationSchema).min(1),
   fileUrl: z.string().url(),
   publishedAt: z.coerce.date().optional(),
 });
+
+function withTranslations<
+  T extends {
+    title: string;
+    description: string | null;
+    titleKz: string | null;
+    descriptionKz: string | null;
+  },
+>(item: T) {
+  return {
+    ...item,
+    translations: [
+      { lang: 'ru' as const, title: item.title, content: item.description ?? '' },
+      ...(item.titleKz ? [{ lang: 'kz' as const, title: item.titleKz, content: item.descriptionKz ?? '' }] : []),
+    ],
+  };
+}
 
 function handleError(err: unknown, res: Response): void {
   const e = err as { message?: string; status?: number };
@@ -35,7 +57,7 @@ cmsDeputyRequestsRouter.get('/', ...requireFaction, async (_req: Request, res: R
       where: { type: 'deputy_request' },
       orderBy: [{ publishedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }],
     });
-    res.json(items);
+    res.json(items.map(withTranslations));
   } catch (err) {
     handleError(err, res);
   }
@@ -51,7 +73,7 @@ cmsDeputyRequestsRouter.get('/:id', ...requireFaction, async (req: Request, res:
       res.status(404).json({ error: 'Депутатский запрос не найден' });
       return;
     }
-    res.json(item);
+    res.json(withTranslations(item));
   } catch (err) {
     handleError(err, res);
   }
@@ -67,19 +89,24 @@ cmsDeputyRequestsRouter.post('/', ...requireFaction, async (req: Request, res: R
 
   try {
     const publishedAt = parsed.data.publishedAt ?? new Date();
+    const ru = parsed.data.translations.find((translation) => translation.lang === 'ru');
+    const kz = parsed.data.translations.find((translation) => translation.lang === 'kz');
+    const primary = ru ?? kz!;
     const item = await prisma.document.create({
       data: {
-        title: parsed.data.title,
-        description: parsed.data.description ?? null,
+        title: primary.title,
+        description: primary.content ?? null,
+        titleKz: kz?.title ?? null,
+        descriptionKz: kz?.content ?? null,
         type: 'deputy_request',
         fileUrl: parsed.data.fileUrl,
-        fileName: `${parsed.data.title.slice(0, 60)}.html`,
+        fileName: `${primary.title.slice(0, 60)}.html`,
         fileSize: 0,
         year: publishedAt.getFullYear(),
         publishedAt,
       },
     });
-    res.status(201).json(item);
+    res.status(201).json(withTranslations(item));
   } catch (err) {
     handleError(err, res);
   }
@@ -94,15 +121,21 @@ cmsDeputyRequestsRouter.put('/:id', ...requireFaction, async (req: Request, res:
   }
 
   try {
-    const { publishedAt, ...rest } = parsed.data;
+    const { publishedAt, translations, ...rest } = parsed.data;
+    const ru = translations?.find((translation) => translation.lang === 'ru');
+    const kz = translations?.find((translation) => translation.lang === 'kz');
     const item = await prisma.document.update({
       where: { id: String(req.params['id']) },
       data: {
         ...rest,
+        ...(ru ? { title: ru.title, description: ru.content ?? null } : {}),
+        ...(translations ? (kz
+          ? { titleKz: kz.title, descriptionKz: kz.content ?? null }
+          : { titleKz: null, descriptionKz: null }) : {}),
         ...(publishedAt ? { publishedAt, year: publishedAt.getFullYear() } : {}),
       },
     });
-    res.json(item);
+    res.json(withTranslations(item));
   } catch (err) {
     handleError(err, res);
   }

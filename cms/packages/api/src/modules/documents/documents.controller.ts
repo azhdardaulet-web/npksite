@@ -121,7 +121,7 @@ export const publicDocumentsRouter = Router();
 
 publicDocumentsRouter.get('/', async (req, res, next) => {
   try {
-    const { type, year } = req.query;
+    const { type, year, lang = 'ru' } = req.query;
     const documents = await prisma.document.findMany({
       where: {
         ...(type ? { type: type as DocumentType } : {}),
@@ -129,7 +129,11 @@ publicDocumentsRouter.get('/', async (req, res, next) => {
       },
       orderBy: [{ publishedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }]
     });
-    res.json(documents);
+    res.json(documents.map(({ titleKz, descriptionKz, ...document }) => ({
+      ...document,
+      title: lang === 'kz' && titleKz ? titleKz : document.title,
+      description: lang === 'kz' && descriptionKz ? descriptionKz : document.description,
+    })));
   } catch (err) {
     next(err);
   }
