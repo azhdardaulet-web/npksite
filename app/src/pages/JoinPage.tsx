@@ -7,8 +7,8 @@ import { PrimaryButton } from '@/components/PrimaryButton';
 import { OutlinedButton } from '@/components/OutlinedButton';
 import { usePageBlocks } from '@/hooks/usePageBlocks';
 import {
-  submitJoinRequest, sendJoinSmsCode, verifyJoinSmsCode, fetchBranches,
-  ApiError, type PublicBranch,
+  submitJoinRequest, sendJoinSmsCode, verifyJoinSmsCode, fetchBranches, fetchAddressSuggest,
+  ApiError, type PublicBranch, type AddressSuggestion,
 } from '@/lib/api';
 import { isValidIin } from '@/lib/iin';
 
@@ -145,6 +145,9 @@ export function JoinPage() {
   const [idDocNumber, setIdDocNumber] = useState('');
   const [branchId, setBranchId] = useState('');
   const [addressLine, setAddressLine] = useState('');
+  const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
+  const [addressSuggestOpen, setAddressSuggestOpen] = useState(false);
+  const [addressActiveIndex, setAddressActiveIndex] = useState(-1);
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [step2Attempted, setStep2Attempted] = useState(false);
@@ -157,6 +160,18 @@ export function JoinPage() {
   const addressRef = useRef<HTMLInputElement>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
+
+  // Автоподсказки адреса (2ГИС Suggest API, C4) — необязательные: без ключа на
+  // бэкенде эндпоинт просто отдаёт пустой список, поле остаётся обычным инпутом.
+  useEffect(() => {
+    if (addressLine.trim().length < 3) { setAddressSuggestions([]); return; }
+    const t = setTimeout(() => {
+      fetchAddressSuggest(addressLine.trim())
+        .then(res => setAddressSuggestions(res.suggestions))
+        .catch(() => setAddressSuggestions([]));
+    }, 300);
+    return () => clearTimeout(t);
+  }, [addressLine]);
 
   const [article8Consent, setArticle8Consent] = useState(false);
   const [dataConsent, setDataConsent] = useState(false);
@@ -408,12 +423,37 @@ export function JoinPage() {
                   {step2Attempted && !branchValid && <p className={errorTextCls}>Выберите филиал</p>}
                 </div>
 
-                <div>
+                <div className="relative">
                   <label className={labelCls}>Адрес (улица, дом, квартира)</label>
                   <input ref={addressRef} type="text" placeholder="ул. Абая, д. 10, кв. 5" value={addressLine}
-                    onChange={e => setAddressLine(e.target.value)}
+                    autoComplete="off"
+                    onChange={e => { setAddressLine(e.target.value); setAddressSuggestOpen(true); setAddressActiveIndex(-1); }}
+                    onFocus={() => setAddressSuggestOpen(true)}
+                    onBlur={() => setTimeout(() => setAddressSuggestOpen(false), 150)}
+                    onKeyDown={e => {
+                      if (!addressSuggestOpen || addressSuggestions.length === 0) return;
+                      if (e.key === 'ArrowDown') { e.preventDefault(); setAddressActiveIndex(i => Math.min(i + 1, addressSuggestions.length - 1)); }
+                      else if (e.key === 'ArrowUp') { e.preventDefault(); setAddressActiveIndex(i => Math.max(i - 1, 0)); }
+                      else if (e.key === 'Enter' && addressActiveIndex >= 0) {
+                        e.preventDefault();
+                        setAddressLine(addressSuggestions[addressActiveIndex].value);
+                        setAddressSuggestOpen(false);
+                      } else if (e.key === 'Escape') setAddressSuggestOpen(false);
+                    }}
                     className={fieldCls(step2Attempted && !addressValid)} />
                   {step2Attempted && !addressValid && <p className={errorTextCls}>Укажите адрес</p>}
+                  {addressSuggestOpen && addressSuggestions.length > 0 && (
+                    <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-surface border border-line rounded-input shadow-2xl overflow-hidden max-h-[220px] overflow-y-auto">
+                      {addressSuggestions.map((s, i) => (
+                        <button key={s.value + i} type="button"
+                          onMouseDown={e => e.preventDefault()}
+                          onClick={() => { setAddressLine(s.value); setAddressSuggestOpen(false); }}
+                          className={`w-full text-left px-4 py-2.5 text-body text-text-base transition-colors ${i === addressActiveIndex ? 'bg-surface-2' : 'hover:bg-surface-2'}`}>
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">

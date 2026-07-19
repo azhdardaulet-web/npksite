@@ -233,6 +233,7 @@ export type TeamGroup = 'LEADERSHIP' | 'MEDIA_TEAM';
 export interface PublicTeamMember {
   id: string;
   photoUrl: string | null;
+  slug: string | null;
   group: TeamGroup;
   sortOrder: number;
   name: string;
@@ -398,4 +399,15 @@ export interface PublicYoutubeVideo {
 
 export function fetchYoutubeFeed() {
   return api.get<{ videos: PublicYoutubeVideo[] }>('/api/v1/youtube/feed');
+}
+
+// ─── Автоподсказки адреса (/vstupit, шаг «Данные») ─────────────────────────────
+
+export interface AddressSuggestion {
+  label: string;
+  value: string;
+}
+
+export function fetchAddressSuggest(q: string) {
+  return api.get<{ suggestions: AddressSuggestion[] }>('/api/v1/address/suggest', { q });
 }

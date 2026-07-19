@@ -26,6 +26,7 @@ import { publicTestimonialsRouter, cmsTestimonialsRouter } from './modules/testi
 import { publicMenuItemsRouter, cmsMenuItemsRouter } from './modules/menu-items/menu-items.controller';
 import { publicFaqRouter, cmsFaqRouter } from './modules/faq/faq.controller';
 import { publicYoutubeRouter } from './modules/youtube/youtube.controller';
+import { publicAddressRouter } from './modules/address/address.controller';
 import { logger } from './lib/logger';
 import { ensureBucketExists } from './lib/minio';
 import { startReminderScheduler } from './lib/reminders';
@@ -120,6 +121,7 @@ app.use('/api/v1/testimonials', publicTestimonialsRouter);
 app.use('/api/v1/menu-items', publicMenuItemsRouter);
 app.use('/api/v1/faq', publicFaqRouter);
 app.use('/api/v1/youtube', publicYoutubeRouter);
+app.use('/api/v1/address', publicAddressRouter);
 
 // ─── CMS API routes (require auth — enforced per-router) ──────────────────────
 app.use('/cms/api/v1/users', usersRouter);
