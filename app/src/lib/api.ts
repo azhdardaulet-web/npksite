@@ -2,8 +2,14 @@
 // Реальные ключи hCaptcha и виджет на фронтенде подключаются в Этапе 8 —
 // пока передаём заглушку токена, бэкенд пропускает проверку, если
 // HCAPTCHA_SECRET не задан на сервере.
+import { approvedBranchesKz } from '@/i18n/branchContent';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
+
+export function getCurrentLanguage(): 'ru' | 'kz' {
+  if (typeof window === 'undefined') return 'ru';
+  return window.localStorage.getItem('npk-language') === 'kz' ? 'kz' : 'ru';
+}
 
 export class ApiError extends Error {
   details?: unknown;
@@ -204,10 +210,10 @@ export interface PublicNewsListResponse {
 }
 
 export function fetchNews(params: { format?: NewsFormat; isFeatured?: boolean; q?: string; page?: number; limit?: number; lang?: string } = {}) {
-  return api.get<PublicNewsListResponse>('/api/v1/news', params);
+  return api.get<PublicNewsListResponse>('/api/v1/news', { lang: getCurrentLanguage(), ...params });
 }
 
-export function fetchNewsBySlug(slug: string, lang = 'ru') {
+export function fetchNewsBySlug(slug: string, lang = getCurrentLanguage()) {
   return api.get<PublicNewsDetail>(`/api/v1/news/${slug}`, { lang });
 }
 
@@ -222,7 +228,7 @@ export interface PublicCandidate {
   promise: string;
 }
 
-export function fetchCandidates(lang = 'ru') {
+export function fetchCandidates(lang = getCurrentLanguage()) {
   return api.get<PublicCandidate[]>('/api/v1/candidates', { lang });
 }
 
@@ -242,7 +248,7 @@ export interface PublicTeamMember {
   fullBio: string | null;
 }
 
-export function fetchTeam(group?: TeamGroup, lang = 'ru') {
+export function fetchTeam(group?: TeamGroup, lang = getCurrentLanguage()) {
   return api.get<PublicTeamMember[]>('/api/v1/team', { group, lang });
 }
 
@@ -257,7 +263,7 @@ export interface PublicHistoryEvent {
   text: string;
 }
 
-export function fetchHistoryEvents(lang = 'ru') {
+export function fetchHistoryEvents(lang = getCurrentLanguage()) {
   return api.get<PublicHistoryEvent[]>('/api/v1/history-events', { lang });
 }
 
@@ -275,7 +281,7 @@ export interface PublicProgramBlock {
   points: string[];
 }
 
-export function fetchProgramBlocks(lang = 'ru') {
+export function fetchProgramBlocks(lang = getCurrentLanguage()) {
   return api.get<PublicProgramBlock[]>('/api/v1/program-blocks', { lang });
 }
 
@@ -291,7 +297,7 @@ export interface PublicMediaProject {
   description: string;
 }
 
-export function fetchMediaProjects(lang = 'ru') {
+export function fetchMediaProjects(lang = getCurrentLanguage()) {
   return api.get<PublicMediaProject[]>('/api/v1/media-projects', { lang });
 }
 
@@ -329,7 +335,7 @@ export interface PublicDocument {
   publishedAt: string | null;
 }
 
-export function fetchDocuments(type?: DocumentType, lang: 'ru' | 'kz' = 'ru') {
+export function fetchDocuments(type?: DocumentType, lang: 'ru' | 'kz' = getCurrentLanguage()) {
   return api.get<PublicDocument[]>('/api/v1/documents', { type, lang });
 }
 
@@ -361,8 +367,19 @@ export interface PublicBranch {
   sortOrder: number;
 }
 
-export function fetchBranches() {
-  return api.get<PublicBranch[]>('/api/v1/branches');
+export async function fetchBranches() {
+  const branches = await api.get<PublicBranch[]>('/api/v1/branches');
+  if (getCurrentLanguage() !== 'kz') return branches;
+
+  return branches.map((branch) => {
+    const approved = approvedBranchesKz.find((item) => item.city === branch.cityKz);
+    return {
+      ...branch,
+      cityRu: branch.cityKz?.trim() || branch.cityRu,
+      addressRu: branch.addressKz?.trim() || branch.addressRu,
+      chairman: approved?.chairman || branch.chairman,
+    };
+  });
 }
 
 // ─── Страницы (блоки для CMS-редактируемых секций, /pages/:slug) ───────────────
@@ -388,7 +405,7 @@ export function fetchPageVisibility() {
   return api.get<PublicPageVisibility[]>('/api/v1/pages');
 }
 
-export function fetchPage(slug: string, lang = 'ru') {
+export function fetchPage(slug: string, lang = getCurrentLanguage()) {
   return api.get<PublicPage>(`/api/v1/pages/${slug}`, { lang });
 }
 

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '../../lib/prisma';
 import { authenticateToken, requireRole } from '../../middleware/auth';
 import { LangSchema } from '@dar-rail/shared';
+import { localizedValue } from '../../lib/localized';
 
 export const publicHistoryRouter = Router();
 export const cmsHistoryRouter = Router();
@@ -41,8 +42,9 @@ publicHistoryRouter.get('/', async (req: Request, res: Response): Promise<void> 
       include: { translations: true },
     });
     const result = events.map((e) => {
-      const t = e.translations.find((tr) => tr.lang === lang) ?? e.translations.find((tr) => tr.lang === 'ru') ?? null;
-      return { id: e.id, year: e.year, imageUrl: e.imageUrl, sortOrder: e.sortOrder, title: t?.title ?? '', text: t?.text ?? '' };
+      const ru = e.translations.find((tr) => tr.lang === 'ru') ?? null;
+      const t = e.translations.find((tr) => tr.lang === lang) ?? ru;
+      return { id: e.id, year: e.year, imageUrl: e.imageUrl, sortOrder: e.sortOrder, title: localizedValue(t?.title, ru?.title) ?? '', text: localizedValue(t?.text, ru?.text) ?? '' };
     });
     res.json(result);
   } catch (err) {

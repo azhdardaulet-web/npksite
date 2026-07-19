@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '../../lib/prisma';
 import { authenticateToken, requireRole } from '../../middleware/auth';
 import { LangSchema } from '@dar-rail/shared';
+import { localizedValue } from '../../lib/localized';
 
 export const publicMediaProjectsRouter = Router();
 export const cmsMediaProjectsRouter = Router();
@@ -42,15 +43,21 @@ publicMediaProjectsRouter.get('/', async (req: Request, res: Response): Promise<
       include: { translations: true },
     });
     const result = projects.map((p) => {
-      const t = p.translations.find((tr) => tr.lang === lang) ?? p.translations.find((tr) => tr.lang === 'ru') ?? null;
+      const ru = p.translations.find((tr) => tr.lang === 'ru') ?? null;
+      const t = p.translations.find((tr) => tr.lang === lang) ?? ru;
+      const tagKz: Record<number, string> = {
+        0: 'Ақпараттық бағдарлама',
+        1: 'Парламент өмірі',
+        2: 'Жергілікті репортаждар',
+      };
       return {
         id: p.id,
-        tag: p.tag,
+        tag: lang === 'kz' ? tagKz[p.sortOrder] ?? p.tag : p.tag,
         url: p.url,
         imageUrl: p.imageUrl,
         sortOrder: p.sortOrder,
-        title: t?.title ?? '',
-        description: t?.description ?? '',
+        title: localizedValue(t?.title, ru?.title) ?? '',
+        description: localizedValue(t?.description, ru?.description) ?? '',
       };
     });
     res.json(result);

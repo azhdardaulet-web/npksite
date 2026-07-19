@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { prisma } from '../../lib/prisma';
 import { requireNewsEditor } from '../../middleware/auth';
 import { Role, NewsFormatSchema, NewsStatusSchema, LangSchema } from '@dar-rail/shared';
+import { localizedValue } from '../../lib/localized';
 import {
   createNews,
   updateNews,
@@ -109,12 +110,10 @@ publicNewsRouter.get('/', async (req: Request, res: Response) => {
   try {
     const result = await findAll({ status: 'PUBLISHED', format, isFeatured, q, page, limit });
     const data = result.data.map((item) => {
-      const t =
-        item.translations.find((tr) => tr.lang === lang) ??
-        item.translations.find((tr) => tr.lang === 'ru') ??
-        item.translations[0];
+      const ru = item.translations.find((tr) => tr.lang === 'ru') ?? item.translations[0];
+      const t = item.translations.find((tr) => tr.lang === lang) ?? ru;
       const { translations: _t, ...rest } = item as typeof item & { translations: unknown };
-      return { ...rest, title: t?.title ?? '', excerpt: t?.excerpt ?? null };
+      return { ...rest, title: localizedValue(t?.title, ru?.title) ?? '', excerpt: localizedValue(t?.excerpt, ru?.excerpt) };
     });
     res.json({ ...result, data });
   } catch (err) {

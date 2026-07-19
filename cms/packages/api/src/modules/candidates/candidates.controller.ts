@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '../../lib/prisma';
 import { authenticateToken, requireRole } from '../../middleware/auth';
 import { LangSchema } from '@dar-rail/shared';
+import { localizedValue } from '../../lib/localized';
 
 export const publicCandidatesRouter = Router();
 export const cmsCandidatesRouter = Router();
@@ -42,7 +43,8 @@ publicCandidatesRouter.get('/', async (req: Request, res: Response): Promise<voi
       include: { translations: true },
     });
     const result = candidates.map((c) => {
-      const t = c.translations.find((tr) => tr.lang === lang) ?? c.translations.find((tr) => tr.lang === 'ru') ?? null;
+      const ru = c.translations.find((tr) => tr.lang === 'ru') ?? null;
+      const t = c.translations.find((tr) => tr.lang === lang) ?? ru;
       return {
         id: c.id,
         name: c.name,
@@ -50,7 +52,7 @@ publicCandidatesRouter.get('/', async (req: Request, res: Response): Promise<voi
         district: c.district,
         photoUrl: c.photoUrl,
         sortOrder: c.sortOrder,
-        promise: t?.promise ?? '',
+        promise: localizedValue(t?.promise, ru?.promise) ?? '',
       };
     });
     res.json(result);

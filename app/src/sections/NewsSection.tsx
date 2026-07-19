@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ArrowUpRight, Play } from 'lucide-react';
 import { fetchNews, fetchYoutubeFeed, NEWS_FORMAT_LABELS, type PublicNewsItem } from '@/lib/api';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 // Хардкод-фолбэк на случай недоступности YouTube API/ключа — не белый экран.
 const FALLBACK_VIDEOS = [
@@ -41,6 +42,7 @@ function formatDate(iso: string | null) {
 }
 
 export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } = {}) {
+  const { language } = useLanguage();
   const [mainIdx, setMainIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const [news, setNews] = useState<PublicNewsItem[]>(FALLBACK_NEWS);
@@ -50,15 +52,15 @@ export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } =
     // На главной показываем только новости с включённым тумблером
     // «Показать на главной странице» (isFeatured) в CMS. Если таких пока
     // нет — не молчим белым экраном, а показываем последние опубликованные.
-    fetchNews({ limit: 9, isFeatured: true })
+    fetchNews({ limit: 9, isFeatured: true, lang: language })
       .then((res) => {
         if (cancelled) return;
         if (res.data.length > 0) { setNews(res.data); return; }
-        return fetchNews({ limit: 9 }).then((all) => { if (!cancelled && all.data.length > 0) setNews(all.data); });
+        return fetchNews({ limit: 9, lang: language }).then((all) => { if (!cancelled && all.data.length > 0) setNews(all.data); });
       })
       .catch(() => { /* остаёмся на демо-данных */ });
     return () => { cancelled = true; };
-  }, []);
+  }, [language]);
 
   const mainNews = news[mainIdx] ?? news[0];
   const sideNews = news.filter((_, i) => i !== mainIdx);

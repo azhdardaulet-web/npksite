@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../lib/prisma';
 import { Lang, NewsFormat, NewsStatus } from '@dar-rail/shared';
+import { localizedValue } from '../../lib/localized';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -302,10 +303,16 @@ export async function findBySlug(slug: string, lang: Lang = 'ru') {
   });
   if (!news) throw Object.assign(new Error('Новость не найдена'), { status: 404 });
 
-  const translation =
-    news.translations.find((t) => t.lang === lang) ??
-    news.translations.find((t) => t.lang === 'ru') ??
-    news.translations[0];
+  const ru = news.translations.find((t) => t.lang === 'ru') ?? news.translations[0];
+  const translation = news.translations.find((t) => t.lang === lang) ?? ru;
+  const activeTranslation = translation && ru ? {
+    ...translation,
+    title: localizedValue(translation.title, ru.title) ?? '',
+    excerpt: localizedValue(translation.excerpt, ru.excerpt),
+    content: localizedValue(translation.content, ru.content) ?? '',
+    seoTitle: localizedValue(translation.seoTitle, ru.seoTitle),
+    seoDescription: localizedValue(translation.seoDescription, ru.seoDescription),
+  } : translation;
 
-  return { ...news, activeTranslation: translation };
+  return { ...news, activeTranslation };
 }

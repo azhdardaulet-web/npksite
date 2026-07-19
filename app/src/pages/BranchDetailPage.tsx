@@ -1,7 +1,9 @@
 import { Link, useParams } from 'react-router-dom';
 import { ChevronDown, Mail, MapPin, Phone } from 'lucide-react';
 import { ScrollReveal } from '@/components/ScrollReveal';
-import { findBranchProfile, type BranchPerson } from '@/lib/branchProfiles';
+import { branchProfiles, findBranchProfile, type BranchPerson } from '@/lib/branchProfiles';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { localizeBranchProfile } from '@/i18n/branchContent';
 
 function contactPhone(phone: string) {
   return phone.replace(/[^+\d]/g, '');
@@ -47,7 +49,12 @@ function PersonCard({ person }: { person: BranchPerson }) {
 
 export function BranchDetailPage() {
   const { slug } = useParams<{ slug: string }>();
-  const branch = findBranchProfile(slug);
+  const { language } = useLanguage();
+  const sourceBranch = findBranchProfile(slug);
+  const sourceIndex = sourceBranch ? branchProfiles.indexOf(sourceBranch) : -1;
+  const branch = sourceBranch && sourceIndex >= 0
+    ? localizeBranchProfile(sourceBranch, sourceIndex, language)
+    : sourceBranch;
 
   if (!branch) {
     return (

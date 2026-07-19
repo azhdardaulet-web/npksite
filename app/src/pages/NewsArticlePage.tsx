@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { fetchNews, fetchNewsBySlug, NEWS_FORMAT_LABELS, type PublicNewsItem, type PublicNewsDetail } from '@/lib/api';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 function getTag(item: { tags: string[]; format: PublicNewsItem['format'] }) {
   return item.tags[0] ?? NEWS_FORMAT_LABELS[item.format];
@@ -107,6 +108,7 @@ function ReadAlsoSlider({ items }: { items: PublicNewsItem[] }) {
 
 /* ─── Page ────────────────────────────────────────────────────────── */
 export function NewsArticlePage() {
+  const { language } = useLanguage();
   const { slug } = useParams<{ slug: string }>();
   const [article, setArticle] = useState<PublicNewsDetail | null>(null);
   const [related, setRelated] = useState<PublicNewsItem[]>([]);
@@ -121,7 +123,7 @@ export function NewsArticlePage() {
     setNotFound(false);
     setApiDown(false);
 
-    fetchNewsBySlug(slug)
+    fetchNewsBySlug(slug, language)
       .then((data) => {
         if (cancelled) return;
         setArticle(data);
@@ -136,12 +138,12 @@ export function NewsArticlePage() {
       })
       .finally(() => { if (!cancelled) setLoading(false); });
 
-    fetchNews({ limit: 8 })
+    fetchNews({ limit: 8, lang: language })
       .then((res) => { if (!cancelled) setRelated(res.data.filter((n) => n.slug !== slug)); })
       .catch(() => { /* сайдбар/слайдер просто не покажутся */ });
 
     return () => { cancelled = true; };
-  }, [slug]);
+  }, [language, slug]);
 
   if (loading) {
     return (

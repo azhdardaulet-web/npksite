@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../../lib/prisma';
 import { authenticateToken, requireRole } from '../../middleware/auth';
 import { LangSchema } from '@dar-rail/shared';
+import { localizedValue } from '../../lib/localized';
 
 export const teamRouter = Router();
 
@@ -55,20 +56,18 @@ teamRouter.get('/', async (req: Request, res: Response): Promise<void> => {
     });
 
     const result = members.map((m) => {
-      const t =
-        m.translations.find((tr) => tr.lang === lang) ??
-        m.translations.find((tr) => tr.lang === 'ru') ??
-        null;
+      const ru = m.translations.find((tr) => tr.lang === 'ru') ?? null;
+      const t = m.translations.find((tr) => tr.lang === lang) ?? ru;
       return {
         id: m.id,
         photoUrl: m.photoUrl,
         slug: m.slug,
         group: m.group,
         sortOrder: m.sortOrder,
-        name: t?.name ?? '',
-        position: t?.position ?? '',
-        bio: t?.bio ?? null,
-        fullBio: t?.fullBio ?? null,
+        name: localizedValue(t?.name, ru?.name) ?? '',
+        position: localizedValue(t?.position, ru?.position) ?? '',
+        bio: localizedValue(t?.bio, ru?.bio),
+        fullBio: localizedValue(t?.fullBio, ru?.fullBio),
       };
     });
 

@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../../lib/prisma';
 import { authenticateToken, requireRole } from '../../middleware/auth';
 import { LangSchema } from '@dar-rail/shared';
+import { localizedValue } from '../../lib/localized';
 
 export const publicProgramRouter = Router();
 export const cmsProgramRouter = Router();
@@ -45,17 +46,20 @@ publicProgramRouter.get('/', async (req: Request, res: Response): Promise<void> 
       include: { translations: true },
     });
     const result = blocks.map((b) => {
-      const t = b.translations.find((tr) => tr.lang === lang) ?? b.translations.find((tr) => tr.lang === 'ru') ?? null;
+      const ru = b.translations.find((tr) => tr.lang === 'ru') ?? null;
+      const t = b.translations.find((tr) => tr.lang === lang) ?? ru;
+      const keywordKz: Record<number, string> = { 1: 'ЕҢБЕК', 2: 'СӨЗ', 3: 'ЗАҢ', 4: 'АДАМ' };
       return {
         id: b.id,
         n: b.n,
-        keyword: b.keyword,
+        keyword: lang === 'kz' ? keywordKz[b.n] ?? b.keyword : b.keyword,
         imageUrl: b.imageUrl,
         sortOrder: b.sortOrder,
-        title: t?.title ?? '',
-        lead1: t?.lead1 ?? null,
-        lead2: t?.lead2 ?? null,
-        points: (t?.points as string[] | undefined) ?? [],
+        title: localizedValue(t?.title, ru?.title) ?? '',
+        lead1: localizedValue(t?.lead1, ru?.lead1),
+        // Для первых четырёх KZ-блоков утверждённый слоган целиком хранится в lead1.
+        lead2: lang === 'kz' && b.n >= 1 && b.n <= 4 ? t?.lead2 ?? null : localizedValue(t?.lead2, ru?.lead2),
+        points: localizedValue(t?.points as string[] | undefined, ru?.points as string[] | undefined) ?? [],
       };
     });
     res.json(result);

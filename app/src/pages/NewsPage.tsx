@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { NewsSection, NarodnoeMediaSection } from '@/sections/NewsSection';
 import { ChevronRight, Search, X, Calendar } from 'lucide-react';
 import { fetchNews, NEWS_FORMAT_LABELS, type NewsFormat, type PublicNewsItem } from '@/lib/api';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 /* ─── Data ────────────────────────────────────────────────────────── */
 type Format = 'Все' | 'Новости' | 'Релизы партии' | 'Статьи' | 'Аналитика' | 'Интервью';
@@ -231,6 +232,7 @@ function CardSkeleton() {
 
 /* ─── Page ────────────────────────────────────────────────────────── */
 export function NewsPage() {
+  const { language } = useLanguage();
   const [keyword, setKeyword] = useState('');
   const [date, setDate] = useState('');
   const [format, setFormat] = useState<Format>('Все');
@@ -253,7 +255,7 @@ export function NewsPage() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetchNews({ format: FORMAT_TO_API[format], q: debouncedKeyword || undefined, page, limit: PER_PAGE })
+    fetchNews({ format: FORMAT_TO_API[format], q: debouncedKeyword || undefined, page, limit: PER_PAGE, lang: language })
       .then((res) => {
         if (cancelled) return;
         setItems(res.data);
@@ -269,7 +271,7 @@ export function NewsPage() {
       })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [format, debouncedKeyword, page]);
+  }, [format, debouncedKeyword, language, page]);
 
   // Мягкий фильтр по дате публикации — применяется к уже загруженной странице.
   const visible = date
