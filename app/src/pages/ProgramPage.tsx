@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { ScrollReveal } from '@/components/ScrollReveal';
+import { TickerSection } from '@/sections/TickerSection';
 import { fetchProgramBlocks, type PublicProgramBlock } from '@/lib/api';
+import { ArrowUpRight, FileText } from 'lucide-react';
 
 const FALLBACK_BLOCKS: PublicProgramBlock[] = [
   { id: '1', n: 1, keyword: 'ТРУД', title: 'Человек труда', lead1: 'Страна держится не на должностях.', lead2: 'Страна держится на людях труда.', points: ['Рабочие профессии — почёт, уважение и достойный доход', 'Национальная программа «Человек труда»', 'Жилищные, образовательные и соцпрограммы для рабочих, инженеров, учителей, врачей', 'Рост производительности = рост зарплат', 'Государство защищает права каждого работника', 'Новые профессии — через массовую переподготовку кадров'], imageUrl: null, sortOrder: 0 },
@@ -8,8 +10,6 @@ const FALLBACK_BLOCKS: PublicProgramBlock[] = [
   { id: '3', n: 3, keyword: 'ЗАКОН', title: 'Справедливость работает', lead1: 'Один закон для всех.', lead2: 'Не должность. Не влияние. Только закон.', points: ['Закон одинаков для всех — от гражданина до чиновника', 'Успех зависит от знаний и труда, не от связей', 'Справедливость — не лозунг, а основа государственной политики', 'Территориальная справедливость: одинаковые возможности в каждом регионе', 'Рост экономики должен ощущаться в жизни каждой семьи'], imageUrl: null, sortOrder: 2 },
   { id: '4', n: 4, keyword: 'ЛЮДИ', title: 'Экономика для людей', lead1: 'Экономика должна работать не ради отчётов —', lead2: 'ради человека.', points: ['Главная цель — рост доходов и благополучия семей', 'Честная конкуренция без административных привилегий', 'Сильный средний класс — стратегическая цель государства', 'Новые рабочие места во всех регионах страны', 'Предпринимательство — главная социальная сила', 'Природные богатства — на образование, медицину, инфраструктуру'], imageUrl: null, sortOrder: 3 },
 ];
-
-const TICKER = ['Справедливость', 'Труд', 'Достоинство', 'Равенство', 'Жильё', 'Знания', 'Здоровье', 'Семья', 'Будущее'];
 
 function VideoSection() {
   const [playing, setPlaying] = useState(false);
@@ -47,7 +47,6 @@ function VideoSection() {
 export function ProgramPage() {
   const [blocks, setBlocks] = useState<PublicProgramBlock[]>([]);
   const [loading, setLoading] = useState(true);
-  const tickerText = TICKER.join(' • ') + ' • ';
 
   useEffect(() => {
     let cancelled = false;
@@ -61,52 +60,34 @@ export function ProgramPage() {
   return (
     <div style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh', overflowX: 'hidden' }}>
 
-      {/* HERO */}
-      <section style={{ position: 'relative', padding: 'clamp(120px,16vh,180px) clamp(16px,4vw,44px) clamp(50px,6vw,90px)', maxWidth: 1300, margin: '0 auto' }}>
-        <div style={{ position: 'absolute', inset: 0, zIndex: 0, backgroundImage: 'radial-gradient(circle at 78% 22%, rgba(219,31,38,.28), transparent 46%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '7px 14px 7px 12px', border: '1px solid var(--line)', borderRadius: 0, fontSize: 12, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#db1f26', display: 'block' }} />
-            Предвыборная программа
-          </div>
-          <h1 style={{ margin: '26px 0 0', fontWeight: 800, fontSize: 'clamp(44px,8.4vw,120px)', lineHeight: .92, letterSpacing: '-.035em' }}>
-            Казахстан{' '}<span style={{ color: '#db1f26' }}>справедливых </span>возможностей
-          </h1>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: 'clamp(28px,4vw,60px)', alignItems: 'center', marginTop: 'clamp(30px,4vw,54px)' }}>
-            <div>
-              <p style={{ margin: 0, maxWidth: '42ch', fontSize: 'clamp(16px,1.6vw,22px)', lineHeight: 1.5, color: 'var(--text-muted)', fontWeight: 500 }}>
+      {/* HERO — та же пропорция 40/60 и тот же ритм, что у главной страницы. */}
+      <section className="bg-bg overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-stretch min-h-[500px] lg:min-h-[570px]">
+          <div className="w-full md:w-2/5 flex items-center px-6 md:pl-12 md:pr-8 lg:pl-16 lg:pr-10 xl:pl-20 xl:pr-12 py-14 md:py-20">
+            <div className="max-w-[520px]">
+              <div className="w-12 h-[3px] bg-accent-brand mb-7" />
+              <p className="text-label font-bold tracking-[0.16em] uppercase text-accent-brand mb-5">Предвыборная программа</p>
+              <h1 className="font-formular text-[36px] sm:text-[44px] md:text-[36px] lg:text-[42px] xl:text-[52px] font-bold text-text-base leading-[1.04] tracking-tight">
+                Казахстан <span className="text-accent-brand dark:text-text-base">справедливых возможностей</span>
+              </h1>
+              <p className="text-[17px] md:text-[19px] text-text-muted leading-relaxed mt-7 max-w-[42ch]">
                 Каждый, кто честно работает, должен жить достойно.
               </p>
-              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 24 }}>
-                <span style={{ padding: '9px 18px', background: '#db1f26', color: '#fff', fontWeight: 700, fontSize: 15 }}>Билік — халыққа!</span>
-                <span style={{ padding: '9px 18px', border: '1.5px solid var(--line)', color: 'var(--text)', fontWeight: 700, fontSize: 15 }}>Власть — народу!</span>
-              </div>
-              <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 30 }}>
-                <a href="/vstupit" style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '17px 30px', background: '#db1f26', color: '#fff', textDecoration: 'none', fontSize: 16, fontWeight: 700 }}>Вступить в партию →</a>
-                <a href="#video" style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '17px 30px', background: 'transparent', border: '1.5px solid var(--line)', color: 'var(--text)', textDecoration: 'none', fontSize: 16, fontWeight: 700 }}>▶ Смотреть агитролик</a>
-              </div>
             </div>
-            <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', inset: '-8% -6% -12%', borderRadius: 0, background: 'radial-gradient(circle at 50% 40%, rgba(219,31,38,.5), transparent 68%)', filter: 'blur(30px)', zIndex: 0 }} />
-              <img src="/banner.png" alt="Народная партия Казахстана" style={{ position: 'relative', zIndex: 1, width: '100%', height: 'auto', display: 'block', border: '1px solid var(--line)', boxShadow: '0 40px 90px -30px rgba(0,0,0,.8)' }} />
-            </div>
+          </div>
+
+          <div className="w-full md:w-3/5 min-h-[310px] md:min-h-0 relative overflow-hidden bg-surface-2">
+            <img
+              src="/images/congress-vote.jpg"
+              alt="Предвыборная программа Народной партии Казахстана"
+              className="absolute inset-0 w-full h-full object-cover object-center"
+            />
           </div>
         </div>
       </section>
 
-      {/* MARQUEE */}
-      <div style={{ padding: 'clamp(24px,4vw,56px) 0', borderTop: '1px solid var(--line)', borderBottom: '1px solid var(--line)', overflow: 'hidden' }}>
-        <style>{`@keyframes prog-marq{from{transform:translateX(0)}to{transform:translateX(-50%)}}`}</style>
-        <div style={{ display: 'flex', width: 'max-content', animation: 'prog-marq 34s linear infinite' }}>
-          {[0, 1].map(i => (
-            <span key={i} aria-hidden={i === 1 || undefined} style={{ flexShrink: 0, fontSize: 'clamp(40px,7vw,88px)', fontWeight: 800, letterSpacing: '-.02em', color: 'transparent', WebkitTextStroke: '1.4px var(--line)', whiteSpace: 'nowrap', paddingRight: '.3em' }}>
-              {tickerText.split(' • ').filter(Boolean).map((word, j) => (
-                <span key={j}>{word}{' '}<span style={{ color: '#db1f26', WebkitTextStroke: '0' }}>•</span>{' '}</span>
-              ))}
-            </span>
-          ))}
-        </div>
-      </div>
+      {/* Используем тикер главной без отдельной скорости и дублирующего текста. */}
+      <TickerSection />
 
       {/* PROGRAM HEADER */}
       <div style={{ maxWidth: 1180, margin: '0 auto', padding: 'clamp(64px,9vw,120px) clamp(16px,4vw,44px) clamp(24px,4vw,52px)' }}>
@@ -167,6 +148,30 @@ export function ProgramPage() {
                 <a href="/vstupit" style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '20px 40px', background: '#050505', color: '#fff', textDecoration: 'none', fontSize: 18, fontWeight: 700 }}>Подать заявку →</a>
               </div>
             </div>
+          </div>
+        </ScrollReveal>
+      </section>
+
+      {/* FULL PROGRAM PDF */}
+      <section className="max-w-[1180px] mx-auto px-4 md:px-11 pb-16 md:pb-24">
+        <ScrollReveal>
+          <div className="border-y border-line py-8 md:py-10 flex flex-col md:flex-row md:items-center justify-between gap-7">
+            <div className="flex items-start gap-4">
+              <FileText size={28} className="text-accent-brand shrink-0 mt-1" />
+              <div>
+                <p className="text-label font-bold tracking-[0.14em] uppercase text-accent-brand">Документ</p>
+                <h2 className="text-heading-sm md:text-heading font-bold text-text-base mt-2">Полная программа партии</h2>
+                <p className="text-body text-text-muted mt-2">Официальный документ в формате PDF, 32 страницы.</p>
+              </div>
+            </div>
+            <a
+              href="https://halykpartiyasy.kz/storage/app/media/PartyProgramRU.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-3 bg-accent-brand text-white px-7 py-4 text-body font-bold hover:brightness-90 transition shrink-0"
+            >
+              Прочитать полную программу <ArrowUpRight size={18} />
+            </a>
           </div>
         </ScrollReveal>
       </section>
