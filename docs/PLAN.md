@@ -16,7 +16,7 @@
 
 | № | Функция | Детали из ТЗ |
 |---|---|---|
-| 6.1 | Роли и доступы | 6 ролей: Администратор (полный доступ), Главный редактор (все новости), Редактор раздела, Аппарат фракции, Редактор филиала (только свой регион), Менеджер приёмной (только обращения) |
+| 6.1 | Роли и доступы | 5 ролей после правок №2: Администратор, Главный редактор, Редактор раздела, Менеджер приёмной, Депутат |
 | 6.2 | Управление новостями | Заголовок RU/KZ, текст, фото, категория, теги. Кнопки: черновик / опубликовать / запланировать (дата-время). После публикации → автопост в Telegram. Поиск по новостям на сайте |
 | 6.3 | Управление страницами | Редактирование текстовых блоков через визуальный редактор, замена фото без разработчика, управление меню, загрузка PDF (Устав, депутатские запросы) |
 | 6.4 | Заявки на вступление | Все заявки с /vstupit → раздел «Заявки». Статусы: Новая → В обработке → Принята → Отклонена. Экспорт в Excel. Email-уведомление ответственному |
@@ -84,7 +84,7 @@ Backend и админка **уже существуют** в папке `cms/` �
 
 1. **Бренд.** Постепенно заменить упоминания «DAR Rail» на «НПК»/нейтральные названия в README, `.env.example`, `mailer.ts` (поле `from`), названиях контейнеров в `docker-compose.yml` — не критично для функциональности, делать по ходу дела, не отдельной задачей.
 2. **Prisma-схема (`cms/packages/api/prisma/schema.prisma`).** Убрать модели, специфичные для DAR Rail и не нужные НПК: `Service`/`ServiceTranslation` (заменяется на `MediaProject`), `Partner`, `Client`, `PurchaseItem`/`PurchasePlan`, `SupplierForm`, `ContactFormSubmission` (заменяется на `Appeal`), `Vacancy`/`VacancyTranslation`/`ResumeApplication`, `SurveySubmission`. Переименовать/расширить переиспользуемые: `Office` → `Branch` (+ `chairman`, `lng`/`lat`), `TeamMember`/`TeamMemberTranslation` — добавить enum `group` (`LEADERSHIP` | `MEDIA_TEAM`), чтобы одна модель обслуживала и «Руководство», и медиакоманду «Народного медиа». Полная новая схема — Часть 2.
-3. **Роли.** Enum `Role` меняется на 6 ролей НПК: `ADMIN`, `CHIEF_EDITOR`, `SECTION_EDITOR`, `FACTION`, `BRANCH_EDITOR`, `RECEPTION_MANAGER` (роль `DEPUTY` добавляется отдельно в Этапе 7 под видеоприём). У `User` — новые поля `branchId` (для `BRANCH_EDITOR`, доступ только к своему филиалу) и `section` (для `SECTION_EDITOR`). Prisma не даёт Row Level Security «из коробки» (это была бы фишка Supabase) — scoping по филиалу/разделу делаем руками: middleware `requireOwnBranch`, проверяющий `req.user.branchId` против запрашиваемой записи, плюс `WHERE branchId = ...` во всех сервисных функциях филиалов.
+3. **Роли (актуализировано по плану правок №2, Этап 6).** Enum `Role`: `ADMIN`, `CHIEF_EDITOR`, `SECTION_EDITOR`, `RECEPTION_MANAGER`, `DEPUTY`. `BRANCH_EDITOR` удалён, существующие пользователи переведены в `SECTION_EDITOR`; прежняя роль `FACTION` переименована в `DEPUTY`. Поле `section` используется для редактора раздела, `branchId` оставлено в схеме только для совместимости старых данных и при миграции очищено.
 4. **Интеграции.** SMS (Mobizon), автопостинг в Telegram, чат-бот на Claude API, видеоприём (Daily.co) реализуются как обычные Express-роуты в новых модулях `cms/packages/api/src/modules/*`. Для отложенных задач (запланированная публикация новости, автопостинг с задержкой, напоминания о видеоприёме за час) — добавляем `node-cron` (аналог pg_cron из Supabase-варианта).
 5. **2FA.** В текущем auth-модуле его нет — добавляется поверх существующего JWT-flow в Этапе 8 (TOTP через `otplib` или аналог), обязателен для роли `ADMIN`.
 6. **Секреты** — как и раньше: только в `cms/.env` (уже в `.gitignore`), никогда во фронтенде и никогда в `cms/packages/cms` (админка — это тоже клиентский код, собирается в статику).
@@ -117,7 +117,7 @@ Backend и админка **уже существуют** в папке `cms/` �
 
 | Модель | Статус | Изменения |
 |---|---|---|
-| `User` | адаптируем | `Role` enum → `ADMIN` \| `CHIEF_EDITOR` \| `SECTION_EDITOR` \| `FACTION` \| `BRANCH_EDITOR` \| `RECEPTION_MANAGER` (+ `DEPUTY` в Этапе 7). Добавить `branchId String?` (FK → `Branch`, для `BRANCH_EDITOR`) и `section String?` (для `SECTION_EDITOR`) |
+| `User` | адаптирован | `Role` enum → `ADMIN` \| `CHIEF_EDITOR` \| `SECTION_EDITOR` \| `RECEPTION_MANAGER` \| `DEPUTY`. `branchId` сохранён для совместимости, `section` — для `SECTION_EDITOR` |
 | `RefreshToken` | без изменений | — |
 
 ### CRM-таблицы (приоритет 1 — лиды теряются каждый день)
@@ -224,9 +224,8 @@ Backend и админка **уже существуют** в папке `cms/` �
    HistoryEvent/HistoryEventTranslation, ProgramBlock/ProgramBlockTranslation,
    MediaProject/MediaProjectTranslation, MediaPublication, Testimonial,
    MenuItem, Faq.
-8. Обнови enum Role: ADMIN, CHIEF_EDITOR, SECTION_EDITOR, FACTION,
-   BRANCH_EDITOR, RECEPTION_MANAGER. У модели User добавь branchId (String?,
-   FK на Branch) и section (String?).
+8. Обнови enum Role: ADMIN, CHIEF_EDITOR, SECTION_EDITOR,
+   RECEPTION_MANAGER, DEPUTY. У модели User добавь section (String?).
 Синхронизируй cms/packages/shared/src/index.ts — обнови/добавь Zod-схемы под
 новые и изменённые модели (по образцу существующих ServiceSchema,
 OfficeSchema и т.д.), убери схемы под удалённые модели.
@@ -285,17 +284,16 @@ appealNumber из ответа API; валидация телефона под +
 ```
 Прочитай текущую структуру cms/packages/cms/src (App.tsx, components/Layout.tsx,
 pages/Login.tsx, store/authStore.ts). Адаптируй под роли НПК из
-docs/PLAN.md (ADMIN, CHIEF_EDITOR, SECTION_EDITOR, FACTION, BRANCH_EDITOR,
-RECEPTION_MANAGER): в сайдбаре (Layout.tsx) показывай только разделы,
+docs/PLAN.md (ADMIN, CHIEF_EDITOR, SECTION_EDITOR, RECEPTION_MANAGER,
+DEPUTY): в сайдбаре (Layout.tsx) показывай только разделы,
 доступные роли текущего пользователя (роль уже приходит в /api/v1/auth/me).
 Разделы: Дашборд, Заявки, Обращения, Новости, Контент, Пользователи,
 Настройки — видимость по роли:
 - ADMIN: всё
 - CHIEF_EDITOR: Новости, Контент
 - SECTION_EDITOR: Новости и Контент (в будущем — фильтр по user.section)
-- BRANCH_EDITOR: только «Мой филиал» (контент своего Branch)
 - RECEPTION_MANAGER: только Обращения
-- FACTION: только контент фракции
+- DEPUTY: только контент фракции
 Не трогай сам механизм логина/JWT (cms/packages/cms/src/store/authStore.ts,
 cms/packages/api/src/modules/auth/*) — он уже работает, только правь
 видимость разделов. Замени старые пункты меню DAR Rail (Партнёры, Клиенты,
@@ -421,9 +419,8 @@ PageEditor.tsx — адаптировать под блоки НПК: О пар�
 футер) через RichTextEditor; /menu — MenuItem с drag-and-drop сортировкой;
 /nastroyki — Setting (счётчики главной, соцсети, notify_email,
 tg_delay_minutes).
-Доступ по ролям: BRANCH_EDITOR видит и редактирует только свой Branch
-(добавь middleware requireOwnBranch в cms/packages/api/src/middleware/auth.ts,
-проверяющий req.user.branchId === req.params.branchId для не-ADMIN).
+Доступ по ролям: филиалы редактируют `ADMIN`, `CHIEF_EDITOR` и
+`SECTION_EDITOR`; отдельной роли редактора филиала больше нет.
 Делай по 2–3 сущности за раз, я проверяю между шагами.
 ```
 
@@ -431,12 +428,12 @@ tg_delay_minutes).
 
 ```
 Адаптируй cms/packages/cms/src/pages/UsersPage.tsx под роли НПК: список
-пользователей, создание нового (email, имя, роль, для BRANCH_EDITOR —
-привязка к Branch, для SECTION_EDITOR — поле section), деактивация
+пользователей, создание нового (email, имя, роль, для SECTION_EDITOR —
+поле section), деактивация
 (User.status = BLOCKED). Доступ — только ADMIN.
 ```
 
-**Проверка:** создай новость в админке → появилась на сайте в /novosti и в поиске. Черновик — не появился. Запланируй на +5 минут — появилась сама (node-cron сработал). Поменяй телефон филиала в BRANCH_EDITOR-аккаунте своего региона — обновился на карте; попробуй отредактировать чужой филиал — должен быть запрещён (403).
+**Проверка:** создай новость в админке → появилась на сайте в /novosti и в поиске. Черновик — не появился. Запланируй на +5 минут — появилась сама (node-cron сработал). Проверь управление пользователями и видимость страниц из admin-аккаунта; для остальных ролей переключатели видимости недоступны.
 
 ---
 
