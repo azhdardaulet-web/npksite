@@ -174,7 +174,7 @@ export function FactionRequestsPage() {
       <section style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 40px 40px' }}>
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
-          padding: '8px 18px', borderRadius: 10000,
+          padding: '8px 18px', borderRadius: 0,
           border: '1.5px solid rgba(219,31,38,0.35)', color: '#db1f26',
           fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em',
           marginBottom: 24,

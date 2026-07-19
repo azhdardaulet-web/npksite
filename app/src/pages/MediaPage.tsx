@@ -40,7 +40,7 @@ export function MediaPage() {
       <section style={{ position: 'relative', padding: 'clamp(120px,16vh,180px) clamp(16px,4vw,44px) clamp(40px,5vw,70px)', maxWidth: 1180, margin: '0 auto' }}>
         <div style={{ position: 'absolute', inset: 0, zIndex: 0, backgroundImage: 'radial-gradient(circle at 80% 15%, rgba(219,31,38,.26), transparent 46%)', pointerEvents: 'none' }} />
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '7px 14px 7px 12px', border: '1px solid rgba(255,255,255,.16)', borderRadius: 100, fontSize: 12, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,.8)' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '7px 14px 7px 12px', border: '1px solid rgba(255,255,255,.16)', borderRadius: 0, fontSize: 12, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,.8)' }}>
             <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#db1f26', display: 'block' }} />
             Медиа НПК · On Air
           </div>
@@ -60,7 +60,7 @@ export function MediaPage() {
       {/* COUNTERS */}
       <section style={{ maxWidth: 1180, margin: '0 auto', padding: 'clamp(16px,2vw,32px) clamp(16px,4vw,44px) 0' }}>
         <ScrollReveal>
-          <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 'clamp(26px,3vw,40px)', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.09)', padding: 'clamp(30px,4vw,56px)' }}>
+          <div style={{ position: 'relative', overflow: 'hidden', borderRadius: '0', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.09)', padding: 'clamp(30px,4vw,56px)' }}>
             <span aria-hidden style={{ position: 'absolute', top: '-.25em', right: '.03em', fontSize: 'clamp(130px,22vw,320px)', fontWeight: 800, lineHeight: 1, color: 'rgba(255,255,255,.035)', pointerEvents: 'none' }}>270K</span>
             <div style={{ position: 'relative', zIndex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, flexWrap: 'wrap' }}>
@@ -69,9 +69,9 @@ export function MediaPage() {
               </div>
               <div style={{ marginTop: 'clamp(26px,3vw,40px)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 12 }}>
                 {SOCIALS.map(s => (
-                  <a key={s.name} href={s.url} target="_blank" rel="noopener" style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: 22, borderRadius: 20, background: '#050505', border: '1px solid rgba(255,255,255,.08)', textDecoration: 'none', color: '#fff' }}>
+                  <a key={s.name} href={s.url} target="_blank" rel="noopener" style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: 22, borderRadius: 0, background: '#050505', border: '1px solid rgba(255,255,255,.08)', textDecoration: 'none', color: '#fff' }}>
                     <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(219,31,38,.12)', border: '1px solid rgba(219,31,38,.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, color: '#fff' }}>{s.name.slice(0, 2).toUpperCase()}</span>
+                      <span style={{ width: 42, height: 42, borderRadius: 0, background: 'rgba(219,31,38,.12)', border: '1px solid rgba(219,31,38,.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, color: '#fff' }}>{s.name.slice(0, 2).toUpperCase()}</span>
                       <span style={{ fontSize: 13, color: 'rgba(255,255,255,.4)', fontWeight: 700 }}>↗</span>
                     </span>
                     <span>
@@ -109,7 +109,7 @@ export function MediaPage() {
             <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,.4)' }}>Загрузка...</div>
           ) : projects.map((p, i) => (
             <ScrollReveal key={p.id} delay={i * 0.1}>
-              <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRadius: 'clamp(24px,2.6vw,36px)', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.09)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRadius: '0', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.09)' }}>
                 <div style={{ width: '100%', height: 210, background: p.imageUrl ? `center/cover no-repeat url(${p.imageUrl})` : 'rgba(255,255,255,.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,.3)', fontSize: 14, fontWeight: 600 }}>
                   {!p.imageUrl && 'Кадр из программы'}
                 </div>
@@ -152,7 +152,7 @@ export function MediaPage() {
       {/* FOLLOW CTA */}
       <section id="follow" style={{ maxWidth: 1180, margin: 'clamp(56px,8vw,100px) auto clamp(40px,6vw,80px)', padding: '0 clamp(16px,4vw,44px)' }}>
         <ScrollReveal>
-          <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 'clamp(28px,3vw,48px)', background: '#db1f26', padding: 'clamp(38px,5vw,72px)', textAlign: 'center' }}>
+          <div style={{ position: 'relative', overflow: 'hidden', borderRadius: '0', background: '#db1f26', padding: 'clamp(38px,5vw,72px)', textAlign: 'center' }}>
             <span aria-hidden style={{ position: 'absolute', bottom: '-.34em', left: '50%', transform: 'translateX(-50%)', fontSize: 'clamp(130px,22vw,320px)', fontWeight: 800, lineHeight: 1, color: 'rgba(0,0,0,.08)', pointerEvents: 'none', whiteSpace: 'nowrap' }}>ЭФИР</span>
             <div style={{ position: 'relative', zIndex: 1 }}>
               <h2 style={{ margin: 0, fontSize: 'clamp(28px,4.4vw,54px)', fontWeight: 800, lineHeight: 1.02, letterSpacing: '-.03em' }}>Подпишись на народное медиа</h2>

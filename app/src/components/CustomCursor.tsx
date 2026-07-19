@@ -67,7 +67,7 @@ export function CustomCursor() {
       gsap.to(ring, {
         width: rect.width + 20,
         height: rect.height + 20,
-        borderRadius: '10000px',
+        borderRadius: '0px',
         duration: 0.3,
         ease: 'expo.out',
       });

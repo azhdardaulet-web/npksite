@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Newspaper, Play, Menu, X, ChevronRight, Youtube, Send, Instagram, Facebook, Globe } from 'lucide-react';
+import { Home, Newspaper, Play, Menu, X, ChevronRight, Youtube, Send, Instagram, Facebook, Globe, Search, Glasses } from 'lucide-react';
 
 /* ─── Menu sections ─────────────────────────────────────────────── */
 const MENU_SECTIONS = [
@@ -55,15 +55,27 @@ function MenuDrawer({ onClose }: { onClose: () => void }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid var(--line)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ display: 'flex', flexDirection: 'column', border: '2px solid var(--text)', borderRadius: 6, overflow: 'hidden', lineHeight: 1, fontWeight: 800, fontSize: 13 }}>
+          <span style={{ display: 'flex', flexDirection: 'column', border: '2px solid var(--text)', borderRadius: 0, overflow: 'hidden', lineHeight: 1, fontWeight: 800, fontSize: 13 }}>
             <span style={{ padding: '3px 7px 2px', borderBottom: '2px solid var(--text)' }}>КХП</span>
             <span style={{ padding: '2px 7px 3px' }}>НПК</span>
           </span>
           <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', lineHeight: 1.2 }}>Народная партия<br /><span style={{ fontWeight: 500, color: 'var(--text-muted)', fontSize: 11 }}>Казахстана</span></span>
         </div>
-        <button onClick={onClose} style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-2)', border: 'none', color: 'var(--text)', cursor: 'pointer', borderRadius: 8 }}>
-          <X size={20} />
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Link to="/search" onClick={onClose} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', color: 'var(--text-muted)' }}>
+            <Search size={18} />
+          </Link>
+          <button
+            aria-label="Версия для слабовидящих"
+            onClick={() => document.documentElement.classList.toggle('a11y-mode')}
+            style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+          >
+            <Glasses size={18} />
+          </button>
+          <button onClick={onClose} style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-2)', border: 'none', color: 'var(--text)', cursor: 'pointer', borderRadius: 0 }}>
+            <X size={20} />
+          </button>
+        </div>
       </div>
 
       {/* Nav items */}
@@ -136,7 +148,7 @@ function JoinSheet({ onClose }: { onClose: () => void }) {
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'flex-end' }}>
       <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.7)', backdropFilter: 'blur(4px)' }} />
       <div style={{ position: 'relative', width: '100%', background: 'var(--bg)', borderTop: '1px solid var(--line)', padding: '24px 20px 40px' }}>
-        <div style={{ width: 36, height: 4, background: 'var(--line)', margin: '0 auto 24px', borderRadius: 2 }} />
+        <div style={{ width: 36, height: 4, background: 'var(--line)', margin: '0 auto 24px', borderRadius: 0 }} />
         <button onClick={onClose} style={{ position: 'absolute', top: 20, right: 20, background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex' }}>
           <X size={20} />
         </button>
@@ -270,7 +282,7 @@ export function MobileBottomNav() {
                   flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
                   justifyContent: 'center', gap: 4, padding: '6px 4px',
                   background: menuOpen ? 'var(--surface-2)' : 'none',
-                  border: 'none', cursor: 'pointer', borderRadius: 12,
+                  border: 'none', cursor: 'pointer', borderRadius: 0,
                 }}>
                 <div style={{ position: 'relative' }}>
                   <Menu size={22} strokeWidth={menuOpen ? 2 : 1.6}
@@ -301,7 +313,7 @@ export function MobileBottomNav() {
                   flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
                   justifyContent: 'center', gap: 4, padding: '6px 4px', textDecoration: 'none',
                   background: isActive ? 'var(--surface-2)' : 'none',
-                  borderRadius: 12,
+                  borderRadius: 0,
                 }}>
                 <div style={{ position: 'relative' }}>
                   <Icon size={22} strokeWidth={isActive ? 2 : 1.6}

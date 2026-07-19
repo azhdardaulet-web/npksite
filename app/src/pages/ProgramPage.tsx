@@ -65,7 +65,7 @@ export function ProgramPage() {
       <section style={{ position: 'relative', padding: 'clamp(120px,16vh,180px) clamp(16px,4vw,44px) clamp(50px,6vw,90px)', maxWidth: 1300, margin: '0 auto' }}>
         <div style={{ position: 'absolute', inset: 0, zIndex: 0, backgroundImage: 'radial-gradient(circle at 78% 22%, rgba(219,31,38,.28), transparent 46%)', pointerEvents: 'none' }} />
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '7px 14px 7px 12px', border: '1px solid var(--line)', borderRadius: 100, fontSize: 12, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '7px 14px 7px 12px', border: '1px solid var(--line)', borderRadius: 0, fontSize: 12, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
             <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#db1f26', display: 'block' }} />
             Предвыборная программа
           </div>
@@ -87,7 +87,7 @@ export function ProgramPage() {
               </div>
             </div>
             <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', inset: '-8% -6% -12%', borderRadius: 48, background: 'radial-gradient(circle at 50% 40%, rgba(219,31,38,.5), transparent 68%)', filter: 'blur(30px)', zIndex: 0 }} />
+              <div style={{ position: 'absolute', inset: '-8% -6% -12%', borderRadius: 0, background: 'radial-gradient(circle at 50% 40%, rgba(219,31,38,.5), transparent 68%)', filter: 'blur(30px)', zIndex: 0 }} />
               <img src="/banner.png" alt="Народная партия Казахстана" style={{ position: 'relative', zIndex: 1, width: '100%', height: 'auto', display: 'block', border: '1px solid var(--line)', boxShadow: '0 40px 90px -30px rgba(0,0,0,.8)' }} />
             </div>
           </div>
@@ -122,7 +122,7 @@ export function ProgramPage() {
           const isRed = (i + 1) % 4 === 0;
           return (
           <ScrollReveal key={b.id} delay={0.05}>
-            <section style={{ position: 'relative', overflow: 'hidden', borderRadius: 'clamp(28px,3vw,44px)', padding: 'clamp(38px,5vw,80px) clamp(26px,4vw,72px)', background: isRed ? '#db1f26' : '#0e0e0f', color: '#fff', border: isRed ? '1px solid rgba(0,0,0,.12)' : '1px solid rgba(255,255,255,.09)' }}>
+            <section style={{ position: 'relative', overflow: 'hidden', borderRadius: '0', padding: 'clamp(38px,5vw,80px) clamp(26px,4vw,72px)', background: isRed ? '#db1f26' : '#0e0e0f', color: '#fff', border: isRed ? '1px solid rgba(0,0,0,.12)' : '1px solid rgba(255,255,255,.09)' }}>
               <span aria-hidden style={{ position: 'absolute', top: '-.28em', right: '.04em', fontSize: 'clamp(150px,26vw,400px)', fontWeight: 800, lineHeight: 1, letterSpacing: '-.04em', color: isRed ? 'rgba(0,0,0,.09)' : 'rgba(255,255,255,.035)', pointerEvents: 'none', zIndex: 0 }}>{b.keyword}</span>
               <div style={{ position: 'relative', zIndex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 18, flexWrap: 'wrap' }}>
@@ -155,7 +155,7 @@ export function ProgramPage() {
       {/* CTA JOIN */}
       <section style={{ maxWidth: 1180, margin: 'clamp(64px,9vw,120px) auto clamp(40px,6vw,80px)', padding: '0 clamp(16px,4vw,44px)' }}>
         <ScrollReveal>
-          <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 'clamp(28px,3vw,48px)', background: '#db1f26', padding: 'clamp(40px,5vw,84px) clamp(26px,4vw,72px)' }}>
+          <div style={{ position: 'relative', overflow: 'hidden', borderRadius: '0', background: '#db1f26', padding: 'clamp(40px,5vw,84px) clamp(26px,4vw,72px)' }}>
             <span aria-hidden style={{ position: 'absolute', bottom: '-.34em', right: '.02em', fontSize: 'clamp(140px,24vw,360px)', fontWeight: 800, lineHeight: 1, color: 'rgba(0,0,0,.08)', pointerEvents: 'none' }}>НПК</span>
             <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(320px,1fr))', gap: 'clamp(30px,4vw,56px)', alignItems: 'center' }}>
               <div>

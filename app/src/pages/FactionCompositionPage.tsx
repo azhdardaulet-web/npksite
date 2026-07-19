@@ -45,7 +45,7 @@ export function FactionCompositionPage() {
       <section className="max-w-[1280px] mx-auto px-4 md:px-10" style={{ padding: '24px 16px 40px' }}>
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
-          padding: '8px 18px', borderRadius: 10000,
+          padding: '8px 18px', borderRadius: 0,
           border: '1.5px solid rgba(219,31,38,0.35)', color: '#db1f26',
           fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em',
           marginBottom: 24,
@@ -69,7 +69,7 @@ export function FactionCompositionPage() {
       </section>
 
       {/* ===== НАШИ ЛИЦА ===== */}
-      <section className="bg-bg py-20 md:py-28">
+      <section className="bg-bg py-[var(--section-gap)]">
         <div className="max-w-[1280px] mx-auto px-4 md:px-10">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-8">

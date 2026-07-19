@@ -299,7 +299,10 @@ export function DesktopHeader() {
           </nav>
 
           <div className="flex items-center gap-0.5 shrink-0">
-            <div className="flex items-center gap-1 mr-2 border-r border-line pr-3">
+            <Link to="/search" className="w-9 h-9 flex items-center justify-center text-text-muted hover:text-text-base hover:bg-surface-2 rounded-none transition-all duration-150">
+              <IconSearch />
+            </Link>
+            <div className="flex items-center gap-1 mx-2 border-r border-line pr-3">
               <IconGlobe />
               <button
                 onClick={() => setLang('kz')}
@@ -312,10 +315,11 @@ export function DesktopHeader() {
               >РУС</button>
             </div>
             <ThemeToggle />
-            <Link to="/search" className="w-9 h-9 flex items-center justify-center text-text-muted hover:text-text-base hover:bg-surface-2 rounded transition-all duration-150">
-              <IconSearch />
-            </Link>
-            <button aria-label="Специальные возможности" className="w-9 h-9 flex items-center justify-center text-text-muted hover:text-text-base hover:bg-surface-2 rounded transition-all duration-150">
+            <button
+              aria-label="Версия для слабовидящих"
+              onClick={() => document.documentElement.classList.toggle('a11y-mode')}
+              className="w-9 h-9 flex items-center justify-center text-text-muted hover:text-text-base hover:bg-surface-2 rounded-none transition-all duration-150"
+            >
               <IconAccessibility />
             </button>
           </div>

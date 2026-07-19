@@ -74,7 +74,7 @@ export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } =
   }, [paused, news.length]);
 
   return (
-    <section className="bg-bg pt-6 pb-16 md:pt-8 md:pb-20 overflow-hidden">
+    <section className="bg-bg pt-[var(--section-gap)] pb-[var(--section-gap)] overflow-hidden">
       <div className="max-w-[1280px] mx-auto px-4 md:px-10">
 
         {/* ── Header ─────────────────────────────────────────────────────── */}

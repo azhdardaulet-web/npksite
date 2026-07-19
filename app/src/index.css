@@ -47,7 +47,10 @@
     --color-red-dark: #b81920;
     --color-red-glow: rgba(219, 31, 38, 0.15);
 
-    --radius: 0.75rem;
+    --radius: 0rem;
+    /* Единый межсекционный отступ (План правок №2, A4) — не зависит от темы,
+       поэтому объявлен один раз в :root, а не дублируется в .dark. */
+    --section-gap: 48px;
     --background: 0 0% 4%;
     --foreground: 0 0% 100%;
     --card: 0 0% 8%;
@@ -81,8 +84,11 @@
     --text-muted-rgb: 91 96 104;
     --line: #e3e5e8;
     --line-rgb: 227 229 232;
-    --accent-brand: #d1272e;
-    --accent-brand-rgb: 209 39 46;
+    /* Эталон — точный красный из файла логотипа (content/Logo rus.svg,
+       app/public/images/logo-rus.svg): #DC0F2D. Единственный источник
+       акцентного цвета, одинаков в обеих темах (План правок №2, A3). */
+    --accent-brand: #dc0f2d;
+    --accent-brand-rgb: 220 15 45;
     --accent-brand-text: #ffffff;
     --accent-brand-text-rgb: 255 255 255;
 
@@ -132,8 +138,8 @@
     --text-muted-rgb: 154 160 168;
     --line: #262930;
     --line-rgb: 38 41 48;
-    --accent-brand: #e5383f;
-    --accent-brand-rgb: 229 56 63;
+    --accent-brand: #dc0f2d;
+    --accent-brand-rgb: 220 15 45;
     --accent-brand-text: #ffffff;
     --accent-brand-text-rgb: 255 255 255;
   }
@@ -179,7 +185,7 @@
   }
 
   ::selection {
-    background-color: rgba(219, 31, 38, 0.3);
+    background-color: rgba(220, 15, 45, 0.3);
     color: #ffffff;
   }
 }

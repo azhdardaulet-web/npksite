@@ -90,7 +90,7 @@ export function ProgramSection() {
 
   return (
     <section
-      className="relative w-full overflow-hidden py-12 md:py-16 bg-bg"
+      className="relative w-full overflow-hidden py-[var(--section-gap)] bg-bg"
     >
       <style>{MOBILE_STYLES}</style>
       <div className="relative z-10 max-w-[1480px] mx-auto px-4 md:px-8">
@@ -119,7 +119,7 @@ export function ProgramSection() {
 
           {/* 01 — Ответственная власть | person-suit | red left, rows 1+2 */}
           <article className="prog-card-1 relative transition-transform duration-300 hover:-translate-y-1"
-            style={{ gridColumn:'1/2', gridRow:'1/3', borderRadius:18, overflow:'hidden', background:'linear-gradient(135deg,#db1f26 0%,#c81721 100%)' }}>
+            style={{ gridColumn:'1/2', gridRow:'1/3', borderRadius:0, overflow:'hidden', background:'linear-gradient(135deg,#db1f26 0%,#c81721 100%)' }}>
             <Diamond />
             <img src="/images/person-suit.webp" alt="" loading="eager"
               className="absolute z-[3] select-none pointer-events-none"
@@ -137,7 +137,7 @@ export function ProgramSection() {
 
           {/* 02 — Казахстан справедливых возможностей | person-athlete | white top center */}
           <article className="prog-card-2 relative transition-transform duration-300 hover:-translate-y-1"
-            style={{ gridColumn:'2/3', gridRow:'1/2', borderRadius:18, overflow:'hidden', background:'#ffffff' }}>
+            style={{ gridColumn:'2/3', gridRow:'1/2', borderRadius:0, overflow:'hidden', background:'#ffffff' }}>
             <div className="absolute inset-0 pointer-events-none" style={{ borderRadius:'inherit',
               background:'linear-gradient(135deg, transparent 56%, #1FA7FF 56%)' }} />
             <img src="/images/person-athlete.webp" alt="" loading="eager"
@@ -156,7 +156,7 @@ export function ProgramSection() {
 
           {/* 03 — Экономика для людей | person-speaker | red right, rows 1+2 */}
           <article className="prog-card-3 relative transition-transform duration-300 hover:-translate-y-1"
-            style={{ gridColumn:'3/4', gridRow:'1/3', borderRadius:18, overflow:'hidden', background:'linear-gradient(135deg,#db1f26 0%,#b9141d 100%)' }}>
+            style={{ gridColumn:'3/4', gridRow:'1/3', borderRadius:0, overflow:'hidden', background:'linear-gradient(135deg,#db1f26 0%,#b9141d 100%)' }}>
             <Diamond />
             <img src="/images/person-speaker.webp" alt="" loading="eager"
               className="absolute z-[3] select-none pointer-events-none"
@@ -174,7 +174,7 @@ export function ProgramSection() {
 
           {/* 04 — Здоровье, семья и дети | 08_QARLYGASH | white bottom left */}
           <article className="prog-card-4 relative transition-transform duration-300 hover:-translate-y-1"
-            style={{ gridColumn:'1/2', gridRow:'3/4', borderRadius:18, overflow:'hidden', background:'#ffffff' }}>
+            style={{ gridColumn:'1/2', gridRow:'3/4', borderRadius:0, overflow:'hidden', background:'#ffffff' }}>
             <div className="absolute inset-0 pointer-events-none" style={{ borderRadius:'inherit',
               background:'linear-gradient(135deg, transparent 68%, rgba(31,167,255,0.9) 68%)' }} />
             <img src="/images/08_QARLYGASH.webp" alt="" loading="lazy"
@@ -193,7 +193,7 @@ export function ProgramSection() {
 
           {/* 05 — Человек труда | 10_SHOKAN | red center, rows 2+3 */}
           <article className="prog-card-5 relative transition-transform duration-300 hover:-translate-y-1"
-            style={{ gridColumn:'2/3', gridRow:'2/4', borderRadius:18, overflow:'hidden',
+            style={{ gridColumn:'2/3', gridRow:'2/4', borderRadius:0, overflow:'hidden',
               background:`radial-gradient(circle at 86% 68%, #FFB000 0%, #FFB000 22%, transparent 23%),
                 linear-gradient(135deg,#db1f26 0%,#c81721 100%)` }}>
             <Diamond />
@@ -213,7 +213,7 @@ export function ProgramSection() {
 
           {/* 06 — Полная программа НПК | 07_ISLAM | dark bottom right */}
           <article className="prog-card-6 relative transition-all duration-300 hover:-translate-y-1 group"
-            style={{ gridColumn:'3/4', gridRow:'3/4', borderRadius:18, overflow:'hidden', padding:24,
+            style={{ gridColumn:'3/4', gridRow:'3/4', borderRadius:0, overflow:'hidden', padding:24,
               background:'linear-gradient(135deg,#111111 0%,#000001 100%)',
               border:'1px solid rgba(255,255,255,0.14)' }}>
             <div className="absolute inset-0 pointer-events-none group-hover:border-[#db1f26]/60 transition-colors" style={{ borderRadius:'inherit',
@@ -232,7 +232,7 @@ export function ProgramSection() {
                 На главной — ключевые акценты. В полной программе — все предложения партии: от регионов и образования до технологий, жилья и народного государства.
               </p>
               <Link to="/programma" className="prog-cta inline-flex items-center gap-2 font-bold text-white hover:bg-[#b9141d] transition-colors"
-                style={{ marginTop:18, background:'#db1f26', padding:'10px 16px', borderRadius:10, fontSize:13, textDecoration:'none' }}>
+                style={{ marginTop:18, background:'#db1f26', padding:'10px 16px', borderRadius:0, fontSize:13, textDecoration:'none' }}>
                 Читать программу →
               </Link>
             </div>

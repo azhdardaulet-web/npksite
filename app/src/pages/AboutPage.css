@@ -32,7 +32,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 18px;
-  border-radius: 10000px;
+  border-radius: 0;
   border: 1.5px solid rgba(219,31,38,0.35);
   color: #db1f26;
   font-size: 12px;
@@ -66,7 +66,7 @@
   gap: 8px;
   margin-top: 32px;
   padding: 16px 32px;
-  border-radius: 10000px;
+  border-radius: 0;
   background: #db1f26;
   color: #fff;
   font-size: 15px;
@@ -89,7 +89,7 @@
   justify-content: center;
 }
 .npo-hero__img {
-  border-radius: 24px;
+  border-radius: 0;
   overflow: hidden;
   position: relative;
   height: 55%;
@@ -104,7 +104,7 @@
   top: 24px;
   left: 24px;
   padding: 12px 20px;
-  border-radius: 14px;
+  border-radius: 0;
   background: rgba(0,0,0,0.7);
   backdrop-filter: blur(12px);
   display: flex;
@@ -130,7 +130,7 @@
   height: 35%;
 }
 .npo-hero__stat {
-  border-radius: 20px;
+  border-radius: 0;
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -250,7 +250,7 @@
   align-items: flex-start;
   gap: 16px;
   padding: 20px;
-  border-radius: 18px;
+  border-radius: 0;
   background: var(--surface);
   border: 1px solid var(--line);
   transition: all 0.25s;
@@ -262,7 +262,7 @@
 .npo-feature__icon {
   width: 44px;
   height: 44px;
-  border-radius: 14px;
+  border-radius: 0;
   background: rgba(219,31,38,0.1);
   border: 1px solid rgba(219,31,38,0.2);
   display: flex;
@@ -285,7 +285,7 @@
 }
 
 .npo-features__img {
-  border-radius: 24px;
+  border-radius: 0;
   overflow: hidden;
   position: relative;
 }
@@ -303,7 +303,7 @@
   gap: 16px;
 }
 .npo-bento2__img {
-  border-radius: 24px;
+  border-radius: 0;
   overflow: hidden;
   position: relative;
 }
@@ -317,7 +317,7 @@
   grid-row: span 2;
 }
 .npo-bento2__card {
-  border-radius: 24px;
+  border-radius: 0;
   padding: 36px;
   display: flex;
   flex-direction: column;
@@ -362,7 +362,7 @@
   gap: 16px;
 }
 .npo-area {
-  border-radius: 24px;
+  border-radius: 0;
   padding: 36px;
 }
 .npo-area--red,
@@ -373,7 +373,7 @@
 .npo-area__icon {
   width: 48px;
   height: 48px;
-  border-radius: 16px;
+  border-radius: 0;
   background: rgba(219,31,38,0.12);
   border: 1px solid rgba(219,31,38,0.2);
   display: flex;
@@ -456,7 +456,7 @@
   gap: 8px;
   margin-top: 32px;
   padding: 16px 32px;
-  border-radius: 10000px;
+  border-radius: 0;
   background: #db1f26;
   color: #fff;
   font-size: 15px;
@@ -469,7 +469,7 @@
   transform: translateY(-2px);
 }
 .npo-goal-split__img {
-  border-radius: 32px;
+  border-radius: 0;
   overflow: hidden;
   height: 100%;
   min-height: 480px;
@@ -498,7 +498,7 @@
 .npo-goal {
   background: linear-gradient(135deg, rgba(219,31,38,0.08), rgba(219,31,38,0.02));
   border: 1px solid rgba(219,31,38,0.15);
-  border-radius: 32px;
+  border-radius: 0;
   padding: 64px;
   text-align: center;
 }
@@ -521,7 +521,7 @@
   align-items: center;
   gap: 8px;
   padding: 16px 36px;
-  border-radius: 10000px;
+  border-radius: 0;
   background: #db1f26;
   color: #fff;
   font-size: 15px;

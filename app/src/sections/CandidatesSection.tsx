@@ -28,7 +28,7 @@ export function CandidatesSection() {
   };
 
   return (
-    <section className="bg-bg py-20 md:py-28 overflow-hidden">
+    <section className="bg-bg py-[var(--section-gap)] overflow-hidden">
       <div className="max-w-[1280px] mx-auto px-4 md:px-10">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-8">

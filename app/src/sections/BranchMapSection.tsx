@@ -535,7 +535,7 @@ function KZRealMap({ activeBi, onSelect }: { activeBi: number|null; onSelect: (i
   const px = (lng: number) => ((lng - 50) / 37) * 1146 + 14;
   const py = (lat: number) => ((55 - lat) / 15) * 632 + 28;
   return (
-    <div style={{position:'relative',borderRadius:16,overflow:'hidden',background:'var(--surface)'}}>
+    <div style={{position:'relative',borderRadius:0,overflow:'hidden',background:'var(--surface)'}}>
       <img src="/mapkz.svg" alt="Карта Казахстана" style={{width:'100%',display:'block',opacity:0.9}}/>
       <svg viewBox="0 0 1174 671" style={{position:'absolute',top:0,left:0,width:'100%',height:'100%'}}>
         <defs>
@@ -601,7 +601,7 @@ function BranchMapMobile() {
           style={{
             width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between',
             padding:'14px 18px',background:'var(--surface-2)',
-            borderRadius:listOpen?'12px 12px 0 0':'12px',
+            borderRadius:0,
             border:'1px solid var(--line)',
             borderBottom: listOpen?'1px solid var(--line)':'1px solid var(--line)',
             outline:'none',cursor:'pointer',transition:'border-radius .2s'
@@ -633,7 +633,7 @@ function BranchMapMobile() {
           <div style={{
             background:'rgb(var(--globe-panel-rgb) / .98)',
             border:'1px solid var(--line)',borderTop:'none',
-            borderRadius:'0 0 12px 12px',
+            borderRadius:0,
             maxHeight:440,overflowY:'auto'
           }} data-lenis-prevent>
             {/* Cities group */}
@@ -696,7 +696,7 @@ function BranchMapMobile() {
         {selBranch && (
           <div style={{
             display:'flex',flexDirection:'column',gap:10,
-            background:'rgba(219,31,38,0.06)',borderRadius:12,
+            background:'rgba(219,31,38,0.06)',borderRadius:0,
             padding:'16px',border:'1px solid rgba(219,31,38,0.16)',
             fontFamily:"'Formular',Arial,sans-serif"
           }}>
@@ -715,7 +715,7 @@ function BranchMapMobile() {
             </div>
             <a href="#" style={{
               display:'block',marginTop:4,padding:'10px 0',textAlign:'center',
-              background:'#db1f26',borderRadius:10,fontSize:13,fontWeight:700,
+              background:'#db1f26',borderRadius:0,fontSize:13,fontWeight:700,
               color:'#fff',textDecoration:'none',letterSpacing:'0.02em'
             }}>Подробнее →</a>
           </div>
@@ -785,7 +785,7 @@ export function BranchMapSection() {
           style={{background:'radial-gradient(130% 90% at 14% 36%,rgb(var(--globe-vignette-rgb) / .82) 0%,rgb(var(--globe-vignette-rgb) / .3) 38%,rgb(var(--globe-vignette-rgb) / 0) 56%),linear-gradient(180deg,rgb(var(--globe-vignette-rgb) / .45) 0%,rgb(var(--globe-vignette-rgb) / 0) 18%)'}} />
 
         {/* Side list */}
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 z-[7] flex flex-col rounded-[20px] overflow-hidden"
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 z-[7] flex flex-col rounded-none overflow-hidden"
           style={{width:296,maxHeight:'76vh',background:'rgb(var(--globe-panel-rgb) / .86)',border:'1px solid rgb(var(--globe-panel-border-rgb) / .1)',backdropFilter:'blur(20px)',boxShadow:'0 30px 80px rgba(0,0,0,.55)',fontFamily:"'Formular',Arial,sans-serif"}}>
           <div className="flex items-center justify-between px-[18px] py-[14px]" style={{borderBottom:'1px solid rgb(var(--globe-panel-border-rgb) / .08)'}}>
             <span style={{fontSize:11,letterSpacing:'0.18em',color:'var(--text-muted)',fontWeight:600}}>ВЫБЕРИТЕ ФИЛИАЛ</span>
@@ -796,7 +796,7 @@ export function BranchMapSection() {
               const active=globeState.selected===i||(globeState.selected===null&&globeState.hovered===i);
               return (
                 <button key={i} onClick={()=>controllerRef.current?.selectBranch(i)}
-                  className="w-full flex items-center gap-[10px] text-left rounded-[10px] mb-[2px] transition-colors"
+                  className="w-full flex items-center gap-[10px] text-left rounded-none mb-[2px] transition-colors"
                   style={{padding:'10px 11px',background:active?'rgba(219,31,38,0.12)':'transparent',borderLeft:`2.5px solid ${active?'#db1f26':'transparent'}`,outline:'none',cursor:'pointer'}}>
                   <span style={{width:7,height:7,borderRadius:'50%',flexShrink:0,background:active?'#db1f26':(b.city?'rgba(255,196,64,0.9)':'var(--text-muted)'),boxShadow:active?'0 0 8px rgba(219,31,38,0.9)':'none'}}/>
                   <span className="flex flex-col gap-[1px] min-w-0">
@@ -813,14 +813,14 @@ export function BranchMapSection() {
         {selBranch && displayBi!=null && (()=>{
           const pos=controllerRef.current?.cardPos(displayBi)??{x:600,y:200};
           return (
-            <div className="absolute z-[8] rounded-[18px] pointer-events-auto"
+            <div className="absolute z-[8] rounded-none pointer-events-auto"
               style={{width:300,left:pos.x,top:pos.y,transform:'translate(-50%,0)',padding:'18px 20px 20px',background:'rgb(var(--globe-panel-rgb) / .92)',border:'1px solid rgba(120,170,225,.22)',backdropFilter:'blur(22px)',boxShadow:'0 24px 70px rgba(0,0,0,.7)',animation:'npkfade .3s ease',fontFamily:"'Formular',Arial,sans-serif",color:'var(--text)'}}>
               <style>{`@keyframes npkfade{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}`}</style>
-              <div style={{position:'absolute',top:0,right:0,width:70,height:70,borderRadius:'0 18px 0 0',background:'radial-gradient(80% 80% at 100% 0%,rgba(219,31,38,.2),transparent 70%)',pointerEvents:'none'}}/>
+              <div style={{position:'absolute',top:0,right:0,width:70,height:70,borderRadius:0,background:'radial-gradient(80% 80% at 100% 0%,rgba(219,31,38,.2),transparent 70%)',pointerEvents:'none'}}/>
               <button onClick={()=>controllerRef.current?.close()}
-                style={{position:'absolute',top:12,right:12,width:24,height:24,borderRadius:7,border:'1px solid rgb(var(--globe-panel-border-rgb) / .15)',color:'var(--text-muted)',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',background:'none',outline:'none'}}>✕</button>
+                style={{position:'absolute',top:12,right:12,width:24,height:24,borderRadius:0,border:'1px solid rgb(var(--globe-panel-border-rgb) / .15)',color:'var(--text-muted)',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',background:'none',outline:'none'}}>✕</button>
               <div className="flex items-center gap-[10px] mb-4 pr-7">
-                <span style={{width:26,height:26,borderRadius:8,background:'rgba(219,31,38,.15)',border:'1px solid rgba(219,31,38,.5)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                <span style={{width:26,height:26,borderRadius:0,background:'rgba(219,31,38,.15)',border:'1px solid rgba(219,31,38,.5)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
                   <span style={{width:9,height:9,borderRadius:'50%',background:'#db1f26',boxShadow:'0 0 8px rgba(219,31,38,.9)'}}/>
                 </span>
                 <span style={{fontSize:14.5,fontWeight:700,lineHeight:1.2,color:'var(--text)'}}>{selBranch.name}</span>
@@ -831,7 +831,7 @@ export function BranchMapSection() {
                 <div><div style={{fontSize:10,letterSpacing:'0.08em',color:'var(--text-muted)',marginBottom:2,textTransform:'uppercase'}}>Адрес</div><div style={{fontSize:12,color:'var(--text)',lineHeight:1.45}}>{selBranch.address}</div></div>
                 <div><div style={{fontSize:10,letterSpacing:'0.08em',color:'var(--text-muted)',marginBottom:2,textTransform:'uppercase'}}>Телефон</div><div style={{fontSize:13,fontWeight:600,color:'var(--text)'}}>{selBranch.phone}</div></div>
               </div>
-              <a href="#" style={{display:'block',marginTop:16,padding:'9px 0',textAlign:'center',background:'#db1f26',borderRadius:10,fontSize:13,fontWeight:700,color:'#fff',textDecoration:'none',letterSpacing:'0.02em',transition:'background .2s'}}
+              <a href="#" style={{display:'block',marginTop:16,padding:'9px 0',textAlign:'center',background:'#db1f26',borderRadius:0,fontSize:13,fontWeight:700,color:'#fff',textDecoration:'none',letterSpacing:'0.02em',transition:'background .2s'}}
                 onMouseEnter={e=>(e.currentTarget.style.background='#b91721')}
                 onMouseLeave={e=>(e.currentTarget.style.background='#db1f26')}>
                 Подробнее →
@@ -842,7 +842,7 @@ export function BranchMapSection() {
         })()}
 
         {/* Legend — top right */}
-        <div className="absolute right-5 top-5 z-[5] flex flex-col gap-[9px] rounded-[14px]"
+        <div className="absolute right-5 top-5 z-[5] flex flex-col gap-[9px] rounded-none"
           style={{padding:'14px 18px',background:'rgb(var(--globe-panel-rgb) / .55)',border:'1px solid rgb(var(--globe-panel-border-rgb) / .07)',backdropFilter:'blur(12px)',fontFamily:"'Formular',Arial,sans-serif"}}>
           {[['#db1f26','0 0 8px rgba(219,31,38,.9)','Выбранный регион'],['var(--text)','0 0 6px rgba(120,120,120,.4)','Филиалы'],['#ffc440','0 0 6px rgba(255,196,64,.7)','Города респ. значения']].map(([bg,sh,label])=>(
             <div key={label} className="flex items-center gap-[9px]" style={{fontSize:11.5,color:'var(--text-muted)'}}>

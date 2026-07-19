@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Youtube, Instagram, Facebook, Send } from 'lucide-react';
 
 const navLinks = [
   { label: 'О партии', href: '/o-partii' },
@@ -9,12 +10,19 @@ const navLinks = [
   { label: 'Контакты', href: '/kontakty' },
 ];
 
+// Ссылки — те же, что в DesktopHeader.tsx (components/DesktopHeader.tsx, массив socials).
+const IconTikTok = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.86a8.22 8.22 0 0 0 4.8 1.54V6.93a4.85 4.85 0 0 1-1.03-.24z"/>
+  </svg>
+);
+
 const socialIcons = [
-  { name: 'YouTube', color: '#FF0000' },
-  { name: 'Instagram', color: '#E4405F' },
-  { name: 'TikTok', color: 'var(--text)' },
-  { name: 'Telegram', color: '#0088cc' },
-  { name: 'Facebook', color: '#1877F2' },
+  { name: 'YouTube', href: 'https://www.youtube.com/channel/UCYq_KOlsxp8H2r3GIq6hWtA', icon: <Youtube size={18} strokeWidth={1.75} /> },
+  { name: 'Instagram', href: 'https://www.instagram.com/halyk_partiyasy/', icon: <Instagram size={18} strokeWidth={1.75} /> },
+  { name: 'TikTok', href: 'https://www.tiktok.com/@halyk_partiyasy', icon: <IconTikTok /> },
+  { name: 'Telegram', href: 'https://t.me/halykparty', icon: <Send size={18} strokeWidth={1.75} /> },
+  { name: 'Facebook', href: 'https://www.facebook.com/halykpartiyasy', icon: <Facebook size={18} strokeWidth={1.75} /> },
 ];
 
 export function Footer() {
@@ -66,16 +74,17 @@ export function Footer() {
           <div>
             <h4 className="text-label font-medium text-text-base mb-4">Соцсети</h4>
             <div className="flex items-center gap-3">
-              {socialIcons.map((icon) => (
-                <button
-                  key={icon.name}
-                  aria-label={icon.name}
+              {socialIcons.map((s) => (
+                <a
+                  key={s.name}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.name}
                   className="w-10 h-10 rounded-none bg-surface-2 flex items-center justify-center text-text-muted hover:text-text-base transition-all duration-150 hover:bg-line"
                 >
-                  <span className="text-xs font-medium" style={{ color: icon.color }}>
-                    {icon.name[0]}
-                  </span>
-                </button>
+                  {s.icon}
+                </a>
               ))}
             </div>
           </div>

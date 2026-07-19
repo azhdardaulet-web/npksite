@@ -90,7 +90,7 @@ export function TrustCountersSection() {
   return (
     <section ref={sectionRef} className="bg-bg overflow-hidden">
       {/* ── Stats block ── */}
-      <div className="max-w-[1280px] mx-auto px-4 md:px-10 pt-20 md:pt-28 pb-16 md:pb-20">
+      <div className="max-w-[1280px] mx-auto px-4 md:px-10 pt-[var(--section-gap)] pb-[var(--section-gap)]">
         {/* Header row */}
         <div className="mb-14 md:mb-16">
           <TextReveal

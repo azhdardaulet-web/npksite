@@ -42,7 +42,7 @@ export function ShopPage() {
       <section style={{ position: 'relative', padding: 'clamp(120px,16vh,180px) clamp(16px,4vw,44px) clamp(40px,5vw,70px)', maxWidth: 1180, margin: '0 auto' }}>
         <div style={{ position: 'absolute', inset: 0, zIndex: 0, backgroundImage: 'radial-gradient(circle at 70% 30%, rgba(219,31,38,.2), transparent 50%)', pointerEvents: 'none' }} />
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '7px 14px 7px 12px', border: '1px solid rgba(255,255,255,.16)', borderRadius: 100, fontSize: 12, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,.8)' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '7px 14px 7px 12px', border: '1px solid rgba(255,255,255,.16)', borderRadius: 0, fontSize: 12, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,.8)' }}>
             <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#db1f26', display: 'block' }} />
             Официальный магазин
           </div>
@@ -58,7 +58,7 @@ export function ShopPage() {
       {/* COMING SOON BANNER */}
       <section style={{ maxWidth: 1180, margin: '0 auto', padding: '0 clamp(16px,4vw,44px) clamp(60px,8vw,100px)' }}>
         <ScrollReveal>
-          <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 'clamp(28px,3vw,44px)', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.09)', padding: 'clamp(40px,5vw,72px)' }}>
+          <div style={{ position: 'relative', overflow: 'hidden', borderRadius: '0', background: '#0e0e0f', border: '1px solid rgba(255,255,255,.09)', padding: 'clamp(40px,5vw,72px)' }}>
             <span aria-hidden style={{ position: 'absolute', top: '-.2em', right: '-.02em', fontSize: 'clamp(130px,22vw,320px)', fontWeight: 800, lineHeight: 1, color: 'rgba(255,255,255,.025)', pointerEvents: 'none', letterSpacing: '-.04em' }}>СКОРО</span>
             <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: 'clamp(32px,4vw,60px)', alignItems: 'center' }}>
               <div>

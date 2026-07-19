@@ -14,10 +14,13 @@ module.exports = {
         fog: '#a8a8a8',
         silver: '#d4d4d4',
         snow: '#ffffff',
+        // red.DEFAULT = --accent-brand (эталон из логотипа, см. index.css) —
+        // значение продублировано здесь т.к. классы bg-red/text-red/shadow-cta
+        // используются в компонентах, ещё не мигрированных на токен accent-brand.
         red: {
-          DEFAULT: '#db1f26',
-          dark: '#b81920',
-          glow: 'rgba(219,31,38,0.15)',
+          DEFAULT: '#dc0f2d',
+          dark: '#b70c25',
+          glow: 'rgba(220,15,45,0.15)',
         },
         whatsapp: '#25d166',
         // ─── Семантические токены темы (Этап 2) — роль, не значение ───────
@@ -76,25 +79,34 @@ module.exports = {
         'display': ['72px', { lineHeight: '1.0' }],
         'display-xl': ['80px', { lineHeight: '1.0' }],
       },
+      // Острые углы — фирменный стиль (План правок №2, A1). Вся шкала — 0,
+      // кроме full: он используется под функциональные круги (аватары,
+      // точки-индикаторы, тумблеры), не под скругление карточек/кнопок.
       borderRadius: {
+        'none': '0px',
+        'sm': '0px',
+        'DEFAULT': '0px',
+        'md': '0px',
+        'lg': '0px',
+        'xl': '0px',
+        '2xl': '0px',
+        '3xl': '0px',
+        'full': '9999px',
         'badge': '0px',
         'input': '0px',
         'button': '0px',
         'card': '0px',
         'panel': '0px',
         'pill': '0px',
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
       },
       spacing: {
         '18': '72px',
       },
       boxShadow: {
-        'cta': 'rgba(219,31,38,0.3) 0px 0px 0px 1.5px, rgba(219,31,38,0.15) 0px 4px 12px 0px',
+        'cta': 'rgba(220,15,45,0.3) 0px 0px 0px 1.5px, rgba(220,15,45,0.15) 0px 4px 12px 0px',
         'card': '0px 1px 0px 0px rgba(255,255,255,0.04) inset',
-        'focus': '0 0 0 3px rgba(219,31,38,0.25)',
-        'red-glow': '0 0 40px rgba(219,31,38,0.1)',
+        'focus': '0 0 0 3px rgba(220,15,45,0.25)',
+        'red-glow': '0 0 40px rgba(220,15,45,0.1)',
       },
       keyframes: {
         "accordion-down": {

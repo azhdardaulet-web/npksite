@@ -243,7 +243,7 @@ export function HistoryPage() {
             position: 'relative',
             height: '2px',
             background: 'var(--line)',
-            borderRadius: '2px',
+            borderRadius: '0',
             overflow: 'hidden',
           }}>
             <div style={{
@@ -252,7 +252,7 @@ export function HistoryPage() {
               top: 0,
               height: '100%',
               background: '#db1f26',
-              borderRadius: '2px',
+              borderRadius: '0',
               width: `${progress}%`,
               transition: 'width 0.15s linear',
             }} />
@@ -332,7 +332,7 @@ export function HistoryPage() {
               </p>
               {s.imageUrl && (
                 <div style={{
-                  borderRadius: '32px',
+                  borderRadius: '0',
                   overflow: 'hidden',
                   maxWidth: '720px',
                   background: 'var(--surface-2)',
@@ -384,7 +384,7 @@ export function HistoryPage() {
                 alignItems: 'center',
                 gap: '8px',
                 padding: '16px 36px',
-                borderRadius: '10000px',
+                borderRadius: '0',
                 background: '#db1f26',
                 color: '#fff',
                 fontSize: '15px',

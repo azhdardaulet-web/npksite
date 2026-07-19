@@ -188,7 +188,7 @@ export function ReceptionFull() {
     } finally { setSubmitting(false); }
   };
 
-  const inputCls = 'w-full bg-[var(--surface-2,var(--surface))] border border-[var(--line)] rounded-[10px] px-4 py-3.5 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent-brand)] outline-none transition-all';
+  const inputCls = 'w-full bg-[var(--surface-2,var(--surface))] border border-[var(--line)] rounded-none px-4 py-3.5 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent-brand)] outline-none transition-all';
 
   return (
     <>
@@ -205,7 +205,7 @@ export function ReceptionFull() {
       <div className="max-w-[1280px] mx-auto px-4 md:px-10 mb-2.5">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
           {HOW_STEPS.map(({ icon: Icon, step, label }, i) => (
-            <div key={i} className="rounded-[10px] border border-[var(--line)] p-3.5" style={{ background: 'var(--surface)' }}>
+            <div key={i} className="rounded-none border border-[var(--line)] p-3.5" style={{ background: 'var(--surface)' }}>
               <p className="text-[11px] text-[var(--text-muted)] uppercase tracking-wide mb-1">{step}</p>
               <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text)]">
                 <Icon size={16} className="text-[var(--accent-brand)] shrink-0" />
@@ -220,17 +220,17 @@ export function ReceptionFull() {
       <div ref={counterRef} className="max-w-[1280px] mx-auto px-4 md:px-10 mb-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
           {/* Stat 1 — from DB */}
-          <div className="rounded-[10px] border border-[var(--line)] p-4" style={{ background: 'var(--surface)' }}>
+          <div className="rounded-none border border-[var(--line)] p-4" style={{ background: 'var(--surface)' }}>
             <CountUp target={stat1Val} triggered={triggered} className="text-2xl font-bold text-[var(--accent-brand)] mr-1.5" />
             <span className="text-sm text-[var(--text-muted)]">{stat1Lab}</span>
           </div>
           {/* Stat 2 — from site_settings */}
-          <div className="rounded-[10px] border border-[var(--line)] p-4" style={{ background: 'var(--surface)' }}>
+          <div className="rounded-none border border-[var(--line)] p-4" style={{ background: 'var(--surface)' }}>
             <span className="text-2xl font-bold text-[var(--text)] mr-1.5">{stat2Val}</span>
             <span className="text-sm text-[var(--text-muted)]">{stat2Lab}</span>
           </div>
           {/* Stat 3 — from site_settings */}
-          <div className="rounded-[10px] border border-[var(--line)] p-4" style={{ background: 'var(--surface)' }}>
+          <div className="rounded-none border border-[var(--line)] p-4" style={{ background: 'var(--surface)' }}>
             <span className="text-2xl font-bold text-[var(--text)] mr-1.5">{stat3Val}</span>
             <span className="text-sm text-[var(--text-muted)]">{stat3Lab}</span>
           </div>
@@ -296,7 +296,7 @@ export function ReceptionFull() {
                   {mode === 'letter' ? (
                     <div className="space-y-3">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                        <label className="block rounded-[10px] border border-dashed border-[var(--line)] p-3.5 cursor-pointer hover:border-[var(--accent-brand)] transition-colors">
+                        <label className="block rounded-none border border-dashed border-[var(--line)] p-3.5 cursor-pointer hover:border-[var(--accent-brand)] transition-colors">
                           <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={handleStatementSelect} />
                           <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text)] mb-0.5">
                             <Paperclip size={15} className="text-[var(--accent-brand)] shrink-0" />
@@ -306,7 +306,7 @@ export function ReceptionFull() {
                             {statementFile ? `${Math.round(statementFile.fileSize / 1024)} КБ` : 'PDF, JPG · до 10 МБ'}
                           </div>
                         </label>
-                        <label className={`block rounded-[10px] border border-dashed border-[var(--line)] p-3.5 transition-colors ${additionalFiles.length >= 3 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-[var(--accent-brand)]'}`}>
+                        <label className={`block rounded-none border border-dashed border-[var(--line)] p-3.5 transition-colors ${additionalFiles.length >= 3 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-[var(--accent-brand)]'}`}>
                           <input type="file" accept=".pdf,.jpg,.jpeg,.png" multiple className="hidden" onChange={handleAdditionalSelect} disabled={additionalFiles.length >= 3} />
                           <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text)] mb-0.5">
                             <FileText size={15} className="text-[var(--accent-brand)] shrink-0" />
@@ -340,7 +340,7 @@ export function ReceptionFull() {
                               <a
                                 key={s.id}
                                 href={s.fileUrl} download={s.fileName} rel="noopener noreferrer"
-                                className="flex items-center gap-2.5 rounded-[10px] p-2.5 border border-[var(--line)] hover:border-[var(--accent-brand)] transition-colors"
+                                className="flex items-center gap-2.5 rounded-none p-2.5 border border-[var(--line)] hover:border-[var(--accent-brand)] transition-colors"
                                 style={{ background: 'var(--surface-2, var(--surface))' }}
                               >
                                 <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(219,31,38,0.1)' }}>
@@ -357,7 +357,7 @@ export function ReceptionFull() {
                       )}
                     </div>
                   ) : (
-                    <div className="rounded-[10px] border border-[var(--line)] p-3 mb-1 text-xs text-[var(--text-muted)]" style={{ background: 'var(--surface-2)' }}>
+                    <div className="rounded-none border border-[var(--line)] p-3 mb-1 text-xs text-[var(--text-muted)]" style={{ background: 'var(--surface-2)' }}>
                       Укажите удобное время и, если хотите, с кем именно — мы согласуем дату видеовстречи и пришлём ссылку на почту и по SMS.
                     </div>
                   )}

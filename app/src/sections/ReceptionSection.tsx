@@ -91,7 +91,7 @@ export function ReceptionSection() {
   const [showWa, setShowWa] = useState(false);
 
   return (
-    <section className="py-20 md:py-28 overflow-hidden" style={{ background: 'var(--bg)' }}>
+    <section className="py-[var(--section-gap)] overflow-hidden" style={{ background: 'var(--bg)' }}>
       <div className="max-w-[1280px] mx-auto px-4 md:px-10">
         <ScrollReveal>
           <p className="text-[11px] font-semibold uppercase tracking-widest text-[var(--accent-brand)] mb-3">Приёмная</p>
@@ -105,7 +105,7 @@ export function ReceptionSection() {
             <div ref={counterRef} className="space-y-2.5">
               <div className="grid grid-cols-2 gap-2.5">
                 {STEPS.map(({ icon: Icon, step, label }, i) => (
-                  <div key={i} className="rounded-[10px] border border-[var(--line)] p-3.5" style={{ background: 'var(--surface)' }}>
+                  <div key={i} className="rounded-none border border-[var(--line)] p-3.5" style={{ background: 'var(--surface)' }}>
                     <p className="text-[11px] text-[var(--text-muted)] uppercase tracking-wide mb-1">{step}</p>
                     <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text)]">
                       <Icon size={16} className="text-[var(--accent-brand)] shrink-0" />
@@ -116,15 +116,15 @@ export function ReceptionSection() {
               </div>
 
               <div className="grid grid-cols-3 gap-2.5">
-                <div className="rounded-[10px] border border-[var(--line)] p-4" style={{ background: 'var(--surface)' }}>
+                <div className="rounded-none border border-[var(--line)] p-4" style={{ background: 'var(--surface)' }}>
                   <CountUp target={stat1Val} triggered={triggered} className="text-2xl font-bold text-[var(--accent-brand)] mr-1.5" />
                   <span className="text-sm text-[var(--text-muted)]">{stat1Lab}</span>
                 </div>
-                <div className="rounded-[10px] border border-[var(--line)] p-4" style={{ background: 'var(--surface)' }}>
+                <div className="rounded-none border border-[var(--line)] p-4" style={{ background: 'var(--surface)' }}>
                   <span className="text-2xl font-bold text-[var(--text)] mr-1.5">{stat2Val}</span>
                   <span className="text-sm text-[var(--text-muted)]">{stat2Lab}</span>
                 </div>
-                <div className="rounded-[10px] border border-[var(--line)] p-4" style={{ background: 'var(--surface)' }}>
+                <div className="rounded-none border border-[var(--line)] p-4" style={{ background: 'var(--surface)' }}>
                   <span className="text-2xl font-bold text-[var(--text)] mr-1.5">{stat3Val}</span>
                   <span className="text-sm text-[var(--text-muted)]">{stat3Lab}</span>
                 </div>

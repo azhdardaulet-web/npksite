@@ -32,7 +32,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 18px;
-  border-radius: 10000px;
+  border-radius: 0;
   border: 1.5px solid rgba(219,31,38,0.35);
   color: #db1f26;
   font-size: 12px;
@@ -70,7 +70,7 @@
   justify-content: center;
 }
 .npf-hero__img {
-  border-radius: 24px;
+  border-radius: 0;
   overflow: hidden;
   position: relative;
   height: 55%;
@@ -85,7 +85,7 @@
   top: 24px;
   left: 24px;
   padding: 12px 20px;
-  border-radius: 14px;
+  border-radius: 0;
   background: rgba(0,0,0,0.7);
   backdrop-filter: blur(12px);
   display: flex;
@@ -111,7 +111,7 @@
   height: 35%;
 }
 .npf-hero__stat {
-  border-radius: 20px;
+  border-radius: 0;
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -204,7 +204,7 @@
   gap: 16px;
 }
 .npf-num {
-  border-radius: 24px;
+  border-radius: 0;
   padding: 36px 28px;
   text-align: center;
   transition: all 0.25s;
@@ -272,7 +272,7 @@
   gap: 16px;
 }
 .npf-achieve__card {
-  border-radius: 24px;
+  border-radius: 0;
   padding: 32px;
   transition: all 0.25s;
 }
@@ -290,7 +290,7 @@
 .npf-achieve__icon {
   width: 48px;
   height: 48px;
-  border-radius: 16px;
+  border-radius: 0;
   background: rgba(219,31,38,0.12);
   border: 1px solid rgba(219,31,38,0.2);
   display: flex;
@@ -333,7 +333,7 @@
   align-items: center;
   gap: 8px;
   padding: 16px 36px;
-  border-radius: 10000px;
+  border-radius: 0;
   background: #db1f26;
   color: #fff;
   font-size: 15px;

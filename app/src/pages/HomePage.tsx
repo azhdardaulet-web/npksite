@@ -18,7 +18,7 @@ export function HomePage() {
       <TrustCountersSection />
       <StatsVideoSection />
       <NewsSection />
-      <section className="bg-surface border-t border-line pb-16 md:pb-24">
+      <section className="bg-surface border-t border-line pb-[var(--section-gap)]">
         <div className="max-w-[1280px] mx-auto px-4 md:px-10">
           <NarodnoeMediaSection />
         </div>
