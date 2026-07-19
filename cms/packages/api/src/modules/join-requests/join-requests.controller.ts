@@ -6,8 +6,10 @@ import { prisma } from '../../lib/prisma';
 import { authenticateToken, requireRole } from '../../middleware/auth';
 import { verifyHCaptcha } from '../../lib/hcaptcha';
 import { sendMail } from '../../lib/mailer';
+import { generateCertificatePdf } from '../../lib/certificate';
 import { sendSms } from '../../lib/sms';
 import { getSetting } from '../../lib/settings';
+import { logger } from '../../lib/logger';
 import { JoinRequestRoleSchema, GenderSchema, kzPhoneSchema, iinSchema, idDocNumberSchema } from '@dar-rail/shared';
 import { Prisma } from '@prisma/client';
 
@@ -160,6 +162,21 @@ joinRequestsRouter.post('/', async (req: Request, res: Response): Promise<void> 
       });
     }
 
+    // Гражданину — только подтверждение приёма в обработку (план правок №2, D3).
+    // Партбилет с QR уходит отдельным письмом позже, при смене статуса на «Принята».
+    if (joinRequest.email) {
+      await sendMail({
+        to: joinRequest.email,
+        subject: 'Заявление принято к рассмотрению — Народная партия Казахстана',
+        html: `
+          <p>Здравствуйте, ${joinRequest.fullName}!</p>
+          <p>Ваше заявление на вступление в Народную партию Казахстана принято к рассмотрению.</p>
+          <p>Номер заявления: <b>${joinRequest.id}</b></p>
+          <p>Мы свяжемся с вами после рассмотрения.</p>
+        `,
+      });
+    }
+
     res.status(201).json({ message: 'Заявка успешно отправлена', id: joinRequest.id });
   } catch (err) {
     handleError(err, res);
@@ -308,11 +325,61 @@ cmsJoinRequestsRouter.put('/:id/status', ...requireCms, async (req: Request, res
   }
 
   try {
+    const id = String(req.params['id']);
+    const before = await prisma.joinRequest.findUnique({ where: { id } });
+
     const joinRequest = await prisma.joinRequest.update({
-      where: { id: String(req.params['id']) },
+      where: { id },
       data: { status: parsed.data.status },
     });
+
+    // Партбилет с QR отправляем только на переходе В статус «Принята» (не при повторном
+    // сохранении того же статуса) — план правок №2, D3.
+    if (parsed.data.status === 'ACCEPTED' && before?.status !== 'ACCEPTED' && joinRequest.email) {
+      try {
+        const pdfBuffer = await generateCertificatePdf({
+          fullName: joinRequest.fullName,
+          requestId: joinRequest.id,
+          acceptedDate: joinRequest.updatedAt,
+        });
+        await sendMail({
+          to: joinRequest.email,
+          subject: 'Вы вступили в Народную партию Казахстана',
+          html: `
+            <p>Здравствуйте, ${joinRequest.fullName}!</p>
+            <p>Ваше заявление принято — вы официально вступили в Народную партию Казахстана.</p>
+            <p>Во вложении — ваш онлайн-партийный билет.</p>
+          `,
+          attachments: [
+            { filename: 'partbilet.pdf', content: pdfBuffer, contentType: 'application/pdf' },
+          ],
+        });
+      } catch (mailErr) {
+        // Смену статуса не откатываем из-за проблем с письмом — только логируем.
+        logger.error('Не удалось отправить партбилет', { error: (mailErr as Error).message });
+      }
+    }
+
     res.json(joinRequest);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
+
+// GET /api/v1/join-requests/verify/:id — публичная проверка заявления по QR/ссылке
+// с партбилета. Без персональных данных (план правок №2, D3, техрешение).
+joinRequestsRouter.get('/verify/:id', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const joinRequest = await prisma.joinRequest.findUnique({ where: { id: String(req.params['id']) } });
+    if (!joinRequest) {
+      res.status(404).json({ found: false });
+      return;
+    }
+    res.json({
+      found: true,
+      status: joinRequest.status,
+      createdAt: joinRequest.createdAt,
+    });
   } catch (err) {
     handleError(err, res);
   }

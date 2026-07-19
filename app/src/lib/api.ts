@@ -411,3 +411,15 @@ export interface AddressSuggestion {
 export function fetchAddressSuggest(q: string) {
   return api.get<{ suggestions: AddressSuggestion[] }>('/api/v1/address/suggest', { q });
 }
+
+// ─── Проверка заявления по QR с онлайн-партбилета (/verify/:id) ────────────────
+
+export interface JoinRequestVerifyResult {
+  found: boolean;
+  status?: 'NEW' | 'PROCESSING' | 'ACCEPTED' | 'REJECTED';
+  createdAt?: string;
+}
+
+export function fetchVerifyJoinRequest(id: string) {
+  return api.get<JoinRequestVerifyResult>(`/api/v1/join-requests/verify/${id}`);
+}

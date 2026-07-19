@@ -11,7 +11,12 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export async function sendMail(opts: { to: string; subject: string; html: string }) {
+export async function sendMail(opts: {
+  to: string;
+  subject: string;
+  html: string;
+  attachments?: Array<{ filename: string; content: Buffer; contentType?: string }>;
+}) {
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
     logger.warn('SMTP not configured — skipping email send');
     return;
@@ -22,6 +27,7 @@ export async function sendMail(opts: { to: string; subject: string; html: string
       to: opts.to,
       subject: opts.subject,
       html: opts.html,
+      attachments: opts.attachments,
     });
     logger.info(`Email sent to ${opts.to}: ${opts.subject}`);
   } catch (err) {

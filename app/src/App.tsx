@@ -23,6 +23,7 @@ import { ProjectsPage } from '@/pages/ProjectsPage';
 import { ProjectDetailPage } from '@/pages/ProjectDetailPage';
 import { FactionCompositionPage } from '@/pages/FactionCompositionPage';
 import { FactionRequestsPage } from '@/pages/FactionRequestsPage';
+import { VerifyPage } from '@/pages/VerifyPage';
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
         <Route path="/novosti/:slug" element={<NewsArticlePage />} />
         <Route path="/smi-o-nas" element={<SmiPage />} />
         <Route path="/narodnoe-media" element={<NarodnoeMediaPage />} />
+        <Route path="/verify/:id" element={<VerifyPage />} />
       </Route>
     </Routes>
   );
