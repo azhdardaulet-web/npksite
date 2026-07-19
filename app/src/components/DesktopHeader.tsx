@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { usePageVisibility } from '@/contexts/PageVisibilityContext';
 
 /* ─── Dropdown nav structure ───────────────────────────────────────── */
 type SubLink = { label: string; href: string; desc?: string };
@@ -84,6 +85,23 @@ const NAV: NavItem[] = [
     href: '/magazin',
   },
 ];
+
+const PATH_TO_PAGE_SLUG: Record<string, string> = {
+  '/o-partii': 'about',
+  '/o-partii/istoriya': 'history',
+  '/rukovodstvo': 'leadership',
+  '/programma': 'program',
+  '/proekty': 'projects',
+  '/frakciya': 'faction',
+  '/priemnaya': 'priemnaya',
+  '/filialy': 'branches',
+  '/novosti': 'news',
+  '/smi-o-nas': 'smi',
+  '/narodnoe-media': 'press-center',
+  '/media': 'media',
+  '/kontakty': 'contacts',
+  '/magazin': 'shop',
+};
 
 /* ─── Social icons ─────────────────────────────────────────────────── */
 const SocialYouTube = () => (
@@ -252,6 +270,13 @@ function NavMenuItem({ item }: { item: NavItem }) {
 /* ─── Component ─────────────────────────────────────────────────── */
 export function DesktopHeader() {
   const [lang, setLang] = useState<'ru' | 'kz'>('ru');
+  const { isVisible } = usePageVisibility();
+  const visibleNav = NAV
+    .filter((item) => isVisible(PATH_TO_PAGE_SLUG[item.href] ?? item.href))
+    .map((item) => ({
+      ...item,
+      children: item.children?.filter((child) => isVisible(PATH_TO_PAGE_SLUG[child.href] ?? child.href)),
+    }));
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 hidden md:block">
@@ -293,7 +318,7 @@ export function DesktopHeader() {
       <div className="bg-surface/95 backdrop-blur-xl border-b border-line">
         <div className="max-w-[1440px] mx-auto px-8 h-[44px] flex items-center justify-between">
           <nav className="flex items-center h-full">
-            {NAV.map((item) => (
+          {visibleNav.map((item) => (
               <NavMenuItem key={item.href + item.label} item={item} />
             ))}
           </nav>

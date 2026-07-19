@@ -379,6 +379,15 @@ export interface PublicPage {
   blocks: PublicPageBlock[];
 }
 
+export interface PublicPageVisibility {
+  slug: string;
+  isPublished: boolean;
+}
+
+export function fetchPageVisibility() {
+  return api.get<PublicPageVisibility[]>('/api/v1/pages');
+}
+
 export function fetchPage(slug: string, lang = 'ru') {
   return api.get<PublicPage>(`/api/v1/pages/${slug}`, { lang });
 }

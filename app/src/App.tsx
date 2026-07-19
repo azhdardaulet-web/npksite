@@ -24,35 +24,36 @@ import { ProjectDetailPage } from '@/pages/ProjectDetailPage';
 import { FactionCompositionPage } from '@/pages/FactionCompositionPage';
 import { FactionRequestsPage } from '@/pages/FactionRequestsPage';
 import { VerifyPage } from '@/pages/VerifyPage';
+import { VisiblePageRoute } from '@/components/VisiblePageRoute';
 
 function App() {
   return (
     <Routes>
       <Route element={<PageLayout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/o-partii" element={<AboutPage />} />
-        <Route path="/o-partii/:sub" element={<AboutPage />} />
-        <Route path="/o-partii/istoriya" element={<HistoryPage />} />
-        <Route path="/proekty" element={<ProjectsPage />} />
-        <Route path="/proekty/:slug" element={<ProjectDetailPage />} />
-        <Route path="/programma" element={<ProgramPage />} />
-        <Route path="/kandidaty" element={<CandidatesPage />} />
-        <Route path="/media" element={<MediaPage />} />
-        <Route path="/priemnaya" element={<ReceptionPage />} />
-        <Route path="/kontakty" element={<ContactsPage />} />
-        <Route path="/vstupit" element={<JoinPage />} />
-        <Route path="/filialy" element={<BranchesPage />} />
-        <Route path="/novosti" element={<NewsPage />} />
-        <Route path="/rukovodstvo" element={<LeadershipPage />} />
-        <Route path="/frakciya" element={<FactionPage />} />
-        <Route path="/frakciya/sostav" element={<FactionCompositionPage />} />
-        <Route path="/frakciya/zaprosy" element={<FactionRequestsPage />} />
-        <Route path="/mediakits" element={<PressKitPage />} />
-        <Route path="/search" element={<SearchPage />} />
-        <Route path="/magazin" element={<ShopPage />} />
-        <Route path="/novosti/:slug" element={<NewsArticlePage />} />
-        <Route path="/smi-o-nas" element={<SmiPage />} />
-        <Route path="/narodnoe-media" element={<NarodnoeMediaPage />} />
+        <Route path="/o-partii" element={<VisiblePageRoute slug="about"><AboutPage /></VisiblePageRoute>} />
+        <Route path="/o-partii/:sub" element={<VisiblePageRoute slug="about"><AboutPage /></VisiblePageRoute>} />
+        <Route path="/o-partii/istoriya" element={<VisiblePageRoute slug="history"><HistoryPage /></VisiblePageRoute>} />
+        <Route path="/proekty" element={<VisiblePageRoute slug="projects"><ProjectsPage /></VisiblePageRoute>} />
+        <Route path="/proekty/:slug" element={<VisiblePageRoute slug="projects"><ProjectDetailPage /></VisiblePageRoute>} />
+        <Route path="/programma" element={<VisiblePageRoute slug="program"><ProgramPage /></VisiblePageRoute>} />
+        <Route path="/kandidaty" element={<VisiblePageRoute slug="candidates"><CandidatesPage /></VisiblePageRoute>} />
+        <Route path="/media" element={<VisiblePageRoute slug="media"><MediaPage /></VisiblePageRoute>} />
+        <Route path="/priemnaya" element={<VisiblePageRoute slug="priemnaya"><ReceptionPage /></VisiblePageRoute>} />
+        <Route path="/kontakty" element={<VisiblePageRoute slug="contacts"><ContactsPage /></VisiblePageRoute>} />
+        <Route path="/vstupit" element={<VisiblePageRoute slug="join"><JoinPage /></VisiblePageRoute>} />
+        <Route path="/filialy" element={<VisiblePageRoute slug="branches"><BranchesPage /></VisiblePageRoute>} />
+        <Route path="/novosti" element={<VisiblePageRoute slug="news"><NewsPage /></VisiblePageRoute>} />
+        <Route path="/rukovodstvo" element={<VisiblePageRoute slug="leadership"><LeadershipPage /></VisiblePageRoute>} />
+        <Route path="/frakciya" element={<VisiblePageRoute slug="faction"><FactionPage /></VisiblePageRoute>} />
+        <Route path="/frakciya/sostav" element={<VisiblePageRoute slug="faction"><FactionCompositionPage /></VisiblePageRoute>} />
+        <Route path="/frakciya/zaprosy" element={<VisiblePageRoute slug="faction"><FactionRequestsPage /></VisiblePageRoute>} />
+        <Route path="/mediakits" element={<VisiblePageRoute slug="press-kit"><PressKitPage /></VisiblePageRoute>} />
+        <Route path="/search" element={<VisiblePageRoute slug="search"><SearchPage /></VisiblePageRoute>} />
+        <Route path="/magazin" element={<VisiblePageRoute slug="shop"><ShopPage /></VisiblePageRoute>} />
+        <Route path="/novosti/:slug" element={<VisiblePageRoute slug="news"><NewsArticlePage /></VisiblePageRoute>} />
+        <Route path="/smi-o-nas" element={<VisiblePageRoute slug="smi"><SmiPage /></VisiblePageRoute>} />
+        <Route path="/narodnoe-media" element={<VisiblePageRoute slug="press-center"><NarodnoeMediaPage /></VisiblePageRoute>} />
         <Route path="/verify/:id" element={<VerifyPage />} />
       </Route>
     </Routes>

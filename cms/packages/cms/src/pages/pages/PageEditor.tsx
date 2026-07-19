@@ -7,9 +7,11 @@ import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } 
 import { CSS } from '@dnd-kit/utilities';
 import {
   Loader2, Save, Plus, Trash2, ImageIcon, FileText, GripVertical, ChevronDown, ChevronRight,
+  Eye, EyeOff,
 } from 'lucide-react';
-import { usePages, usePage, useUpdatePage, type PageBlock } from '@/hooks/usePages';
+import { usePages, usePage, useUpdatePage, useSetPageVisibility, type PageBlock } from '@/hooks/usePages';
 import { useMediaPicker } from '@/components/MediaLibrary/MediaPicker';
+import { useAuthStore } from '@/store/authStore';
 
 // ─── Site page catalogue (см. docs/PLAN.md, Часть 2: Page/PageBlock) ──────────
 // Валидные слаги фиксированы в cms/packages/api/src/modules/pages/pages.controller.ts
@@ -23,6 +25,28 @@ const SITE_PAGES: Record<string, { label: string; description: string }> = {
   footer: { label: 'Футер', description: 'Блоки, отображаемые в подвале сайта на всех страницах' },
   priemnaya: { label: 'Приёмная', description: 'Страница /priemnaya — шапка, шаги «Как это работает», форма обращения и мокап видеоприёма. Статистика — из счётчика обращений (авто) и раздела «Настройки»; отзывы — отдельный CRUD ниже' },
 };
+
+const PAGE_VISIBILITY_CATALOG = [
+  { slug: 'home', title: 'Главная', path: '/' },
+  { slug: 'about', title: 'О партии', path: '/o-partii' },
+  { slug: 'history', title: 'История партии', path: '/o-partii/istoriya' },
+  { slug: 'projects', title: 'Проекты', path: '/proekty' },
+  { slug: 'program', title: 'Программа', path: '/programma' },
+  { slug: 'candidates', title: 'Кандидаты', path: '/kandidaty' },
+  { slug: 'leadership', title: 'Руководство', path: '/rukovodstvo' },
+  { slug: 'faction', title: 'Фракция', path: '/frakciya' },
+  { slug: 'priemnaya', title: 'Общественная приёмная', path: '/priemnaya' },
+  { slug: 'branches', title: 'Филиалы', path: '/filialy' },
+  { slug: 'news', title: 'Новости', path: '/novosti' },
+  { slug: 'smi', title: 'СМИ о нас', path: '/smi-o-nas' },
+  { slug: 'press-center', title: 'Народное медиа', path: '/narodnoe-media' },
+  { slug: 'media', title: 'Видео', path: '/media' },
+  { slug: 'contacts', title: 'Контакты', path: '/kontakty' },
+  { slug: 'join', title: 'Вступить в партию', path: '/vstupit' },
+  { slug: 'press-kit', title: 'Пресс-кит', path: '/mediakits' },
+  { slug: 'search', title: 'Поиск', path: '/search' },
+  { slug: 'shop', title: 'Магазин', path: '/magazin' },
+] as const;
 
 // ─── Дерево навигации мини-панели «Страницы» ──────────────────────────────────
 // Узел либо ведёт на редактор блоков этой же страницы (pageSlug), либо на
@@ -73,7 +97,6 @@ const PAGE_NAV_TREE: PageNavNode[] = [
   },
   { label: 'Контакты', pageSlug: 'contacts' },
   { label: 'Меню сайта', route: '/menu' },
-  { label: 'Пользователи', route: '/users' },
 ];
 
 const BLOCK_TYPES: Record<PageBlock['type'], string> = {
@@ -769,6 +792,54 @@ export function PagesSidebar({ activeSlug }: { activeSlug: string }) {
   );
 }
 
+function PageVisibilityPanel() {
+  const user = useAuthStore((state) => state.user);
+  const { data: pages = [], isLoading } = usePages();
+  const visibilityMut = useSetPageVisibility();
+  const isAdmin = user?.role === 'ADMIN';
+
+  return (
+    <section className="bg-white border border-[#DFDFDF] overflow-hidden">
+      <div className="px-5 py-4 border-b border-[#DFDFDF]">
+        <h2 className="font-bold text-[#383233]">Показывать страницы на сайте</h2>
+        <p className="text-xs text-[#89837E] mt-1">Скрытая страница исчезает из меню, а её адрес перенаправляет на главную. Переключатели доступны только администратору.</p>
+      </div>
+      {isLoading ? (
+        <div className="py-8 flex justify-center"><Loader2 className="animate-spin text-[#89837E]" size={22} /></div>
+      ) : (
+        <div className="divide-y divide-[#EDEAE5]">
+          {PAGE_VISIBILITY_CATALOG.map((item) => {
+            const visible = pages.find((page) => page.slug === item.slug)?.isPublished ?? true;
+            const locked = item.slug === 'home';
+            return (
+              <div key={item.slug} className="px-5 py-3 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-[#383233]">{item.title}</p>
+                  <p className="text-xs text-[#89837E]">{item.path}</p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={visible}
+                  aria-label={`${visible ? 'Скрыть' : 'Показать'} страницу «${item.title}»`}
+                  disabled={!isAdmin || locked || visibilityMut.isPending}
+                  onClick={() => visibilityMut.mutate({ slug: item.slug, visible: !visible })}
+                  className={`w-28 px-3 py-2 text-xs font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 ${
+                    visible ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-[#F2EBE3] text-[#89837E] border border-[#DFDFDF]'
+                  }`}
+                >
+                  {visible ? <Eye size={14} /> : <EyeOff size={14} />}
+                  {visible ? 'Показывается' : 'Скрыта'}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
 // ─── Main component ─────────────────────────────────────────────────────────
 
 export default function PageEditor({ slugOverride }: { slugOverride?: string } = {}) {
@@ -777,6 +848,7 @@ export default function PageEditor({ slugOverride }: { slugOverride?: string } =
 
   const { data: page, isLoading } = usePage(slug);
   const updateMut = useUpdatePage(slug);
+  const canManageVisibility = useAuthStore((state) => state.user?.role === 'ADMIN');
 
   const [activeLang, setActiveLang] = useState<Lang>('ru');
   const [titleRu, setTitleRu] = useState('');
@@ -848,6 +920,7 @@ export default function PageEditor({ slugOverride }: { slugOverride?: string } =
           </div>
         ) : (
           <div className="max-w-4xl mx-auto p-6 space-y-5">
+            {slug === 'home' && <PageVisibilityPanel />}
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-lg font-bold text-[#383233]">{SITE_PAGES[slug]?.label ?? slug}</h1>
@@ -855,7 +928,7 @@ export default function PageEditor({ slugOverride }: { slugOverride?: string } =
               </div>
               <div className="flex items-center gap-3">
                 <label className="flex items-center gap-2 text-xs text-[#383233]">
-                  <input type="checkbox" checked={isPublished} onChange={e => setIsPublished(e.target.checked)} className="accent-[#D64338]" />
+                  <input type="checkbox" checked={isPublished} disabled={!canManageVisibility} onChange={e => setIsPublished(e.target.checked)} className="accent-[#D64338] disabled:opacity-50" />
                   Опубликована
                 </label>
                 <button

@@ -4,11 +4,16 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../../lib/prisma';
 import { authenticateToken, requireRole } from '../../middleware/auth';
 import { LangSchema } from '@dar-rail/shared';
+import { writeAudit } from '../../lib/audit';
 
 export const publicPagesRouter = Router();
 export const cmsPagesRouter = Router();
 
-const VALID_SLUGS = ['home', 'about', 'faction', 'press-center', 'contacts', 'footer', 'priemnaya'] as const;
+const VALID_SLUGS = [
+  'home', 'about', 'history', 'projects', 'program', 'candidates', 'media',
+  'priemnaya', 'contacts', 'join', 'branches', 'news', 'leadership', 'faction',
+  'press-kit', 'search', 'shop', 'smi', 'press-center', 'footer',
+] as const;
 
 const PageBlockInputSchema = z.object({
   type: z.enum(['hero', 'home_hero', 'text_image', 'kpi', 'quote', 'pdf_list', 'contacts_block', 'ticker', 'stats', 'video', 'about_hero', 'about_community', 'about_methods', 'about_structure', 'about_goal', 'press_hero', 'press_studio', 'press_cta', 'reception', 'candidates_intro', 'program_intro', 'join', 'reception_header', 'reception_steps']),
@@ -48,6 +53,20 @@ const requireContent = [
   requireRole('CHIEF_EDITOR', 'SECTION_EDITOR', 'DEPUTY', 'ADMIN'),
 ];
 
+// ─── Public: GET /api/v1/pages ───────────────────────────────────────────────
+
+publicPagesRouter.get('/', async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const pages = await prisma.page.findMany({
+      select: { slug: true, isPublished: true },
+      orderBy: { slug: 'asc' },
+    });
+    res.json(pages);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
+
 // ─── Public: GET /api/v1/pages/:slug ─────────────────────────────────────────
 
 publicPagesRouter.get('/:slug', async (req: Request, res: Response): Promise<void> => {
@@ -63,7 +82,7 @@ publicPagesRouter.get('/:slug', async (req: Request, res: Response): Promise<voi
       },
     });
 
-    if (!page) {
+    if (!page || !page.isPublished) {
       res.status(404).json({ error: 'Страница не найдена' });
       return;
     }
@@ -116,6 +135,45 @@ cmsPagesRouter.get('/:slug', ...requireContent, async (req: Request, res: Respon
   }
 });
 
+// ─── CMS: PATCH /cms/api/v1/pages/:slug/visibility ───────────────────────────
+
+cmsPagesRouter.patch(
+  '/:slug/visibility',
+  authenticateToken,
+  requireRole('ADMIN'),
+  async (req: Request, res: Response): Promise<void> => {
+    const slug = String(req.params['slug']);
+    const parsed = z.object({ visible: z.boolean() }).safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: 'visible обязателен' });
+      return;
+    }
+
+    try {
+      const page = await ensurePage(slug);
+      if (!page) {
+        res.status(404).json({ error: 'Страница не найдена' });
+        return;
+      }
+
+      const updated = await prisma.page.update({
+        where: { id: page.id },
+        data: { isPublished: parsed.data.visible },
+        include: { translations: { where: { lang: 'ru' } }, blocks: { select: { id: true } } },
+      });
+      await writeAudit(req, {
+        action: 'VISIBILITY',
+        entity: 'Страница сайта',
+        entityId: slug,
+        details: `Страница «${slug}» ${parsed.data.visible ? 'показана' : 'скрыта'} на сайте`,
+      });
+      res.json(updated);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
 // ─── CMS: PUT /cms/api/v1/pages/:slug ────────────────────────────────────────
 
 cmsPagesRouter.put('/:slug', ...requireContent, async (req: Request, res: Response): Promise<void> => {
@@ -136,7 +194,7 @@ cmsPagesRouter.put('/:slug', ...requireContent, async (req: Request, res: Respon
     }
 
     await prisma.$transaction(async (tx) => {
-      if (isPublished !== undefined) {
+      if (isPublished !== undefined && req.user?.role === 'ADMIN') {
         await tx.page.update({ where: { id: page.id }, data: { isPublished } });
       }
 

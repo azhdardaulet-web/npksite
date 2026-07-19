@@ -81,3 +81,12 @@ export function useUpdatePage(slug: string) {
     },
   });
 }
+
+export function useSetPageVisibility() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ slug, visible }: { slug: string; visible: boolean }) =>
+      api.patch(`/cms/api/v1/pages/${slug}/visibility`, { visible }).then((response) => response.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [QK] }),
+  });
+}
