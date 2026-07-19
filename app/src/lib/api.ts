@@ -228,7 +228,7 @@ export function fetchCandidates(lang = 'ru') {
 
 // ─── Команда (/rukovodstvo, /narodnoe-media) ───────────────────────────────────
 
-export type TeamGroup = 'LEADERSHIP' | 'MEDIA_TEAM';
+export type TeamGroup = 'LEADERSHIP' | 'MEDIA_TEAM' | 'FACTION';
 
 export interface PublicTeamMember {
   id: string;

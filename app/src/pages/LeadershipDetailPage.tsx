@@ -8,7 +8,7 @@ import { FALLBACK } from './LeadershipPage';
 // fullBio хранится как секции через пустую строку: первая строка — заголовок
 // («ОБРАЗОВАНИЕ», «КАРЬЕРА» и т.д.), дальше — пункты с «• ». Если пунктов нет —
 // секция рендерится обычным абзацем (так формируется bio-фолбэк без fullBio).
-function BioSections({ text }: { text: string }) {
+export function BioSections({ text }: { text: string }) {
   const sections = text.split('\n\n').filter(Boolean);
   return (
     <div className="space-y-6">

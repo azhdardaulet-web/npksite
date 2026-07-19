@@ -133,20 +133,21 @@ function MemberModal({
 }) {
   const [photoUrl, setPhotoUrl] = useState(initial?.photoUrl ?? '');
   const [email, setEmail] = useState(initial?.email ?? '');
+  const [slug, setSlug] = useState(initial?.slug ?? '');
   const isDeputy = (initial?.group ?? group) === 'FACTION';
   const [activeLang, setActiveLang] = useState('ru');
-  const [translations, setTranslations] = useState<Record<string, { name: string; position: string; bio: string }>>(
+  const [translations, setTranslations] = useState<Record<string, { name: string; position: string; bio: string; fullBio: string }>>(
     () => {
-      const init: Record<string, { name: string; position: string; bio: string }> = {};
+      const init: Record<string, { name: string; position: string; bio: string; fullBio: string }> = {};
       LANGS.forEach(({ code }) => {
         const t = initial?.translations.find((x) => x.lang === code);
-        init[code] = { name: t?.name ?? '', position: t?.position ?? '', bio: t?.bio ?? '' };
+        init[code] = { name: t?.name ?? '', position: t?.position ?? '', bio: t?.bio ?? '', fullBio: t?.fullBio ?? '' };
       });
       return init;
     }
   );
 
-  function setField(lang: string, field: 'name' | 'position' | 'bio', value: string) {
+  function setField(lang: string, field: 'name' | 'position' | 'bio' | 'fullBio', value: string) {
     setTranslations((prev) => ({ ...prev, [lang]: { ...prev[lang], [field]: value } }));
   }
 
@@ -156,8 +157,9 @@ function MemberModal({
       name: translations[code].name,
       position: translations[code].position,
       bio: translations[code].bio || null,
+      fullBio: translations[code].fullBio || null,
     }));
-    onSave({ photoUrl: photoUrl || null, email: email || null, translations: trs });
+    onSave({ photoUrl: photoUrl || null, email: email || null, slug: slug || null, translations: trs });
   }
 
   const cur = translations[activeLang];
@@ -210,6 +212,19 @@ function MemberModal({
           )}
 
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Адрес персональной страницы (slug)
+            </label>
+            <input
+              value={slug}
+              onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="ivanov-ivan"
+            />
+            <p className="text-xs text-gray-500 mt-1">Латинские буквы, цифры и дефисы. Без slug карточка не ведёт на персональную страницу.</p>
+          </div>
+
+          <div>
             <div className="flex gap-2 mb-3">
               {LANGS.map(({ code, label }) => {
                 const filled = translations[code]?.name;
@@ -254,12 +269,22 @@ function MemberModal({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Биография</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Краткая биография для карточки</label>
                 <textarea
                   rows={3}
                   value={cur.bio}
                   onChange={(e) => setField(activeLang, 'bio', e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Полная биография для персональной страницы</label>
+                <textarea
+                  rows={7}
+                  value={cur.fullBio}
+                  onChange={(e) => setField(activeLang, 'fullBio', e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+                  placeholder={'ОБРАЗОВАНИЕ\n• Учебное заведение\n\nКАРЬЕРА\n• Должность'}
                 />
               </div>
             </div>

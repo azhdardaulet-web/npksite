@@ -19,7 +19,7 @@ const TeamMemberInputSchema = z.object({
   photoUrl: z.string().url().optional().nullable(),
   // Нужен депутатам (group=FACTION) — приглашение на Google Meet при видеоприёме.
   email: z.string().email().optional().nullable(),
-  // Для персональной страницы /rukovodstvo/:slug (LEADERSHIP).
+  // Для персональных страниц руководства и депутатов фракции.
   slug: z.string().min(1).optional().nullable(),
   group: z.enum(['LEADERSHIP', 'MEDIA_TEAM', 'FACTION']).optional(),
   sortOrder: z.number().int().min(0).optional(),
@@ -49,7 +49,7 @@ teamRouter.get('/', async (req: Request, res: Response): Promise<void> => {
 
   try {
     const members = await prisma.teamMember.findMany({
-      where: group ? { group: group as 'LEADERSHIP' | 'MEDIA_TEAM' } : undefined,
+      where: group ? { group: group as 'LEADERSHIP' | 'MEDIA_TEAM' | 'FACTION' } : undefined,
       orderBy: { sortOrder: 'asc' },
       include: { translations: true },
     });

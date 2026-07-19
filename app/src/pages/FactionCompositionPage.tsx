@@ -1,21 +1,33 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { TextReveal } from '@/components/TextReveal';
+import { fetchTeam, type PublicTeamMember } from '@/lib/api';
 
-const deputies = [
-  { name: 'Марат Бекетов', role: 'Руководитель фракции', committee: 'Комитет по социально-культурному развитию', photo: '/images/candidate-3.jpg' },
-  { name: 'Айкын Конуров', role: 'Первый заместитель председателя партии', committee: 'Комитет по финансам и бюджету', photo: '/images/candidate-1.jpg' },
-  { name: 'Жамбыл Ахметбеков', role: 'Депутат Мажилиса', committee: 'Комитет по аграрным вопросам', photo: '/images/candidate-2.jpg' },
-  { name: 'Ирина Смирнова', role: 'Депутат Мажилиса', committee: 'Комитет по социально-культурному развитию', photo: '/images/candidate-4.jpg' },
-  { name: 'Александр Милютин', role: 'Депутат Мажилиса', committee: 'Комитет по вопросам экономической реформы и региональному развитию', photo: '/images/candidate-5.jpg' },
-  { name: 'Сергей Решетников', role: 'Депутат Мажилиса', committee: 'Комитет по законодательству и судебно-правовой реформе', photo: '/images/candidate-6.jpg' },
-  { name: 'Айбек Паяев', role: 'Депутат Мажилиса', committee: 'Комитет по международным делам, обороне и безопасности', photo: '/images/candidate-1.jpg' },
-  { name: 'Газиз Кулахметов', role: 'Депутат Мажилиса', committee: 'Комитет по вопросам экологии и природопользования', photo: '/images/candidate-2.jpg' },
-  { name: 'Ерлан Смайлов', role: 'Депутат Мажилиса', committee: 'Комитет по финансам и бюджету', photo: '/images/candidate-3.jpg' },
-  { name: 'Файзолла Каменов', role: 'Депутат Мажилиса', committee: 'Комитет по аграрным вопросам', photo: '/images/candidate-4.jpg' },
+export const FACTION_FALLBACK: PublicTeamMember[] = [
+  { id: 'f1', slug: 'marat-beketov', group: 'FACTION', sortOrder: 0, name: 'Марат Бекетов', position: 'Руководитель фракции', bio: 'Комитет по социально-культурному развитию', fullBio: null, photoUrl: '/images/candidate-3.jpg' },
+  { id: 'f2', slug: 'ajkyn-konurov', group: 'FACTION', sortOrder: 1, name: 'Айкын Конуров', position: 'Первый заместитель председателя партии', bio: 'Комитет по финансам и бюджету', fullBio: null, photoUrl: '/images/candidate-1.jpg' },
+  { id: 'f3', slug: 'zhambyl-ahmetbekov', group: 'FACTION', sortOrder: 2, name: 'Жамбыл Ахметбеков', position: 'Депутат Мажилиса', bio: 'Комитет по аграрным вопросам', fullBio: null, photoUrl: '/images/candidate-2.jpg' },
+  { id: 'f4', slug: 'irina-smirnova', group: 'FACTION', sortOrder: 3, name: 'Ирина Смирнова', position: 'Депутат Мажилиса', bio: 'Комитет по социально-культурному развитию', fullBio: null, photoUrl: '/images/candidate-4.jpg' },
+  { id: 'f5', slug: 'aleksandr-milyutin', group: 'FACTION', sortOrder: 4, name: 'Александр Милютин', position: 'Депутат Мажилиса', bio: 'Комитет по вопросам экономической реформы и региональному развитию', fullBio: null, photoUrl: '/images/candidate-5.jpg' },
+  { id: 'f6', slug: 'sergej-reshetnikov', group: 'FACTION', sortOrder: 5, name: 'Сергей Решетников', position: 'Депутат Мажилиса', bio: 'Комитет по законодательству и судебно-правовой реформе', fullBio: null, photoUrl: '/images/candidate-6.jpg' },
+  { id: 'f7', slug: 'ajbek-payaev', group: 'FACTION', sortOrder: 6, name: 'Айбек Паяев', position: 'Депутат Мажилиса', bio: 'Комитет по международным делам, обороне и безопасности', fullBio: null, photoUrl: '/images/candidate-1.jpg' },
+  { id: 'f8', slug: 'gaziz-kulahmetov', group: 'FACTION', sortOrder: 7, name: 'Газиз Кулахметов', position: 'Депутат Мажилиса', bio: 'Комитет по вопросам экологии и природопользования', fullBio: null, photoUrl: '/images/candidate-2.jpg' },
+  { id: 'f9', slug: 'erlan-smajlov', group: 'FACTION', sortOrder: 8, name: 'Ерлан Смайлов', position: 'Депутат Мажилиса', bio: 'Комитет по финансам и бюджету', fullBio: null, photoUrl: '/images/candidate-3.jpg' },
+  { id: 'f10', slug: 'fajzolla-kamenov', group: 'FACTION', sortOrder: 9, name: 'Файзолла Каменов', position: 'Депутат Мажилиса', bio: 'Комитет по аграрным вопросам', fullBio: null, photoUrl: '/images/candidate-4.jpg' },
 ];
 
 export function FactionCompositionPage() {
+  const [deputies, setDeputies] = useState<PublicTeamMember[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchTeam('FACTION')
+      .then((items) => { if (!cancelled) setDeputies(items.length > 0 ? items : FACTION_FALLBACK); })
+      .catch(() => { if (!cancelled) setDeputies(FACTION_FALLBACK); });
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <div className="bg-bg min-h-screen">
       {/* ===== BREADCRUMBS ===== */}
@@ -90,15 +102,16 @@ export function FactionCompositionPage() {
 
           {/* Grid of deputy cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {deputies.map((d) => (
-              <div
-                key={d.name}
+            {(deputies.length > 0 ? deputies : FACTION_FALLBACK).map((d) => (
+              <Link
+                key={d.id}
+                to={d.slug ? `/frakciya/sostav/${d.slug}` : '/frakciya/sostav'}
                 className="bg-surface rounded-card overflow-hidden border border-line group hover:border-red/30 transition-all duration-300 hover:-translate-y-1"
               >
                 {/* Photo */}
                 <div className="aspect-[4/5] overflow-hidden">
                   <img
-                    src={d.photo}
+                    src={d.photoUrl ?? undefined}
                     alt={d.name}
                     className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
                   />
@@ -106,10 +119,10 @@ export function FactionCompositionPage() {
                 {/* Info */}
                 <div className="p-5">
                   <h3 className="text-body-lg font-bold text-text-base mb-1">{d.name}</h3>
-                  <p className="text-label text-accent-brand font-medium mb-2">{d.role}</p>
-                  <p className="text-body text-text-muted line-clamp-2">{d.committee}</p>
+                  <p className="text-label text-accent-brand font-medium mb-2">{d.position}</p>
+                  <p className="text-body text-text-muted line-clamp-2">{d.bio}</p>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

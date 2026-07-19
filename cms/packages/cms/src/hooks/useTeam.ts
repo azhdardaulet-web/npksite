@@ -9,6 +9,7 @@ export interface TeamTranslation {
   name: string;
   position: string;
   bio: string | null;
+  fullBio: string | null;
 }
 
 export type TeamMemberGroup = 'LEADERSHIP' | 'MEDIA_TEAM' | 'FACTION';
@@ -18,6 +19,7 @@ export interface TeamMember {
   photoUrl: string | null;
   /** Нужен депутатам (group=FACTION) — приглашение на Google Meet при видеоприёме */
   email: string | null;
+  slug: string | null;
   group: TeamMemberGroup;
   sortOrder: number;
   translations: TeamTranslation[];
@@ -28,6 +30,7 @@ export interface TeamMember {
 export interface TeamMemberInput {
   photoUrl?: string | null;
   email?: string | null;
+  slug?: string | null;
   group?: TeamMemberGroup;
   sortOrder?: number;
   translations: Array<{
@@ -35,6 +38,7 @@ export interface TeamMemberInput {
     name: string;
     position: string;
     bio?: string | null;
+    fullBio?: string | null;
   }>;
 }
 
