@@ -381,13 +381,24 @@ export function JoinPage() {
         {step === 3 && (
           <ScrollReveal>
             <div className="bg-surface rounded-card p-6 md:p-8 border border-line">
-              <h3 className="text-heading-sm font-bold text-text-base mb-4">Заявление</h3>
+              <h3 className="text-heading-sm font-bold text-text-base mb-4">Ознакомьтесь с заявлением</h3>
 
-              <div className="bg-surface-2 border border-line rounded-card p-5 mb-6 text-body text-text-base leading-relaxed">
-                Настоящим, я, <b>{fullName || '__________'}</b>, дата рождения <b>{birthDateLabel}</b>,
-                ИИН <b>{iin || '____________'}</b>, документ, удостоверяющий личность, № <b>{idDocNumber || '_________'}</b>,
-                проживающий(ая) по адресу: <b>{selectedBranch ? selectedBranch.cityRu + ', ' : ''}{addressLine || '__________'}</b>,
-                телефон <b>{phone || '__________'}</b>, выражаю намерение вступить в Народную партию Казахстана.
+              {/* Заявление оформлено как документ: белый лист с чёрным текстом жёстко,
+                  независимо от темы сайта (это не UI-блок, а текст официальной бумаги). */}
+              <div
+                className="rounded-card p-6 md:p-8 mb-6 leading-relaxed"
+                style={{ background: '#ffffff', color: '#181818', fontFamily: 'Georgia, "Times New Roman", serif' }}
+              >
+                <p className="text-center font-bold mb-5" style={{ fontSize: 18 }}>Заявление</p>
+                <p className="mb-4">
+                  Настоящим, я, {fullName || '__________'}, выражаю намерение вступить в Общественное объединение «Народная партия Казахстана».
+                </p>
+                <p className="mb-2">Дата рождения: {birthDateLabel}</p>
+                <p className="mb-2">ИИН: {iin || '____________'}</p>
+                <p className="mb-2">Номер документа, удостоверяющего личность гражданина Республики Казахстан: {idDocNumber || '_________'}</p>
+                <p className="mb-1">Область, город, адрес места жительства:</p>
+                <p className="mb-2">{selectedBranch ? selectedBranch.cityRu + ', ' : ''}{addressLine || '__________'}</p>
+                <p>Телефон: {phone || '__________'}</p>
               </div>
 
               <div className="space-y-3 mb-6">
