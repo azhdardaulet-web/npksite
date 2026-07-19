@@ -11,7 +11,7 @@ export function JoinSection() {
   const cms = getBlock<JoinBlock>('join');
   const titleLines = (cms?.titleRu?.trim() || 'Стань частью\nнародной силы').split('\n');
   const subtitle = cms?.subtitleRu?.trim() || 'Казахстан справедливых возможностей начинается с людей, которые готовы за него работать.';
-  const image = cms?.imageUrl?.trim() || '/images/join-bg.jpg';
+  const image = cms?.imageUrl?.trim() || '/images/congress-hall-applause.jpg';
 
   const [consent, setConsent] = useState(false);
   const [submitted, setSubmitted] = useState(false);
