@@ -1,7 +1,6 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { candidates, regionFilterTags } from '@/lib/data';
-import { cn } from '@/lib/utils';
+import { candidates } from '@/lib/data';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { TextReveal } from '@/components/TextReveal';
 import { useHomeBlocks } from '@/hooks/useHomeBlocks';
@@ -14,12 +13,7 @@ export function CandidatesSection() {
   const heading = cms?.headingRu?.trim() || 'Лица партии';
   const subtitle = cms?.textRu?.trim() || 'Люди, которые уже сделали выбор — быть с народом. Депутаты, общественные деятели и лидеры регионов, которые каждый день работают для страны.';
 
-  const [activeRegion, setActiveRegion] = useState('Все');
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  const filtered = activeRegion === 'Все'
-    ? candidates
-    : candidates.filter(c => c.region.toLowerCase().includes(activeRegion.toLowerCase()));
 
   const scroll = (dir: number) => {
     if (scrollRef.current) {
@@ -53,24 +47,6 @@ export function CandidatesSection() {
           </Link>
         </div>
 
-        {/* Filter */}
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-8 pb-2">
-          {regionFilterTags.slice(0, 8).map((tag) => (
-            <button
-              key={tag}
-              onClick={() => setActiveRegion(tag)}
-              className={cn(
-                'shrink-0 px-3.5 py-1.5 rounded-badge text-label font-medium transition-all duration-200',
-                activeRegion === tag
-                  ? 'bg-accent-brand text-accent-brand-text border border-accent-brand'
-                  : 'bg-surface-2 text-text-muted border border-line hover:border-text-muted'
-              )}
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
-
         {/* Horizontal scroll carousel with drag */}
         <div className="relative">
           <div
@@ -78,7 +54,7 @@ export function CandidatesSection() {
             className="flex gap-5 overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing pb-4"
             style={{ scrollSnapType: 'x mandatory' }}
           >
-            {filtered.map((candidate) => (
+            {candidates.map((candidate) => (
               <div
                 key={candidate.id}
                 className="shrink-0 w-[280px] md:w-[300px] bg-surface rounded-card overflow-hidden border border-line group hover:border-red/30 transition-all duration-300 hover:-translate-y-1"
