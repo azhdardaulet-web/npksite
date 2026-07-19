@@ -10,39 +10,45 @@ interface ProfileCrumb {
   href: string;
 }
 
-// Полная биография хранится секциями через пустую строку. Первая строка
-// секции становится заголовком, если остальные строки начинаются с «•».
+// Полная биография хранится блоками через пустую строку: отдельный заголовок,
+// абзац или группа строк с маркером «•». Такой формат поддерживает длинные
+// биографии из CMS без HTML-разметки.
 export function BioSections({ text }: { text: string }) {
-  const sections = text.split('\n\n').filter(Boolean);
+  const blocks = text.split(/\n{2,}/).map((block) => block.trim()).filter(Boolean);
 
   return (
-    <div className="divide-y divide-line">
-      {sections.map((section, index) => {
-        const lines = section.split('\n').filter(Boolean);
-        const [first, ...rest] = lines;
-        const isHeading = rest.length > 0 && rest.every((line) => line.startsWith('• '));
+    <div className="space-y-6">
+      {blocks.map((block, index) => {
+        const lines = block.split('\n').map((line) => line.trim()).filter(Boolean);
+        const isHeading = lines.length === 1 && /^[А-ЯЁ0-9\s«»()–—-]+$/.test(lines[0]);
+        const isList = lines.every((line) => line.startsWith('• '));
 
-        return (
-          <section key={index} className="py-7 first:pt-0 last:pb-0">
-            {isHeading && (
-              <h2 className="text-label font-bold tracking-[0.12em] text-text-base uppercase mb-4">
-                {first}
-              </h2>
-            )}
-            {isHeading ? (
-              <ul className="space-y-3">
-                {rest.map((item, itemIndex) => (
-                  <li key={itemIndex} className="text-body md:text-body-lg text-text-muted leading-relaxed pl-5 relative">
-                    <span className="absolute left-0 top-[0.72em] w-1.5 h-1.5 bg-accent-brand" />
-                    {item.replace(/^•\s*/, '')}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-body md:text-body-lg text-text-muted leading-relaxed">{lines.join(' ')}</p>
-            )}
-          </section>
-        );
+        if (isHeading) {
+          return (
+            <h2 key={index} className="text-label font-bold tracking-[0.12em] text-text-base uppercase pt-5 first:pt-0 border-t border-line first:border-t-0">
+              {lines[0]}
+            </h2>
+          );
+        }
+
+        if (isList) {
+          return (
+            <ul key={index} className="space-y-3">
+              {lines.map((item, itemIndex) => (
+                <li key={itemIndex} className="text-body md:text-body-lg text-text-muted leading-relaxed pl-5 relative">
+                  <span className="absolute left-0 top-[0.72em] w-1.5 h-1.5 bg-accent-brand" />
+                  {item.replace(/^•\s*/, '')}
+                </li>
+              ))}
+            </ul>
+          );
+        }
+
+        return lines.map((line, lineIndex) => (
+          <p key={`${index}-${lineIndex}`} className="text-body md:text-body-lg text-text-muted leading-relaxed">
+            {line}
+          </p>
+        ));
       })}
     </div>
   );
