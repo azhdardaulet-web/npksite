@@ -6,9 +6,8 @@ export const RoleSchema = z.enum([
   'ADMIN',
   'CHIEF_EDITOR',
   'SECTION_EDITOR',
-  'FACTION',
-  'BRANCH_EDITOR',
   'RECEPTION_MANAGER',
+  'DEPUTY',
 ]);
 export type Role = z.infer<typeof RoleSchema>;
 

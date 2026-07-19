@@ -70,7 +70,7 @@ usersRouter.post('/', async (req: Request, res: Response) => {
 const UpdateUserSchema = z.object({
   name: z.string().min(2).max(100).optional(),
   role: z
-    .enum(['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR', 'FACTION', 'BRANCH_EDITOR', 'RECEPTION_MANAGER'])
+    .enum(['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR', 'RECEPTION_MANAGER', 'DEPUTY'])
     .optional(),
   status: z.enum(['ACTIVE', 'BLOCKED']).optional(),
   branchId: z.string().uuid().optional().nullable(),

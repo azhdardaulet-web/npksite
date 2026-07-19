@@ -45,7 +45,7 @@ async function ensurePage(slug: string) {
 
 const requireContent = [
   authenticateToken,
-  requireRole('CHIEF_EDITOR', 'SECTION_EDITOR', 'FACTION', 'ADMIN'),
+  requireRole('CHIEF_EDITOR', 'SECTION_EDITOR', 'DEPUTY', 'ADMIN'),
 ];
 
 // ─── Public: GET /api/v1/pages/:slug ─────────────────────────────────────────

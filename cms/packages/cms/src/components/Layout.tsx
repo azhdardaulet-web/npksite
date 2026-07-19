@@ -39,9 +39,8 @@ const ALL_ROLES: Role[] = [
   'ADMIN',
   'CHIEF_EDITOR',
   'SECTION_EDITOR',
-  'FACTION',
-  'BRANCH_EDITOR',
   'RECEPTION_MANAGER',
+  'DEPUTY',
 ];
 
 // Структура сайдбара НПК — Сводка / CRM / CMS / Поддержка / Настройки.
@@ -85,7 +84,7 @@ const navGroups: NavGroupDef[] = [
       {
         label: 'Фракция',
         icon: Landmark,
-        roles: ['ADMIN', 'CHIEF_EDITOR', 'FACTION'],
+        roles: ['ADMIN', 'CHIEF_EDITOR', 'DEPUTY'],
         children: [
           { label: 'Создать', path: '/frakciya/zaprosy?create=1' },
           { label: 'Все запросы', path: '/frakciya/zaprosy' },
@@ -99,7 +98,7 @@ const navGroups: NavGroupDef[] = [
         label: 'Управление страницами',
         path: '/pages',
         icon: Users2,
-        roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR', 'FACTION', 'BRANCH_EDITOR'],
+        roles: ['ADMIN', 'CHIEF_EDITOR', 'SECTION_EDITOR', 'DEPUTY'],
       },
     ],
   },

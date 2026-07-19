@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Plus, Trash2, Pencil, Building2, Phone, Mail, MapPin, User, Loader2 } from 'lucide-react';
-import { useAuthStore } from '@/store/authStore';
 import {
   useBranches,
   useCreateBranch,
@@ -196,9 +195,6 @@ function BranchRow({ branch, onEdit, onDelete, readOnly }: { branch: Branch; onE
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function BranchesPage() {
-  const { user } = useAuthStore();
-  const isBranchEditor = user?.role === 'BRANCH_EDITOR';
-
   const { data: branches = [], isLoading } = useBranches();
   const createMut = useCreateBranch();
   const [modal, setModal] = useState<{ open: boolean; editing?: Branch }>({ open: false });
@@ -206,9 +202,7 @@ export default function BranchesPage() {
   const updateMut = useUpdateBranch(modal.editing?.id ?? '');
   const deleteMut = useDeleteBranch();
 
-  const visibleBranches = isBranchEditor
-    ? branches.filter((b) => b.id === user?.branchId)
-    : branches;
+  const visibleBranches = branches;
 
   const handleSave = async (data: BranchInput) => {
     if (modal.editing) {
@@ -229,18 +223,16 @@ export default function BranchesPage() {
     <div className="min-h-screen bg-[#F9F8F6]">
       <div className="bg-white border-b border-[#DFDFDF] px-6 py-4 flex items-center justify-between sticky top-0 z-10">
         <div>
-          <h1 className="font-bold text-[#383233] text-lg">{isBranchEditor ? 'Мой филиал' : 'Филиалы'}</h1>
+          <h1 className="font-bold text-[#383233] text-lg">Филиалы</h1>
           <p className="text-[#89837E] text-sm mt-0.5">Региональные отделения партии</p>
         </div>
-        {!isBranchEditor && (
-          <button
-            onClick={() => setModal({ open: true })}
-            className="flex items-center gap-2 px-4 py-2 bg-[#D64338] text-white text-sm rounded-lg hover:bg-[#b8362d] font-medium transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Добавить филиал
-          </button>
-        )}
+        <button
+          onClick={() => setModal({ open: true })}
+          className="flex items-center gap-2 px-4 py-2 bg-[#D64338] text-white text-sm rounded-lg hover:bg-[#b8362d] font-medium transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          Добавить филиал
+        </button>
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-8">
@@ -259,7 +251,7 @@ export default function BranchesPage() {
               <BranchRow
                 key={branch.id}
                 branch={branch}
-                readOnly={isBranchEditor}
+                readOnly={false}
                 onEdit={() => setModal({ open: true, editing: branch })}
                 onDelete={() => handleDelete(branch)}
               />

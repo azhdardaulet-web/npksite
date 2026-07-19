@@ -4,9 +4,8 @@ export type Role =
   | 'ADMIN'
   | 'CHIEF_EDITOR'
   | 'SECTION_EDITOR'
-  | 'FACTION'
-  | 'BRANCH_EDITOR'
-  | 'RECEPTION_MANAGER';
+  | 'RECEPTION_MANAGER'
+  | 'DEPUTY';
 
 export interface AuthUser {
   id: string;

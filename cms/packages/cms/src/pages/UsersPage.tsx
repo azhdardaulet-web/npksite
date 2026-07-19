@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Plus, Pencil, Ban, CheckCircle2, Shield, ShieldCheck, Users, Eye, EyeOff, Loader2 } from 'lucide-react';
 import type { Role } from '@/store/authStore';
 import { useUsers, useCreateUser, useUpdateUser, useBlockUser, type CmsUser } from '@/hooks/useUsers';
-import { useBranches } from '@/hooks/useBranches';
 
 // ─── Role definitions (роли НПК, см. docs/PLAN.md) ────────────────────────────
 
@@ -40,21 +39,13 @@ export const ROLES: Record<Role, RoleInfo> = {
     badge: 'bg-indigo-100 text-indigo-700',
     access: ['Новости своего раздела', 'Контент своего раздела'],
   },
-  FACTION: {
-    label: 'Аппарат фракции',
-    labelKz: 'Фракция аппараты',
-    description: 'Контент раздела «Фракция».',
+  DEPUTY: {
+    label: 'Депутат',
+    labelKz: 'Депутат',
+    description: 'Работа с материалами фракции и депутатскими запросами.',
     color: 'bg-purple-50 text-purple-700 border-purple-200',
     badge: 'bg-purple-100 text-purple-700',
     access: ['Раздел «Фракция»'],
-  },
-  BRANCH_EDITOR: {
-    label: 'Редактор филиала',
-    labelKz: 'Филиал редакторы',
-    description: 'Редактирование только своего филиала (адрес, контакты, председатель).',
-    color: 'bg-green-50 text-green-700 border-green-200',
-    badge: 'bg-green-100 text-green-700',
-    access: ['Свой филиал'],
   },
   RECEPTION_MANAGER: {
     label: 'Менеджер приёмной',
@@ -70,9 +61,8 @@ export const ROLE_ORDER: Role[] = [
   'ADMIN',
   'CHIEF_EDITOR',
   'SECTION_EDITOR',
-  'FACTION',
-  'BRANCH_EDITOR',
   'RECEPTION_MANAGER',
+  'DEPUTY',
 ];
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
@@ -83,7 +73,6 @@ interface FormState {
   role: Role;
   status: 'ACTIVE' | 'BLOCKED';
   password: string;
-  branchId: string;
   section: string;
 }
 
@@ -98,14 +87,12 @@ function UserModal({
   onClose: () => void;
   saving: boolean;
 }) {
-  const { data: branches = [] } = useBranches();
   const [form, setForm] = useState<FormState>({
     name: initial?.name ?? '',
     email: initial?.email ?? '',
     role: initial?.role ?? 'SECTION_EDITOR',
     status: initial?.status ?? 'ACTIVE',
     password: '',
-    branchId: initial?.branchId ?? '',
     section: initial?.section ?? '',
   });
   const [showPw, setShowPw] = useState(false);
@@ -114,8 +101,7 @@ function UserModal({
   const isValid =
     form.name &&
     form.email &&
-    (isEdit || form.password.length >= 8) &&
-    (form.role !== 'BRANCH_EDITOR' || form.branchId);
+    (isEdit || form.password.length >= 8);
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
@@ -175,24 +161,6 @@ function UserModal({
               })}
             </div>
           </div>
-
-          {form.role === 'BRANCH_EDITOR' && (
-            <div>
-              <label className="block text-sm font-medium text-brand-dark mb-1">
-                Филиал <span className="text-brand-red">*</span>
-              </label>
-              <select
-                value={form.branchId}
-                onChange={e => setForm(p => ({ ...p, branchId: e.target.value }))}
-                className="w-full border border-brand-silver rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brand-red bg-white"
-              >
-                <option value="">Выберите филиал...</option>
-                {branches.map(b => (
-                  <option key={b.id} value={b.id}>{b.cityRu}</option>
-                ))}
-              </select>
-            </div>
-          )}
 
           {form.role === 'SECTION_EDITOR' && (
             <div>
@@ -262,15 +230,12 @@ function UserModal({
 
 export default function UsersPage() {
   const { data: users = [], isLoading } = useUsers();
-  const { data: branches = [] } = useBranches();
   const [modal, setModal] = useState<{ open: boolean; editing?: CmsUser }>({ open: false });
   const [roleFilter, setRoleFilter] = useState<Role | 'ALL'>('ALL');
 
   const createMut = useCreateUser();
   const updateMut = useUpdateUser(modal.editing?.id ?? '');
   const blockMut = useBlockUser();
-
-  const branchName = (id: string | null) => branches.find(b => b.id === id)?.cityRu ?? '—';
 
   const filtered = roleFilter === 'ALL' ? users : users.filter(u => u.role === roleFilter);
 
@@ -280,7 +245,7 @@ export default function UsersPage() {
         name: data.name,
         role: data.role,
         status: data.status,
-        branchId: data.role === 'BRANCH_EDITOR' ? data.branchId : null,
+        branchId: null,
         section: data.role === 'SECTION_EDITOR' ? data.section : null,
       });
     } else {
@@ -289,7 +254,6 @@ export default function UsersPage() {
         email: data.email,
         password: data.password,
         role: data.role,
-        branchId: data.role === 'BRANCH_EDITOR' ? data.branchId : undefined,
         section: data.role === 'SECTION_EDITOR' ? data.section : undefined,
       });
     }
@@ -420,7 +384,7 @@ export default function UsersPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3 text-brand-gray text-sm">
-                      {user.role === 'BRANCH_EDITOR' ? branchName(user.branchId) : user.role === 'SECTION_EDITOR' ? (user.section ?? '—') : '—'}
+                      {user.role === 'SECTION_EDITOR' ? (user.section ?? '—') : '—'}
                     </td>
                     <td className="px-5 py-3">
                       <span className={`text-xs px-2 py-1 rounded-full font-medium ${user.status === 'ACTIVE' ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>

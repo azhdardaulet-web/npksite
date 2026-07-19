@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../../lib/prisma';
-import { authenticateToken, requireRole, requireOwnBranch } from '../../middleware/auth';
+import { authenticateToken, requireRole } from '../../middleware/auth';
 
 export const branchesRouter = Router();
 
@@ -27,7 +27,7 @@ function handleError(err: unknown, res: Response): void {
 const requireAdmin = [authenticateToken, requireRole('ADMIN')];
 const requireContent = [
   authenticateToken,
-  requireRole('CHIEF_EDITOR', 'SECTION_EDITOR', 'BRANCH_EDITOR', 'ADMIN'),
+  requireRole('CHIEF_EDITOR', 'SECTION_EDITOR', 'ADMIN'),
 ];
 
 // ─── Public: GET /api/v1/branches ─────────────────────────────────────────────
@@ -82,12 +82,10 @@ branchesRouter.post('/', ...requireAdmin, async (req: Request, res: Response): P
 });
 
 // ─── CMS: PUT /cms/api/v1/branches/:id ────────────────────────────────────────
-// BRANCH_EDITOR может редактировать только свой филиал (requireOwnBranch).
 
 branchesRouter.put(
   '/:branchId',
-  authenticateToken,
-  requireOwnBranch,
+  ...requireContent,
   async (req: Request, res: Response): Promise<void> => {
     const id = String(req.params['branchId']);
     const parsed = BranchInputSchema.partial().safeParse(req.body);

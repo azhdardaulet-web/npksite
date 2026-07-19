@@ -25,7 +25,7 @@ function handleError(err: unknown, res: Response): void {
 
 const requireFaction = [
   authenticateToken,
-  requireRole('FACTION', 'CHIEF_EDITOR', 'ADMIN'),
+  requireRole('DEPUTY', 'CHIEF_EDITOR', 'ADMIN'),
 ];
 
 // GET /cms/api/v1/deputy-requests

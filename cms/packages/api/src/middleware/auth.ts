@@ -107,29 +107,6 @@ export function requireRole(...allowedRoles: Role[]) {
   };
 }
 
-/**
- * Ограничивает доступ BRANCH_EDITOR только к своему филиалу (req.params.branchId).
- * ADMIN проходит всегда. Должен вызываться после authenticateToken.
- */
-export function requireOwnBranch(req: Request, res: Response, next: NextFunction): void {
-  if (!req.user) {
-    res.status(401).json({ error: 'Требуется авторизация' });
-    return;
-  }
-
-  if (req.user.role === 'ADMIN') {
-    next();
-    return;
-  }
-
-  if (req.user.role !== 'BRANCH_EDITOR' || req.user.branchId !== req.params['branchId']) {
-    res.status(403).json({ error: 'Недостаточно прав доступа' });
-    return;
-  }
-
-  next();
-}
-
 // Shorthand middleware combinations
 export const requireAdmin = [authenticateToken, requireRole('ADMIN')];
 export const requireNewsEditor = [
@@ -138,7 +115,7 @@ export const requireNewsEditor = [
 ];
 export const requireContentManager = [
   authenticateToken,
-  requireRole('CHIEF_EDITOR', 'SECTION_EDITOR', 'BRANCH_EDITOR', 'FACTION', 'ADMIN'),
+  requireRole('CHIEF_EDITOR', 'SECTION_EDITOR', 'DEPUTY', 'ADMIN'),
 ];
 export const requireReceptionManager = [
   authenticateToken,
