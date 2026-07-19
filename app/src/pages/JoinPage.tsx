@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { UserPlus, Heart, CheckCircle, ChevronDown, ChevronRight, Check, ArrowLeft } from 'lucide-react';
 import { SectionHeader } from '@/components/SectionHeader';
 import { ScrollReveal } from '@/components/ScrollReveal';
@@ -561,7 +562,10 @@ export function JoinPage() {
               {applicationId && (
                 <p className="text-body text-text-muted mb-1">Номер заявки: <span className="text-text-base font-medium">{applicationId}</span></p>
               )}
-              <p className="text-body text-text-base">Мы свяжемся с вами в ближайшее время.</p>
+              <p className="text-body text-text-base mb-6">Мы свяжемся с вами в ближайшее время.</p>
+              <Link to="/">
+                <OutlinedButton>На главную</OutlinedButton>
+              </Link>
             </div>
           </ScrollReveal>
         )}
