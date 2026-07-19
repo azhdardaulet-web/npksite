@@ -63,10 +63,10 @@ export function Footer() {
           <div>
             <h4 className="text-label font-medium text-text-base mb-4">Контакты</h4>
             <div className="space-y-2 text-body text-text-muted">
-              <p>Астана, ул. Желтоксан, 16</p>
-              <p>Алматы, пр. Абая, 42</p>
-              <p>+7 700 088 19 17</p>
-              <p>info@halykpartiyasy.kz</p>
+              <p>010000, Астана, ул. Желтоксан, 16</p>
+              <a href="mailto:info@halykpartiyasy.kz" className="inline-block hover:text-text-base transition-colors">
+                info@halykpartiyasy.kz
+              </a>
             </div>
           </div>
 
