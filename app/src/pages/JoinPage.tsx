@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { UserPlus, Heart, CheckCircle, ChevronDown, ChevronRight, Check, ArrowLeft } from 'lucide-react';
 import { SectionHeader } from '@/components/SectionHeader';
 import { ScrollReveal } from '@/components/ScrollReveal';
@@ -11,8 +11,30 @@ import {
 } from '@/lib/api';
 import { isValidIin } from '@/lib/iin';
 
-const KZ_PHONE_RE = /^\+7\s?7\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Телефон храним как 10 цифр локального номера (7XX XXX XX XX, без +7) — источник истины.
+// Маска для показа — "+7 (7XX) XXX-XX-XX", для API — "+7 7XX XXX XX XX" (формат бэкенда, см.
+// kzPhoneSchema в cms/packages/shared/src/index.ts, менять его не стали, чтобы не задеть
+// другие формы на той же схеме).
+function extractPhoneDigits(input: string): string {
+  let d = input.replace(/\D/g, '');
+  if (d.length === 11 && (d[0] === '7' || d[0] === '8')) d = d.slice(1);
+  else if (d.length > 10) d = d.slice(d.length - 10);
+  return d.slice(0, 10);
+}
+function formatPhoneMasked(digits: string): string {
+  let out = '+7';
+  if (digits.length > 0) out += ' (' + digits.slice(0, 3);
+  if (digits.length >= 3) out += ')';
+  if (digits.length > 3) out += ' ' + digits.slice(3, 6);
+  if (digits.length > 6) out += '-' + digits.slice(6, 8);
+  if (digits.length > 8) out += '-' + digits.slice(8, 10);
+  return out;
+}
+function normalizePhoneForApi(digits: string): string {
+  return `+7 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 8)} ${digits.slice(8, 10)}`;
+}
 const SMS_CODE_TTL_S = 300; // держим в синхроне с cms/packages/api SMS_CODE_TTL_MS
 const RESEND_COOLDOWN_S = 60;
 
@@ -40,6 +62,10 @@ const STEPS = ['Старт', 'Данные', 'Заявление', 'Подпис
 
 const inputCls = 'w-full bg-surface-2 border border-line rounded-input px-4 py-3.5 text-body text-text-base placeholder:text-text-muted focus:border-red focus:shadow-focus outline-none transition-all';
 const labelCls = 'block text-[12px] font-semibold tracking-wide text-text-muted uppercase mb-1.5';
+const errorTextCls = 'text-[12px] text-red mt-1';
+function fieldCls(hasError: boolean) {
+  return `${inputCls} ${hasError ? 'border-red' : ''}`;
+}
 
 function stepCircleCls(done: boolean, active: boolean) {
   return `w-9 h-9 shrink-0 rounded-full flex items-center justify-center text-[13px] font-bold border-2 transition-all ${
@@ -120,7 +146,16 @@ export function JoinPage() {
   const [addressLine, setAddressLine] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [dataError, setDataError] = useState<string | null>(null);
+  const [step2Attempted, setStep2Attempted] = useState(false);
+
+  const fullNameRef = useRef<HTMLInputElement>(null);
+  const birthDateRef = useRef<HTMLInputElement>(null);
+  const idDocRef = useRef<HTMLInputElement>(null);
+  const iinRef = useRef<HTMLInputElement>(null);
+  const branchRef = useRef<HTMLSelectElement>(null);
+  const addressRef = useRef<HTMLInputElement>(null);
+  const phoneRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
 
   const [article8Consent, setArticle8Consent] = useState(false);
   const [dataConsent, setDataConsent] = useState(false);
@@ -153,10 +188,14 @@ export function JoinPage() {
   const iinDigitsOk = /^\d{12}$/.test(iin);
   const iinValid = iinDigitsOk && isValidIin(iin);
   const idDocValid = /^\d{9}$/.test(idDocNumber);
-  const phoneValid = KZ_PHONE_RE.test(phone.trim());
+  const phoneValid = phone.length === 10 && phone[0] === '7';
   const emailValid = email.trim() === '' || EMAIL_RE.test(email.trim());
+  const fullNameValid = !!fullName.trim();
+  const birthDateValid = !!birthDate;
+  const branchValid = !!branchId;
+  const addressValid = !!addressLine.trim();
 
-  const step2Valid = !!fullName.trim() && !!birthDate && iinValid && idDocValid && !!branchId && !!addressLine.trim() && phoneValid && emailValid;
+  const step2Valid = fullNameValid && birthDateValid && iinValid && idDocValid && branchValid && addressValid && phoneValid && emailValid;
   const step3Valid = article8Consent && dataConsent;
 
   function formatTime(s: number) {
@@ -170,10 +209,24 @@ export function JoinPage() {
     setStep(2);
   }
 
+  // Валидация по нажатию «Продолжить»: подсвечиваем невалидные поля и скроллим к первому.
   function goToStep3() {
-    setDataError(null);
+    setStep2Attempted(true);
     if (!step2Valid) {
-      setDataError('Проверьте поля — что-то заполнено неверно или пропущено.');
+      const fieldChecks: Array<[boolean, typeof fullNameRef]> = [
+        [fullNameValid, fullNameRef],
+        [birthDateValid, birthDateRef],
+        [idDocValid, idDocRef],
+        [iinValid, iinRef],
+        [branchValid, branchRef as typeof fullNameRef],
+        [addressValid, addressRef],
+        [phoneValid, phoneRef],
+        [emailValid, emailRef],
+      ];
+      const firstInvalid = fieldChecks.find(([valid]) => !valid);
+      const el = firstInvalid?.[1].current;
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el?.focus();
       return;
     }
     setStep(3);
@@ -183,7 +236,7 @@ export function JoinPage() {
     setCodeError(null);
     setSendingCode(true);
     try {
-      const res = await sendJoinSmsCode(phone.trim());
+      const res = await sendJoinSmsCode(normalizePhoneForApi(phone));
       setCodeSent(true);
       setCodeVerified(false);
       setCode('');
@@ -201,7 +254,7 @@ export function JoinPage() {
     setCodeError(null);
     setVerifying(true);
     try {
-      const res = await verifyJoinSmsCode(phone.trim(), code);
+      const res = await verifyJoinSmsCode(normalizePhoneForApi(phone), code);
       if (!res.valid) {
         setCodeError('Неверный код. Проверьте SMS и попробуйте снова.');
         setCodeVerified(false);
@@ -227,7 +280,7 @@ export function JoinPage() {
         iin,
         idDocNumber,
         address: `${selectedBranch ? selectedBranch.cityRu + ', ' : ''}${addressLine.trim()}`,
-        phone: phone.trim(),
+        phone: normalizePhoneForApi(phone),
         email: email.trim() || undefined,
         city: selectedBranch?.cityRu,
         branchId: branchId || undefined,
@@ -307,66 +360,80 @@ export function JoinPage() {
               <div className="space-y-4">
                 <div>
                   <label className={labelCls}>ФИО</label>
-                  <input type="text" placeholder="Иванов Иван Иванович" value={fullName}
-                    onChange={e => setFullName(e.target.value)} className={inputCls} />
+                  <input ref={fullNameRef} type="text" placeholder="Иванов Иван Иванович" value={fullName}
+                    onChange={e => setFullName(e.target.value)}
+                    className={fieldCls(step2Attempted && !fullNameValid)} />
+                  {step2Attempted && !fullNameValid && <p className={errorTextCls}>Укажите ФИО полностью</p>}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={labelCls}>Дата рождения</label>
-                    <input type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} className={inputCls} />
+                    <input ref={birthDateRef} type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)}
+                      className={fieldCls(step2Attempted && !birthDateValid)} />
+                    {step2Attempted && !birthDateValid && <p className={errorTextCls}>Укажите дату рождения</p>}
                   </div>
                   <div>
                     <label className={labelCls}>Номер удостоверения</label>
-                    <input type="text" inputMode="numeric" maxLength={9} placeholder="9 цифр" value={idDocNumber}
+                    <input ref={idDocRef} type="text" inputMode="numeric" maxLength={9} placeholder="9 цифр" value={idDocNumber}
                       onChange={e => setIdDocNumber(e.target.value.replace(/\D/g, '').slice(0, 9))}
-                      className={`${inputCls} ${idDocNumber.length === 9 && !idDocValid ? 'border-red' : ''}`} />
+                      className={fieldCls((idDocNumber.length === 9 || step2Attempted) && !idDocValid)} />
+                    {(idDocNumber.length === 9 || step2Attempted) && !idDocValid && (
+                      <p className={errorTextCls}>9 цифр номера удостоверения</p>
+                    )}
                   </div>
                 </div>
 
                 <div>
                   <label className={labelCls}>ИИН</label>
-                  <input type="text" inputMode="numeric" maxLength={12} placeholder="12 цифр" value={iin}
+                  <input ref={iinRef} type="text" inputMode="numeric" maxLength={12} placeholder="12 цифр" value={iin}
                     onChange={e => setIin(e.target.value.replace(/\D/g, '').slice(0, 12))}
-                    className={`${inputCls} ${iinDigitsOk && !iinValid ? 'border-red' : ''}`} />
-                  {iinDigitsOk && !iinValid && (
-                    <p className="text-[12px] text-red mt-1">Неверный ИИН — проверьте цифры (контрольная сумма или дата рождения не сходятся)</p>
+                    className={fieldCls((iinDigitsOk || step2Attempted) && !iinValid)} />
+                  {(iinDigitsOk || step2Attempted) && !iinValid && (
+                    <p className={errorTextCls}>Неверный ИИН — проверьте цифры (контрольная сумма или дата рождения не сходятся)</p>
                   )}
                 </div>
 
                 <div>
                   <label className={labelCls}>Область / город</label>
                   <div className="relative">
-                    <select value={branchId} onChange={e => setBranchId(e.target.value)} className={`${inputCls} appearance-none cursor-pointer pr-10`}>
+                    <select ref={branchRef} value={branchId} onChange={e => setBranchId(e.target.value)}
+                      className={`${fieldCls(step2Attempted && !branchValid)} appearance-none cursor-pointer pr-10`}>
                       <option value="">Выберите филиал</option>
                       {branches.map(b => <option key={b.id} value={b.id}>{b.cityRu}</option>)}
                     </select>
                     <ChevronDown size={16} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
                   </div>
+                  {step2Attempted && !branchValid && <p className={errorTextCls}>Выберите филиал</p>}
                 </div>
 
                 <div>
                   <label className={labelCls}>Адрес (улица, дом, квартира)</label>
-                  <input type="text" placeholder="ул. Абая, д. 10, кв. 5" value={addressLine}
-                    onChange={e => setAddressLine(e.target.value)} className={inputCls} />
+                  <input ref={addressRef} type="text" placeholder="ул. Абая, д. 10, кв. 5" value={addressLine}
+                    onChange={e => setAddressLine(e.target.value)}
+                    className={fieldCls(step2Attempted && !addressValid)} />
+                  {step2Attempted && !addressValid && <p className={errorTextCls}>Укажите адрес</p>}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={labelCls}>Телефон</label>
-                    <input type="tel" placeholder="+7 7XX XXX XX XX" value={phone}
-                      onChange={e => setPhone(e.target.value)}
-                      className={`${inputCls} ${phone.length > 0 && !phoneValid ? 'border-red' : ''}`} />
+                    <input ref={phoneRef} type="tel" placeholder="+7 (7XX) XXX-XX-XX" value={formatPhoneMasked(phone)}
+                      onChange={e => setPhone(extractPhoneDigits(e.target.value))}
+                      className={fieldCls((phone.length > 0 || step2Attempted) && !phoneValid)} />
+                    {(phone.length > 0 || step2Attempted) && !phoneValid && (
+                      <p className={errorTextCls}>Введите номер полностью — +7 (7XX) XXX-XX-XX</p>
+                    )}
                   </div>
                   <div>
                     <label className={labelCls}>Email (необязательно)</label>
-                    <input type="email" placeholder="mail@example.com" value={email}
+                    <input ref={emailRef} type="email" placeholder="mail@example.com" value={email}
                       onChange={e => setEmail(e.target.value)}
-                      className={`${inputCls} ${email.length > 0 && !emailValid ? 'border-red' : ''}`} />
+                      className={fieldCls(email.length > 0 && !emailValid)} />
+                    <p className="text-[11px] text-text-muted mt-1">На эту почту придёт ссылка-подтверждение</p>
+                    {email.length > 0 && !emailValid && <p className={errorTextCls}>Проверьте формат почты</p>}
                   </div>
                 </div>
-
-                {dataError && <p className="text-body text-red">{dataError}</p>}
 
                 <div className="flex gap-3 pt-2">
                   <OutlinedButton className="flex-1" onClick={() => setStep(1)}>Назад</OutlinedButton>
@@ -398,7 +465,7 @@ export function JoinPage() {
                 <p className="mb-2">Номер документа, удостоверяющего личность гражданина Республики Казахстан: {idDocNumber || '_________'}</p>
                 <p className="mb-1">Область, город, адрес места жительства:</p>
                 <p className="mb-2">{selectedBranch ? selectedBranch.cityRu + ', ' : ''}{addressLine || '__________'}</p>
-                <p>Телефон: {phone || '__________'}</p>
+                <p>Телефон: {phone ? formatPhoneMasked(phone) : '__________'}</p>
               </div>
 
               <div className="space-y-3 mb-6">
@@ -428,7 +495,7 @@ export function JoinPage() {
             <div className="bg-surface rounded-card p-6 md:p-8 border border-line">
               <h3 className="text-heading-sm font-bold text-text-base mb-2">Подпись</h3>
               <p className="text-body text-text-muted mb-6">
-                Код подтверждения придёт на номер <b className="text-text-base">{phone}</b>
+                Код подтверждения придёт на номер <b className="text-text-base">{formatPhoneMasked(phone)}</b>
               </p>
 
               {!codeSent ? (
