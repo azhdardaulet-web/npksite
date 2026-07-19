@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { NewsSection, NarodnoeMediaSection } from '@/sections/NewsSection';
-import { ChevronRight, Search, X, Calendar } from 'lucide-react';
+import { Search, X, Calendar } from 'lucide-react';
 import { fetchNews, NEWS_FORMAT_LABELS, type NewsFormat, type PublicNewsItem } from '@/lib/api';
 
 /* ─── Data ────────────────────────────────────────────────────────── */
@@ -33,27 +33,6 @@ function getTag(item: PublicNewsItem) {
 function formatDate(iso: string | null) {
   if (!iso) return '';
   return new Date(iso).toLocaleDateString('ru-RU');
-}
-
-/* ─── Breadcrumbs ─────────────────────────────────────────────────── */
-function Breadcrumbs() {
-  return (
-    <nav style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, letterSpacing: '.04em', color: 'var(--text-muted)', marginBottom: 0 }}>
-      <Link to="/" style={{ color: 'var(--text-muted)', textDecoration: 'none', transition: 'color .15s' }}
-        onMouseEnter={e => (e.currentTarget.style.color = 'var(--text)')}
-        onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
-        Главная
-      </Link>
-      <ChevronRight size={12} />
-      <Link to="/novosti" style={{ color: 'var(--text-muted)', textDecoration: 'none', transition: 'color .15s' }}
-        onMouseEnter={e => (e.currentTarget.style.color = 'var(--text)')}
-        onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
-        Пресс-центр
-      </Link>
-      <ChevronRight size={12} />
-      <span style={{ color: 'var(--text)' }}>Новости и релизы</span>
-    </nav>
-  );
 }
 
 /* ─── Sidebar ─────────────────────────────────────────────────────── */
@@ -282,13 +261,6 @@ export function NewsPage() {
 
   return (
     <div style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh' }}>
-
-      {/* Breadcrumbs bar */}
-      <div>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 clamp(16px,4vw,40px) 20px', borderBottom: '1px solid var(--line)' }}>
-          <Breadcrumbs />
-        </div>
-      </div>
 
       {/* Hero news section — 48px gap above, comes naturally from NewsSection py */}
       <NewsSection hideAllNewsLink />

@@ -17,20 +17,21 @@ const TOP_LEVEL: Record<string, string> = {
   '/kontakty': 'Контакты',
   '/vstupit': 'Вступить в партию',
   '/filialy': 'Филиалы',
-  '/novosti': 'Новости',
   '/rukovodstvo': 'Руководство партии',
   '/frakciya': 'Фракция',
   '/mediakits': 'Пресс-кит',
   '/search': 'Поиск',
   '/magazin': 'Магазин',
-  '/smi-o-nas': 'СМИ о нас',
-  '/narodnoe-media': 'Народное медиа',
   '/ustav': 'Устав партии',
 };
 
 function crumbsFor(pathname: string): SiteCrumb[] {
   if (pathname === '/') return [];
   if (TOP_LEVEL[pathname]) return [{ label: TOP_LEVEL[pathname] }];
+
+  if (pathname === '/novosti') return [{ label: 'Пресс-центр', href: '/novosti' }, { label: 'Новости и релизы' }];
+  if (pathname === '/smi-o-nas') return [{ label: 'Пресс-центр', href: '/novosti' }, { label: 'СМИ о нас' }];
+  if (pathname === '/narodnoe-media') return [{ label: 'Пресс-центр', href: '/novosti' }, { label: 'Народное медиа' }];
 
   if (pathname === '/o-partii/istoriya') return [{ label: 'О партии', href: '/o-partii' }, { label: 'История партии' }];
   if (pathname === '/o-partii/ustav') return [{ label: 'О партии', href: '/o-partii' }, { label: 'Устав партии' }];
@@ -46,7 +47,11 @@ function crumbsFor(pathname: string): SiteCrumb[] {
 
   if (pathname.startsWith('/rukovodstvo/')) return [{ label: 'Руководство партии', href: '/rukovodstvo' }, { label: 'Профиль руководителя' }];
   if (pathname.startsWith('/filialy/')) return [{ label: 'Филиалы', href: '/filialy' }, { label: 'Страница филиала' }];
-  if (pathname.startsWith('/novosti/')) return [{ label: 'Новости', href: '/novosti' }, { label: 'Материал' }];
+  if (pathname.startsWith('/novosti/')) return [
+    { label: 'Пресс-центр', href: '/novosti' },
+    { label: 'Новости и релизы', href: '/novosti' },
+    { label: 'Материал' },
+  ];
   if (pathname.startsWith('/proekty/')) return [{ label: 'Проекты', href: '/proekty' }, { label: 'О проекте' }];
   if (pathname.startsWith('/verify/')) return [{ label: 'Проверка партбилета' }];
 

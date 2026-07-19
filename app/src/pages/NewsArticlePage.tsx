@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { fetchNews, fetchNewsBySlug, NEWS_FORMAT_LABELS, type PublicNewsItem, type PublicNewsDetail } from '@/lib/api';
 
 function getTag(item: { tags: string[]; format: PublicNewsItem['format'] }) {
@@ -168,27 +168,6 @@ export function NewsArticlePage() {
 
   return (
     <div style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh' }}>
-
-      {/* Breadcrumbs */}
-      <div>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 clamp(16px,4vw,40px) 20px', borderBottom: '1px solid var(--line)' }}>
-          <nav style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, letterSpacing: '.04em', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
-            <Link to="/" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'var(--text)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>Главная</Link>
-            <ChevronRight size={12} />
-            <Link to="/novosti" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'var(--text)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>Пресс-центр</Link>
-            <ChevronRight size={12} />
-            <Link to="/novosti" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'var(--text)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>Новости и релизы</Link>
-            <ChevronRight size={12} />
-            <span style={{ color: 'var(--text)' }}>{translation?.title ?? ''}</span>
-          </nav>
-        </div>
-      </div>
 
       {/* Article header */}
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '48px clamp(16px,4vw,40px) 0' }}>

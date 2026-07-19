@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronRight, Search, X } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { ReadAlsoSlider } from '@/sections/ReadAlsoSlider';
 import { fetchMediaPublications, type PublicMediaPublication } from '@/lib/api';
 
@@ -15,27 +14,6 @@ const FALLBACK_SMI: PublicMediaPublication[] = [
 
 const SOURCES: Source[] = ['Все', 'Телевидение', 'Радио', 'Интернет-СМИ', 'Газеты', 'Информагентства'];
 const PER_PAGE = 6;
-
-/* ─── Breadcrumbs ─────────────────────────────────────────────────── */
-function Breadcrumbs() {
-  return (
-    <nav style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, letterSpacing: '.04em', color: 'var(--text-muted)' }}>
-      <Link to="/" style={{ color: 'var(--text-muted)', textDecoration: 'none', transition: 'color .15s' }}
-        onMouseEnter={e => (e.currentTarget.style.color = 'var(--text)')}
-        onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
-        Главная
-      </Link>
-      <ChevronRight size={12} />
-      <Link to="/novosti" style={{ color: 'var(--text-muted)', textDecoration: 'none', transition: 'color .15s' }}
-        onMouseEnter={e => (e.currentTarget.style.color = 'var(--text)')}
-        onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
-        Пресс-центр
-      </Link>
-      <ChevronRight size={12} />
-      <span style={{ color: 'var(--text)' }}>СМИ о нас</span>
-    </nav>
-  );
-}
 
 /* ─── Sidebar ─────────────────────────────────────────────────────── */
 function Sidebar({
@@ -215,13 +193,6 @@ export function SmiPage() {
 
   return (
     <div style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh' }}>
-
-      {/* Breadcrumbs */}
-      <div>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 clamp(16px,4vw,40px) 20px', borderBottom: '1px solid var(--line)' }}>
-          <Breadcrumbs />
-        </div>
-      </div>
 
       {/* Page hero */}
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '48px clamp(16px,4vw,40px) 24px' }}>
