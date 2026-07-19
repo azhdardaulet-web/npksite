@@ -58,6 +58,8 @@ const config: ContentCrudConfig<DeputyRequest, DeputyRequestFormShape> = {
   }),
   getRowTitle: (d) => d.title,
   getRowSubtitle: (d) => (d.publishedAt ? new Date(d.publishedAt).toLocaleDateString('ru-RU') : undefined),
+  createHref: '/frakciya/zaprosy/new',
+  editHref: (d) => `/frakciya/zaprosy/${d.id}/edit`,
   renderForm: ({ form, setForm }) => <DeputyRequestFormFields form={form} setForm={setForm} />,
   isValid: (f) => !!f.title && !!f.fileUrl,
 };

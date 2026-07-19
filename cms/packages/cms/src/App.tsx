@@ -24,6 +24,7 @@ import MenuItemsPage from '@/pages/content/MenuItemsPage';
 import ShopSubscribersPage from '@/pages/shop/ShopSubscribersPage';
 import DeputiesPage from '@/pages/faction/DeputiesPage';
 import DeputyRequestsPage from '@/pages/faction/DeputyRequestsPage';
+import DeputyRequestEditor from '@/pages/faction/DeputyRequestEditor';
 import PlaceholderPage from '@/pages/PlaceholderPage';
 import DocumentsPage from '@/pages/documents/DocumentsPage';
 
@@ -50,6 +51,8 @@ export default function App() {
         <Route path="/podcast" element={<PrivateRoute><PlaceholderPage title="Народный подкаст" /></PrivateRoute>} />
         <Route path="/galereya" element={<PrivateRoute><PlaceholderPage title="Галерея" /></PrivateRoute>} />
         <Route path="/frakciya/zaprosy" element={<PrivateRoute><DeputyRequestsPage /></PrivateRoute>} />
+        <Route path="/frakciya/zaprosy/new" element={<PrivateRoute><DeputyRequestEditor /></PrivateRoute>} />
+        <Route path="/frakciya/zaprosy/:id/edit" element={<PrivateRoute><DeputyRequestEditor /></PrivateRoute>} />
         <Route path="/frakciya/deputaty" element={<PrivateRoute><DeputiesPage /></PrivateRoute>} />
 
         {/* Управление страницами — мини-панель «Страницы сайта» остаётся видимой

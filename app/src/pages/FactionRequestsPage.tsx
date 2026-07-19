@@ -44,6 +44,10 @@ function formatDate(iso: string | null): string {
   return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '.');
 }
 
+function descriptionText(value: string | null): string {
+  return (value ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 const PER_PAGE = 6;
 
 /* ─── Pagination ──────────────────────────────────────────────────── */
@@ -129,7 +133,7 @@ export function FactionRequestsPage() {
           docs.map((d) => ({
             date: formatDate(d.publishedAt),
             title: d.title,
-            excerpt: d.description ?? '',
+            excerpt: descriptionText(d.description),
             url: d.fileUrl,
           }))
         );

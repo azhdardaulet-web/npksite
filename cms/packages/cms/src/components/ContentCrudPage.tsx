@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil, Trash2, Loader2, ChevronUp, ChevronDown } from 'lucide-react';
 import { api } from '@/lib/api';
@@ -31,6 +31,8 @@ export interface ContentCrudConfig<TItem extends { id: string }, TForm> {
   buildPayload: (form: TForm) => unknown;
   getRowTitle: (item: TItem) => string;
   getRowSubtitle?: (item: TItem) => string | undefined;
+  createHref?: string;
+  editHref?: (item: TItem) => string;
   renderForm: (props: {
     form: TForm;
     setForm: (updater: (prev: TForm) => TForm) => void;
@@ -45,6 +47,7 @@ export function ContentCrudPage<TItem extends { id: string; sortOrder?: number }
   config: ContentCrudConfig<TItem, TForm>;
 }) {
   const { data: items = [], isLoading } = useEntityList<TItem>(config.basePath);
+  const navigate = useNavigate();
   const deleteMut = useDeleteEntity(config.basePath);
   const { open: openImagePicker, element: imagePickerEl } = useMediaPicker();
   const qc = useQueryClient();
@@ -55,6 +58,10 @@ export function ContentCrudPage<TItem extends { id: string; sortOrder?: number }
   const setForm = (updater: (prev: TForm) => TForm) => setFormState(updater);
 
   const openCreate = () => {
+    if (config.createHref) {
+      navigate(config.createHref);
+      return;
+    }
     setFormState(config.emptyForm);
     setModal({ open: true });
   };
@@ -70,6 +77,10 @@ export function ContentCrudPage<TItem extends { id: string; sortOrder?: number }
   }, [location.search]);
 
   const openEdit = (item: TItem) => {
+    if (config.editHref) {
+      navigate(config.editHref(item));
+      return;
+    }
     setFormState(config.parseItem(item));
     setModal({ open: true, editing: item });
   };

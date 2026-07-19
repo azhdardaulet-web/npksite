@@ -41,6 +41,22 @@ cmsDeputyRequestsRouter.get('/', ...requireFaction, async (_req: Request, res: R
   }
 });
 
+// GET /cms/api/v1/deputy-requests/:id — отдельный редактор записи.
+cmsDeputyRequestsRouter.get('/:id', ...requireFaction, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const item = await prisma.document.findFirst({
+      where: { id: String(req.params['id']), type: 'deputy_request' },
+    });
+    if (!item) {
+      res.status(404).json({ error: 'Депутатский запрос не найден' });
+      return;
+    }
+    res.json(item);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
+
 // POST /cms/api/v1/deputy-requests
 cmsDeputyRequestsRouter.post('/', ...requireFaction, async (req: Request, res: Response): Promise<void> => {
   const parsed = DeputyRequestInputSchema.safeParse(req.body);
