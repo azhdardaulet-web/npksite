@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { UserPlus, Heart, Eye, CheckCircle, ChevronDown, Check, ArrowLeft } from 'lucide-react';
+import { UserPlus, Heart, CheckCircle, ChevronDown, ChevronRight, Check, ArrowLeft } from 'lucide-react';
 import { SectionHeader } from '@/components/SectionHeader';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -25,20 +25,14 @@ const roles = [
   {
     id: 'member' as const,
     icon: UserPlus,
-    title: 'Стать членом партии',
-    description: 'Полноценное участие в жизни партии. Голосование на съездах, выбор кандидатов, участие в партийных мероприятиях.',
+    title: 'Вступить в партию',
+    description: 'Подайте заявку на вступление, чтобы участвовать в жизни партии, инициативах и мероприятиях.',
   },
   {
     id: 'volunteer' as const,
     icon: Heart,
     title: 'Стать волонтёром',
-    description: 'Помогайте в предвыборной кампании. Распространение программы, агитационная работа, помощь на избирательных участках.',
-  },
-  {
-    id: 'observer' as const,
-    icon: Eye,
-    title: 'Наблюдатель на выборах',
-    description: 'Следите за честностью выборов. Защитите свой голос и голос народа. Обучение и аккредитация наблюдателей.',
+    description: 'Помогайте в общественных и предвыборных инициативах, информационной работе и мероприятиях партии.',
   },
 ];
 
@@ -47,9 +41,41 @@ const STEPS = ['Старт', 'Данные', 'Заявление', 'Подпис
 const inputCls = 'w-full bg-surface-2 border border-line rounded-input px-4 py-3.5 text-body text-text-base placeholder:text-text-muted focus:border-red focus:shadow-focus outline-none transition-all';
 const labelCls = 'block text-[12px] font-semibold tracking-wide text-text-muted uppercase mb-1.5';
 
-function Stepper({ step }: { step: number }) {
+function stepCircleCls(done: boolean, active: boolean) {
+  return `w-9 h-9 shrink-0 rounded-full flex items-center justify-center text-[13px] font-bold border-2 transition-all ${
+    done ? 'bg-red border-red text-white' : active ? 'border-red text-red bg-transparent' : 'border-line text-text-muted bg-transparent'
+  }`;
+}
+
+// Вертикальный степпер — колонка слева от карточки шага (десктоп).
+function VerticalStepper({ step }: { step: number }) {
   return (
-    <div className="flex items-center justify-between mb-10">
+    <div className="flex flex-col">
+      {STEPS.map((label, i) => {
+        const n = i + 1;
+        const done = n < step;
+        const active = n === step;
+        const isLast = n === STEPS.length;
+        return (
+          <div key={label} className={`flex items-stretch gap-3 ${isLast ? '' : 'pb-9'}`}>
+            <div className="flex flex-col items-center">
+              <div className={stepCircleCls(done, active)}>{done ? <Check size={16} /> : n}</div>
+              {!isLast && <div className={`w-[2px] flex-1 mt-1 transition-all ${done ? 'bg-red' : 'bg-line'}`} />}
+            </div>
+            <span className={`text-[14px] font-medium pt-1.5 ${active || done ? 'text-text-base' : 'text-text-muted'}`}>
+              {label}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// Компактный горизонтальный прогресс сверху — мобильная версия (узко, вертикальный степпер не влезает).
+function MobileStepper({ step }: { step: number }) {
+  return (
+    <div className="flex items-center justify-between mb-8 md:hidden">
       {STEPS.map((label, i) => {
         const n = i + 1;
         const done = n < step;
@@ -57,13 +83,7 @@ function Stepper({ step }: { step: number }) {
         return (
           <div key={label} className="flex items-center flex-1 last:flex-none">
             <div className="flex flex-col items-center gap-2 shrink-0">
-              <div
-                className={`w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold border-2 transition-all ${
-                  done ? 'bg-red border-red text-white' : active ? 'border-red text-red bg-transparent' : 'border-line text-text-muted bg-transparent'
-                }`}
-              >
-                {done ? <Check size={16} /> : n}
-              </div>
+              <div className={stepCircleCls(done, active)}>{done ? <Check size={16} /> : n}</div>
               <span className={`hidden sm:block text-[11px] font-medium ${active || done ? 'text-text-base' : 'text-text-muted'}`}>
                 {label}
               </span>
@@ -87,7 +107,7 @@ export function JoinPage() {
     || 'Подтверждаю достоверность указанных сведений и осведомлён(а) об ответственности за предоставление ложной информации в соответствии с законодательством Республики Казахстан. Даю согласие на обработку персональных данных в соответствии с политикой конфиденциальности.';
 
   const [step, setStep] = useState(1);
-  const [role, setRole] = useState<'member' | 'volunteer' | 'observer' | ''>('');
+  const [role, setRole] = useState<'member' | 'volunteer' | ''>('');
 
   const [branches, setBranches] = useState<PublicBranch[]>([]);
   useEffect(() => { fetchBranches().then(setBranches).catch(() => {}); }, []);
@@ -228,17 +248,25 @@ export function JoinPage() {
 
   return (
     <div className="pt-[104px] pb-16">
-      <div className="max-w-[720px] mx-auto px-4 md:px-10">
+      <div className="max-w-[960px] mx-auto px-4 md:px-10">
         <SectionHeader light="Вступить в" bold="партию" centered />
 
-        {step < 5 && <Stepper step={step} />}
+        {step < 5 && <MobileStepper step={step} />}
 
+        <div className={step < 5 ? 'md:grid md:grid-cols-[200px_1fr] md:gap-10 md:items-start' : ''}>
+          {step < 5 && (
+            <div className="hidden md:block pt-2">
+              <VerticalStepper step={step} />
+            </div>
+          )}
+
+          <div>
         {/* ── Шаг 1: Старт ── */}
         {step === 1 && (
           <ScrollReveal>
             <div className="bg-surface rounded-card p-6 md:p-8 border border-line">
-              <h3 className="text-heading-sm font-bold text-text-base mb-2 text-center">Выберите роль</h3>
-              <p className="text-body text-text-muted text-center mb-6">
+              <h3 className="text-heading-sm font-bold text-text-base mb-2">Выберите роль</h3>
+              <p className="text-body text-text-muted mb-6">
                 Дальше — 4 коротких шага: данные, заявление, подпись SMS-кодом и готово. Занимает пару минут.
               </p>
               <div className="space-y-4">
@@ -248,15 +276,18 @@ export function JoinPage() {
                     <button
                       key={r.id}
                       onClick={() => setRole(r.id)}
-                      className={`w-full flex items-start gap-4 p-5 rounded-card border transition-all duration-200 text-left ${
+                      className={`w-full flex items-start justify-between gap-4 p-5 rounded-card border transition-all duration-200 text-left ${
                         role === r.id ? 'border-red bg-red/[0.08]' : 'border-line hover:border-text-muted bg-surface-2'
                       }`}
                     >
-                      <Icon size={28} strokeWidth={1.5} className="text-red shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="text-body-lg font-bold text-text-base mb-1">{r.title}</h4>
-                        <p className="text-body text-text-muted">{r.description}</p>
+                      <div className="flex items-start gap-4">
+                        <Icon size={28} strokeWidth={1.5} className="text-red shrink-0 mt-0.5" />
+                        <div>
+                          <h4 className="text-body-lg font-bold text-text-base mb-1">{r.title}</h4>
+                          <p className="text-body text-text-muted">{r.description}</p>
+                        </div>
                       </div>
+                      <ChevronRight size={20} className="text-text-muted shrink-0 mt-1" />
                     </button>
                   );
                 })}
@@ -456,6 +487,8 @@ export function JoinPage() {
             </div>
           </ScrollReveal>
         )}
+          </div>
+        </div>
       </div>
     </div>
   );
