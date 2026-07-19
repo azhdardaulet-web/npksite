@@ -30,6 +30,7 @@ const PAGE_VISIBILITY_CATALOG = [
   { slug: 'home', title: 'Главная', path: '/' },
   { slug: 'about', title: 'О партии', path: '/o-partii' },
   { slug: 'history', title: 'История партии', path: '/o-partii/istoriya' },
+  { slug: 'ustav', title: 'Устав партии', path: '/o-partii/ustav' },
   { slug: 'projects', title: 'Проекты', path: '/proekty' },
   { slug: 'program', title: 'Программа', path: '/programma' },
   { slug: 'candidates', title: 'Кандидаты', path: '/kandidaty' },
@@ -72,6 +73,7 @@ const PAGE_NAV_TREE: PageNavNode[] = [
     pageSlug: 'about',
     children: [
       { label: 'История партии', route: '/history' },
+      { label: 'Устав партии', route: '/documents/ustav' },
       { label: 'Программа', route: '/program' },
       { label: 'Кандидаты', route: '/candidates' },
       { label: 'Руководство и команда', route: '/team' },

@@ -89,6 +89,8 @@ const NAV: NavItem[] = [
 const PATH_TO_PAGE_SLUG: Record<string, string> = {
   '/o-partii': 'about',
   '/o-partii/istoriya': 'history',
+  '/o-partii/ustav': 'ustav',
+  '/ustav': 'ustav',
   '/rukovodstvo': 'leadership',
   '/programma': 'program',
   '/proekty': 'projects',

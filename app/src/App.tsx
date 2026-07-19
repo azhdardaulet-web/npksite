@@ -20,6 +20,7 @@ import { NewsArticlePage } from '@/pages/NewsArticlePage';
 import { SmiPage } from '@/pages/SmiPage';
 import { NarodnoeMediaPage } from '@/pages/NarodnoeMediaPage';
 import { HistoryPage } from '@/pages/HistoryPage';
+import { UstavPage } from '@/pages/UstavPage';
 import { ProjectsPage } from '@/pages/ProjectsPage';
 import { ProjectDetailPage } from '@/pages/ProjectDetailPage';
 import { FactionCompositionPage } from '@/pages/FactionCompositionPage';
@@ -35,6 +36,8 @@ function App() {
         <Route path="/o-partii" element={<VisiblePageRoute slug="about"><AboutPage /></VisiblePageRoute>} />
         <Route path="/o-partii/:sub" element={<VisiblePageRoute slug="about"><AboutPage /></VisiblePageRoute>} />
         <Route path="/o-partii/istoriya" element={<VisiblePageRoute slug="history"><HistoryPage /></VisiblePageRoute>} />
+        <Route path="/o-partii/ustav" element={<VisiblePageRoute slug="ustav"><UstavPage /></VisiblePageRoute>} />
+        <Route path="/ustav" element={<VisiblePageRoute slug="ustav"><UstavPage /></VisiblePageRoute>} />
         <Route path="/proekty" element={<VisiblePageRoute slug="projects"><ProjectsPage /></VisiblePageRoute>} />
         <Route path="/proekty/:slug" element={<VisiblePageRoute slug="projects"><ProjectDetailPage /></VisiblePageRoute>} />
         <Route path="/programma" element={<VisiblePageRoute slug="program"><ProgramPage /></VisiblePageRoute>} />

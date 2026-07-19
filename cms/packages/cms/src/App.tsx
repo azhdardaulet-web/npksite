@@ -25,6 +25,7 @@ import ShopSubscribersPage from '@/pages/shop/ShopSubscribersPage';
 import DeputiesPage from '@/pages/faction/DeputiesPage';
 import DeputyRequestsPage from '@/pages/faction/DeputyRequestsPage';
 import PlaceholderPage from '@/pages/PlaceholderPage';
+import DocumentsPage from '@/pages/documents/DocumentsPage';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   return <Layout>{children}</Layout>;
@@ -60,6 +61,7 @@ export default function App() {
           <Route path="/filialy" element={<BranchesPage />} />
           <Route path="/candidates" element={<CandidatesPage />} />
           <Route path="/history" element={<HistoryEventsPage />} />
+          <Route path="/documents/ustav" element={<DocumentsPage />} />
           <Route path="/program" element={<ProgramBlocksPage />} />
           <Route path="/media-projects" element={<MediaProjectsPage />} />
           <Route path="/smi" element={<MediaPublicationsPage />} />

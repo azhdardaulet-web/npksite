@@ -10,7 +10,7 @@ export const publicPagesRouter = Router();
 export const cmsPagesRouter = Router();
 
 const VALID_SLUGS = [
-  'home', 'about', 'history', 'projects', 'program', 'candidates', 'media',
+  'home', 'about', 'history', 'ustav', 'projects', 'program', 'candidates', 'media',
   'priemnaya', 'contacts', 'join', 'branches', 'news', 'leadership', 'faction',
   'press-kit', 'search', 'shop', 'smi', 'press-center', 'footer',
 ] as const;

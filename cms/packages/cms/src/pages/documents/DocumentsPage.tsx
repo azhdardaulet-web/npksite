@@ -1,120 +1,137 @@
-import { useState, useRef } from 'react';
-import { FileText, Upload, Trash2, Download, File } from 'lucide-react';
+import { useRef, useState, type FormEvent } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Download, FileText, Loader2, Trash2, Upload } from 'lucide-react';
+import { api } from '@/lib/api';
 
-interface Doc {
+interface DocumentItem {
   id: string;
-  name: string;
-  size: string;
-  uploadedAt: string;
-  url: string;
+  title: string;
+  description: string | null;
+  fileUrl: string;
+  fileName: string;
+  fileSize: number;
+  year: number | null;
+  createdAt: string;
 }
 
-const MOCK: Doc[] = [];
+function formatSize(bytes: number) {
+  return `${(bytes / (1024 * 1024)).toFixed(1)} МБ`;
+}
 
 export default function DocumentsPage() {
-  const [docs, setDocs] = useState<Doc[]>(MOCK);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [year, setYear] = useState(String(new Date().getFullYear()));
+  const [error, setError] = useState('');
 
-  function handleFiles(files: FileList | null) {
-    if (!files) return;
-    Array.from(files).forEach(file => {
-      const sizeMb = (file.size / 1024 / 1024).toFixed(1);
-      setDocs(prev => [
-        ...prev,
-        {
-          id: Date.now().toString() + Math.random(),
-          name: file.name,
-          size: `${sizeMb} МБ`,
-          uploadedAt: new Date().toLocaleDateString('ru-RU'),
-          url: URL.createObjectURL(file),
-        },
-      ]);
-    });
-  }
+  const documents = useQuery<DocumentItem[]>({
+    queryKey: ['documents', 'ustav'],
+    queryFn: async () => {
+      const { data } = await api.get<DocumentItem[]>('/cms/api/v1/documents', { params: { type: 'ustav' } });
+      return data;
+    },
+  });
 
-  function handleDelete(id: string) {
-    if (window.confirm('Удалить документ?')) setDocs(prev => prev.filter(d => d.id !== id));
+  const upload = useMutation({
+    mutationFn: async (form: FormData) => {
+      await api.post('/cms/api/v1/documents', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+    },
+    onSuccess: () => {
+      setTitle('');
+      setDescription('');
+      if (fileRef.current) fileRef.current.value = '';
+      queryClient.invalidateQueries({ queryKey: ['documents', 'ustav'] });
+    },
+    onError: () => setError('Не удалось загрузить документ. Проверьте PDF-файл и повторите попытку.'),
+  });
+
+  const remove = useMutation({
+    mutationFn: (id: string) => api.delete(`/cms/api/v1/documents/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['documents', 'ustav'] }),
+    onError: () => setError('Не удалось удалить документ.'),
+  });
+
+  function handleSubmit(event: FormEvent) {
+    event.preventDefault();
+    setError('');
+    const file = fileRef.current?.files?.[0];
+    if (!title.trim() || !file) {
+      setError('Укажите название и выберите PDF-файл.');
+      return;
+    }
+    const form = new FormData();
+    form.append('title', title.trim());
+    form.append('description', description.trim());
+    form.append('type', 'ustav');
+    if (year) form.append('year', year);
+    form.append('file', file);
+    upload.mutate(form);
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-brand-dark">Документы</h1>
-          <p className="text-brand-gray text-sm mt-0.5">PDF-файлы для скачивания на сайте</p>
+      <div>
+        <h1 className="text-2xl font-bold text-brand-dark">Устав партии</h1>
+        <p className="text-brand-gray text-sm mt-0.5">PDF-документы, опубликованные на странице /o-partii/ustav</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="bg-white border border-brand-silver/50 p-5 space-y-4">
+        <h2 className="font-semibold text-brand-dark">Добавить документ</h2>
+        <div className="grid md:grid-cols-[1fr_120px] gap-4">
+          <label className="text-sm text-brand-dark">
+            <span className="block mb-1.5 font-medium">Название *</span>
+            <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full border border-brand-silver px-3 py-2 outline-none focus:border-brand-red" placeholder="Устав НПК" />
+          </label>
+          <label className="text-sm text-brand-dark">
+            <span className="block mb-1.5 font-medium">Год</span>
+            <input type="number" min="1990" max="2100" value={year} onChange={(e) => setYear(e.target.value)} className="w-full border border-brand-silver px-3 py-2 outline-none focus:border-brand-red" />
+          </label>
         </div>
-        <button
-          onClick={() => inputRef.current?.click()}
-          className="flex items-center gap-2 px-4 py-2 bg-brand-red text-white text-sm rounded-lg hover:bg-brand-red/90"
-        >
-          <Upload size={16} /> Загрузить документ
+        <label className="text-sm text-brand-dark block">
+          <span className="block mb-1.5 font-medium">Описание</span>
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="w-full border border-brand-silver px-3 py-2 outline-none focus:border-brand-red resize-y" />
+        </label>
+        <label className="text-sm text-brand-dark block">
+          <span className="block mb-1.5 font-medium">PDF-файл *</span>
+          <input ref={fileRef} type="file" accept="application/pdf,.pdf" className="block w-full text-sm text-brand-gray file:mr-4 file:border-0 file:bg-brand-cream file:px-4 file:py-2 file:text-brand-dark file:cursor-pointer" />
+        </label>
+        {error && <p className="text-sm text-brand-red">{error}</p>}
+        <button type="submit" disabled={upload.isPending} className="flex items-center gap-2 px-4 py-2 bg-brand-red text-white text-sm hover:bg-brand-red/90 disabled:opacity-50">
+          {upload.isPending ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+          Опубликовать
         </button>
-        <input
-          ref={inputRef}
-          type="file"
-          accept=".pdf,.doc,.docx,.xls,.xlsx"
-          multiple
-          className="hidden"
-          onChange={e => handleFiles(e.target.files)}
-        />
-      </div>
+      </form>
 
-      {/* Drop zone */}
-      <div
-        className="border-2 border-dashed border-brand-silver rounded-xl p-8 text-center hover:border-brand-red/50 hover:bg-brand-cream/30 transition-colors cursor-pointer"
-        onClick={() => inputRef.current?.click()}
-        onDragOver={e => e.preventDefault()}
-        onDrop={e => { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
-      >
-        <Upload size={32} className="mx-auto mb-2 text-brand-gray/60" />
-        <p className="text-brand-dark font-medium">Перетащите файлы сюда</p>
-        <p className="text-brand-gray text-sm mt-1">или нажмите для выбора · PDF, DOC, XLS · до 50 МБ</p>
-      </div>
-
-      <div className="bg-white rounded-xl border border-brand-silver/50 shadow-sm overflow-hidden">
-        {docs.length === 0 ? (
-          <div className="text-center py-16">
-            <File size={40} className="mx-auto mb-3 text-brand-silver" />
+      <div className="bg-white border border-brand-silver/50 overflow-hidden">
+        {documents.isLoading ? (
+          <div className="py-12 flex justify-center"><Loader2 className="animate-spin text-brand-gray" /></div>
+        ) : documents.isError ? (
+          <p className="text-center py-12 text-brand-red">Не удалось загрузить документы</p>
+        ) : documents.data?.length === 0 ? (
+          <div className="text-center py-14">
+            <FileText size={36} className="mx-auto mb-3 text-brand-silver" />
             <p className="text-brand-dark font-medium">Документов пока нет</p>
-            <p className="text-brand-gray text-sm mt-1">Загрузите первый документ через кнопку выше</p>
           </div>
         ) : (
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-brand-silver/40 bg-brand-cream/50">
-                <th className="text-left px-5 py-3 text-xs font-semibold text-brand-gray uppercase tracking-wide">Файл</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-brand-gray uppercase tracking-wide">Размер</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-brand-gray uppercase tracking-wide">Дата</th>
-                <th className="px-5 py-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {docs.map(doc => (
-                <tr key={doc.id} className="border-b border-brand-silver/30 hover:bg-brand-cream/30 transition-colors">
-                  <td className="px-5 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-brand-cream rounded-lg">
-                        <FileText size={16} className="text-brand-red" />
-                      </div>
-                      <span className="text-sm font-medium text-brand-dark">{doc.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3 text-brand-gray text-sm">{doc.size}</td>
-                  <td className="px-5 py-3 text-brand-gray text-sm">{doc.uploadedAt}</td>
-                  <td className="px-5 py-3">
-                    <div className="flex items-center gap-2 justify-end">
-                      <a href={doc.url} download={doc.name} className="p-1.5 text-brand-gray hover:text-brand-dark hover:bg-brand-cream rounded">
-                        <Download size={15} />
-                      </a>
-                      <button onClick={() => handleDelete(doc.id)} className="p-1.5 text-brand-gray hover:text-brand-red hover:bg-red-50 rounded">
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="divide-y divide-brand-silver/40">
+            {documents.data?.map((document) => (
+              <div key={document.id} className="p-4 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <FileText size={20} className="text-brand-red shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-brand-dark truncate">{document.title}</p>
+                    <p className="text-xs text-brand-gray">{document.fileName} · {formatSize(document.fileSize)}{document.year ? ` · ${document.year}` : ''}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <a href={document.fileUrl} target="_blank" rel="noopener noreferrer" aria-label={`Открыть ${document.title}`} className="p-2 text-brand-gray hover:text-brand-dark hover:bg-brand-cream"><Download size={16} /></a>
+                  <button type="button" aria-label={`Удалить ${document.title}`} disabled={remove.isPending} onClick={() => window.confirm(`Удалить «${document.title}»?`) && remove.mutate(document.id)} className="p-2 text-brand-gray hover:text-brand-red hover:bg-red-50 disabled:opacity-50"><Trash2 size={16} /></button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
