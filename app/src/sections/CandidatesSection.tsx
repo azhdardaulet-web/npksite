@@ -1,19 +1,34 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { candidates } from '@/lib/data';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { TextReveal } from '@/components/TextReveal';
 import { useHomeBlocks } from '@/hooks/useHomeBlocks';
+import { fetchTeam, type PublicTeamMember } from '@/lib/api';
+import { LEADERSHIP_FALLBACK } from '../../../shared/leadershipData';
 
 interface CandidatesIntroBlock { headingRu?: string; textRu?: string; }
 
 export function CandidatesSection() {
+  const [leaders, setLeaders] = useState<PublicTeamMember[]>(LEADERSHIP_FALLBACK);
   const { getBlock } = useHomeBlocks();
   const cms = getBlock<CandidatesIntroBlock>('candidates_intro');
   const heading = cms?.headingRu?.trim() || 'Лица партии';
   const subtitle = cms?.textRu?.trim() || 'Люди, которые уже сделали выбор — быть с народом. Депутаты, общественные деятели и лидеры регионов, которые каждый день работают для страны.';
 
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // До публикации списка кандидатов секция показывает актуальное руководство.
+  useEffect(() => {
+    let cancelled = false;
+    fetchTeam('LEADERSHIP')
+      .then((data) => {
+        if (!cancelled && data.length > 0) setLeaders(data);
+      })
+      .catch(() => {
+        // Локальный список уже установлен как безопасный запасной источник.
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   const scroll = (dir: number) => {
     if (scrollRef.current) {
@@ -39,7 +54,7 @@ export function CandidatesSection() {
             </p>
           </div>
           <Link
-            to="/kandidaty"
+            to="/rukovodstvo"
             className="mt-4 md:mt-0 inline-flex items-center gap-2 text-body font-medium text-accent-brand hover:gap-3 transition-all group"
           >
             Все участники
@@ -54,30 +69,34 @@ export function CandidatesSection() {
             className="flex gap-5 overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing pb-4"
             style={{ scrollSnapType: 'x mandatory' }}
           >
-            {candidates.map((candidate) => (
-              <div
-                key={candidate.id}
+            {leaders.map((leader) => (
+              <Link
+                key={leader.id}
+                to={leader.slug ? `/rukovodstvo/${leader.slug}` : '/rukovodstvo'}
                 className="shrink-0 w-[280px] md:w-[300px] bg-surface rounded-card overflow-hidden border border-line group hover:border-red/30 transition-all duration-300 hover:-translate-y-1"
                 style={{ scrollSnapAlign: 'start' }}
               >
                 {/* Photo */}
                 <div className="aspect-[4/5] overflow-hidden">
-                  <img
-                    src={candidate.photo}
-                    alt={candidate.name}
-                    className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
-                  />
+                  {leader.photoUrl ? (
+                    <img
+                      src={leader.photoUrl}
+                      alt={leader.name}
+                      className="w-full h-full object-cover object-top grayscale-[30%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-surface-2 flex items-center justify-center text-6xl font-bold text-accent-brand">
+                      {leader.name[0]}
+                    </div>
+                  )}
                 </div>
                 {/* Info */}
                 <div className="p-5">
-                  <h3 className="text-body-lg font-bold text-text-base mb-1">{candidate.name}</h3>
-                  <p className="text-label text-text-muted mb-2">{candidate.region} &middot; {candidate.district}</p>
-                  <p className="text-body text-text-muted line-clamp-2 mb-4">{candidate.promise}</p>
-                  <button className="w-full py-2.5 bg-surface-2 border border-line rounded-button text-body font-medium text-text-base hover:border-red/40 hover:bg-line transition-all">
-                    Поддержать
-                  </button>
+                  <h3 className="text-body-lg font-bold text-text-base mb-2">{leader.name}</h3>
+                  <p className="text-label text-accent-brand font-semibold mb-3 line-clamp-2">{leader.position}</p>
+                  {leader.bio && <p className="text-body text-text-muted line-clamp-3">{leader.bio}</p>}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
 
