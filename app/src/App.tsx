@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { PageLayout } from '@/components/PageLayout';
 import { HomePage } from '@/pages/HomePage';
@@ -30,9 +31,22 @@ import { FactionRequestsPage } from '@/pages/FactionRequestsPage';
 import { VerifyPage } from '@/pages/VerifyPage';
 import { VisiblePageRoute } from '@/components/VisiblePageRoute';
 
+const DevPartyCardPreviewPage = import.meta.env.DEV
+  ? lazy(async () => {
+      const module = await import('@/pages/PartyCardPreviewPage');
+      return { default: module.PartyCardPreviewPage };
+    })
+  : null;
+
 function App() {
   return (
     <Routes>
+      {DevPartyCardPreviewPage ? (
+        <Route
+          path="/dev/partbilet"
+          element={<Suspense fallback={null}><DevPartyCardPreviewPage /></Suspense>}
+        />
+      ) : null}
       <Route element={<PageLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/o-partii" element={<VisiblePageRoute slug="about"><AboutPage /></VisiblePageRoute>} />
