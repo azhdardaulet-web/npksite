@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { fetchNews, fetchNewsBySlug, NEWS_FORMAT_LABELS, type PublicNewsItem, type PublicNewsDetail } from '@/lib/api';
 
 function getTag(item: { tags: string[]; format: PublicNewsItem['format'] }) {
