@@ -33,6 +33,7 @@ const TABS: Array<{ id: Tab; label: string; icon: typeof Users }> = [
 ];
 
 const SITE_FIELDS = [
+  { key: 'member_number_start', label: 'Стартовый номер партийного билета', placeholder: '00000001', type: 'number' },
   { key: 'notify_email', label: 'Email для уведомлений CMS', placeholder: 'office@halykparty.kz', type: 'email' },
   { key: 'tg_delay_minutes', label: 'Задержка публикации в Telegram, минут', placeholder: '0', type: 'number' },
   { key: 'social_telegram', label: 'Telegram', placeholder: 'https://t.me/halykparty', type: 'url' },

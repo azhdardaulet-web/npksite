@@ -412,6 +412,12 @@ model JoinRequest {
   status        JoinRequestStatus @default(NEW)
   phoneVerified Boolean           @default(false)
   merchAddress  String?
+  memberNumber  String?           @unique
+  fullNameKz    String?
+  fullNameRu    String?
+  joinDate      DateTime?         @db.Date
+  cardFileUrl   String?
+  verifyUuid    String            @unique @default(uuid()) @db.Uuid
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 
