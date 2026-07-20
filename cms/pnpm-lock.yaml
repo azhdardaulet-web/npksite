@@ -17,7 +17,7 @@ importers:
 
   packages/api:
     dependencies:
-      '@dar-rail/shared':
+      '@npk/shared':
         specifier: workspace:*
         version: link:../shared
       '@pdf-lib/fontkit':
@@ -144,7 +144,7 @@ importers:
 
   packages/cms:
     dependencies:
-      '@dar-rail/shared':
+      '@npk/shared':
         specifier: workspace:*
         version: link:../shared
       '@dnd-kit/core':

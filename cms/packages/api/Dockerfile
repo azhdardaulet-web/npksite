@@ -25,13 +25,13 @@ COPY packages/api/src ./packages/api/src/
 RUN pnpm install --frozen-lockfile
 
 # Build shared first
-RUN pnpm --filter @dar-rail/shared build
+RUN pnpm --filter @npk/shared build
 
 # Generate Prisma client
 RUN cd packages/api && npx prisma generate
 
 # Build API
-RUN pnpm --filter @dar-rail/api build
+RUN pnpm --filter @npk/api build
 
 # ─── Stage 2: Runner ─────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner

@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { prisma } from '../../lib/prisma';
 import { requireNewsEditor } from '../../middleware/auth';
-import { Role, NewsFormatSchema, NewsStatusSchema, LangSchema } from '@dar-rail/shared';
+import { Role, NewsFormatSchema, NewsStatusSchema, LangSchema } from '@npk/shared';
 import { localizedValue } from '../../lib/localized';
 import {
   createNews,

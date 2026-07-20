@@ -11,7 +11,7 @@ import { ensurePrivateMembershipCardsBucket, MEMBERSHIP_CARDS_BUCKET, minioClien
 import { sendSms } from '../../lib/sms';
 import { getSetting } from '../../lib/settings';
 import { logger } from '../../lib/logger';
-import { JoinRequestRoleSchema, GenderSchema, kzPhoneSchema, iinSchema, idDocNumberSchema } from '@dar-rail/shared';
+import { JoinRequestRoleSchema, GenderSchema, kzPhoneSchema, iinSchema, idDocNumberSchema } from '@npk/shared';
 import { Prisma } from '@prisma/client';
 
 export const joinRequestsRouter = Router();

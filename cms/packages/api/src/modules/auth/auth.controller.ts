@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
-import { LoginSchema } from '@dar-rail/shared';
+import { LoginSchema } from '@npk/shared';
 import { login, refreshAccessToken, logout, saveRefreshToken } from './auth.service';
 import { authenticateToken } from '../../middleware/auth';
 

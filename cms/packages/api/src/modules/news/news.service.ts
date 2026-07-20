@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../lib/prisma';
-import { Lang, NewsFormat, NewsStatus } from '@dar-rail/shared';
+import { Lang, NewsFormat, NewsStatus } from '@npk/shared';
 import { localizedValue } from '../../lib/localized';
 
 // ─── Types ────────────────────────────────────────────────────────────────────

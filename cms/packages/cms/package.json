@@ -1,5 +1,5 @@
 {
-  "name": "@dar-rail/cms",
+  "name": "@npk/cms",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -10,7 +10,7 @@
     "lint": "eslint src --ext .ts,.tsx"
   },
   "dependencies": {
-    "@dar-rail/shared": "workspace:*",
+    "@npk/shared": "workspace:*",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",

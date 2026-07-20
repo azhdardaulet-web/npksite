@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { prisma } from '../../lib/prisma';
 import { logger } from '../../lib/logger';
-import { Role } from '@dar-rail/shared';
+import { Role } from '@npk/shared';
 
 const BCRYPT_ROUNDS = 12;
 const ACCESS_TOKEN_EXPIRES = process.env.JWT_EXPIRES_IN ?? '15m';

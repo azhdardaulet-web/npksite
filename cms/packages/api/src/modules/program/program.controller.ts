@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../lib/prisma';
 import { authenticateToken, requireRole } from '../../middleware/auth';
-import { LangSchema } from '@dar-rail/shared';
+import { LangSchema } from '@npk/shared';
 import { localizedValue } from '../../lib/localized';
 
 export const publicProgramRouter = Router();

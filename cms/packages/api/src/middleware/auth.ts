@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
 import { logger } from '../lib/logger';
-import { Role } from '@dar-rail/shared';
+import { Role } from '@npk/shared';
 
 // Extend Express Request to include authenticated user
 declare global {

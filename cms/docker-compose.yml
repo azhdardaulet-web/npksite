@@ -4,19 +4,19 @@ services:
   # ─── PostgreSQL ──────────────────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
-    container_name: darrail_postgres
+    container_name: npk_postgres
     restart: unless-stopped
     env_file: .env
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-darrail_cms}
-      POSTGRES_USER: ${POSTGRES_USER:-darrail}
+      POSTGRES_DB: ${POSTGRES_DB:-npk_cms}
+      POSTGRES_USER: ${POSTGRES_USER:-npk}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-darrail} -d ${POSTGRES_DB:-darrail_cms}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-npk} -d ${POSTGRES_DB:-npk_cms}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,7 +25,7 @@ services:
   # ─── MinIO ───────────────────────────────────────────────────────────────────
   minio:
     image: minio/minio:latest
-    container_name: darrail_minio
+    container_name: npk_minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
     env_file: .env
@@ -49,7 +49,7 @@ services:
     build:
       context: .
       dockerfile: packages/api/Dockerfile
-    container_name: darrail_api
+    container_name: npk_api
     restart: unless-stopped
     env_file: .env
     environment:
@@ -74,7 +74,7 @@ services:
     build:
       context: ../../app
       dockerfile: Dockerfile
-    container_name: darrail_frontend
+    container_name: npk_frontend
     restart: unless-stopped
     depends_on:
       - api
@@ -84,7 +84,7 @@ services:
     build:
       context: ./packages/cms
       dockerfile: Dockerfile
-    container_name: darrail_cms
+    container_name: npk_cms
     restart: unless-stopped
     depends_on:
       - api
@@ -97,7 +97,7 @@ services:
     build:
       context: ./nginx
       dockerfile: Dockerfile
-    container_name: darrail_nginx
+    container_name: npk_nginx
     restart: unless-stopped
     depends_on:
       - api
@@ -118,4 +118,4 @@ volumes:
 
 networks:
   default:
-    name: darrail_network
+    name: npk_network

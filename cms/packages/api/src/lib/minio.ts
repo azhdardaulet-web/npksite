@@ -9,7 +9,7 @@ export const minioClient = new Client({
   secretKey: process.env.MINIO_SECRET_KEY ?? '',
 });
 
-export const MINIO_BUCKET = process.env.MINIO_BUCKET ?? 'darrail-media';
+export const MINIO_BUCKET = process.env.MINIO_BUCKET ?? 'npk-media';
 export const MEMBERSHIP_CARDS_BUCKET = process.env.MINIO_MEMBERSHIP_CARDS_BUCKET ?? 'membership-cards';
 export const MINIO_PUBLIC_URL = (process.env.MINIO_PUBLIC_URL ?? '').replace(/\/$/, '');
 

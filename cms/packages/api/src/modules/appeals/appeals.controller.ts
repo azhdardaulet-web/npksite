@@ -10,7 +10,7 @@ import { sendMail } from '../../lib/mailer';
 import { getSetting } from '../../lib/settings';
 import { minioClient, MINIO_BUCKET, objectUrl } from '../../lib/minio';
 import { createGoogleMeetEvent, cancelGoogleMeetEvent } from '../../lib/googleCalendar';
-import { kzPhoneSchema } from '@dar-rail/shared';
+import { kzPhoneSchema } from '@npk/shared';
 import { Prisma } from '@prisma/client';
 
 const APPEAL_STATUS_LABEL: Record<string, string> = {

@@ -19,7 +19,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@dar-rail/shared": ["../shared/src/index.ts"]
+      "@npk/shared": ["../shared/src/index.ts"]
     }
   },
   "include": ["src"]

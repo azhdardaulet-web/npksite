@@ -1,6 +1,6 @@
-# DAR Rail CMS
+# НПК CMS
 
-Headless CMS для управления контентом сайта [darrail.com](https://darrail.com).
+Headless CMS для управления контентом сайта Народной партии Казахстана.
 
 **Стек:** Node.js 20 + Express 5 + Prisma + PostgreSQL 16 | React 19 + Vite + Tailwind | MinIO | Docker + Nginx
 
@@ -60,7 +60,7 @@ docker compose up -d
 | `MINIO_PORT` | — | Порт MinIO (default: `9000`) |
 | `MINIO_ACCESS_KEY` | ✅ | Логин MinIO |
 | `MINIO_SECRET_KEY` | ✅ | Пароль MinIO |
-| `MINIO_BUCKET` | — | Название бакета (default: `darrail-media`) |
+| `MINIO_BUCKET` | — | Название бакета (default: `npk-media`) |
 | `MINIO_PUBLIC_URL` | ✅ | Публичный URL для доступа к файлам |
 | `HCAPTCHA_SECRET` | ✅ | Секретный ключ hCaptcha (для форм) |
 | `PORT` | — | Порт API (default: `3001`) |
@@ -86,7 +86,7 @@ Seed-скрипт автоматически создаёт admin-пользов
 
 | Поле | Значение |
 |---|---|
-| Email | `admin@darrail.com` |
+| Email | `admin@npk.kz` |
 | Пароль | `ChangeMe123!` |
 | Роль | `ADMIN` |
 
@@ -176,8 +176,8 @@ docker compose exec api node -e "require('./dist/prisma/seed.js')"
 
 ### Доступ к CMS через VPN
 
-CMS (`cms.darrail.local`) доступна только с VPN-подсети (`10.0.0.0/8`).
-Настрой WireGuard или OpenVPN на сервере, добавь запись `cms.darrail.local` в `/etc/hosts` клиентов.
+CMS (`cms.halykparty.kz`) доступна только с VPN-подсети (`10.0.0.0/8`).
+Настрой WireGuard или OpenVPN на сервере, добавь запись `cms.halykparty.kz` в `/etc/hosts` клиентов.
 
 ---
 
@@ -203,10 +203,10 @@ cd packages/api && pnpm db:studio
 
 ```bash
 # Ручной дамп базы
-docker compose exec postgres pg_dump -U darrail darrail_cms > backup_$(date +%Y%m%d).sql
+docker compose exec postgres pg_dump -U npk npk_cms > backup_$(date +%Y%m%d).sql
 
 # Восстановление
-docker compose exec -T postgres psql -U darrail darrail_cms < backup_20250501.sql
+docker compose exec -T postgres psql -U npk npk_cms < backup_20250501.sql
 ```
 
 Рекомендуется настроить cron для автоматического pg_dump + загрузки в S3/MinIO.

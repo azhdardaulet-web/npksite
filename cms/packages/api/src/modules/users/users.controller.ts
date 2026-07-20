@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { prisma } from '../../lib/prisma';
 import { hashPassword } from '../auth/auth.service';
 import { requireAdmin } from '../../middleware/auth';
-import { CreateUserSchema } from '@dar-rail/shared';
+import { CreateUserSchema } from '@npk/shared';
 import { writeAudit } from '../../lib/audit';
 
 export const usersRouter = Router();

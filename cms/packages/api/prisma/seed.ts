@@ -601,13 +601,13 @@ async function main() {
   const appealSamplesData = [
     {
       title: 'Образец обращения (на русском)',
-      fileUrl: 'http://localhost:9000/darrail-media/documents/appeal-sample-ru.docx',
+      fileUrl: 'http://localhost:9000/npk-media/documents/appeal-sample-ru.docx',
       fileName: 'obrashcheniya-v-partiyu-1-12.docx',
       fileSize: 13149,
     },
     {
       title: 'Үлгі өтініш (қазақша)',
-      fileUrl: 'http://localhost:9000/darrail-media/documents/appeal-sample-kz.docx',
+      fileUrl: 'http://localhost:9000/npk-media/documents/appeal-sample-kz.docx',
       fileName: 'obrazes_kz.docx',
       fileSize: 11788,
     },
