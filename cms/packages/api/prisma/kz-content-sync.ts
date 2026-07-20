@@ -365,15 +365,34 @@ async function syncTranslatedEntities(): Promise<void> {
 
   const leaders = extractLeaders();
   const biographies = extractSupplementalBiographies();
+  const leaderNamesKz: Record<string, string> = {
+    'shokanov-nursultan': 'Шоқанов Нұрсұлтан Нұрланұлы',
+    'kusainov-bejbut-bulatovich': 'Құсайынов Бейбіт Болатұлы',
+    'aukenov-miras': 'Әукенов Мирас Серікбекұлы',
+    'kurmanbaev-zhandos': 'Құрманбаев Жандос',
+    'maksutov-kalel-mukataevich': 'Мақсұтов Кәлел Мұқатайұлы',
+  };
+  const biographyNamesKz: Record<string, string> = {
+    'shokanov-nursultan': 'Нұрсұлтан Нұрланұлы Шоқанов',
+    'kusainov-bejbut-bulatovich': 'Бейбіт Болатұлы Құсайынов',
+    'aukenov-miras': 'Мирас Серікбекұлы Әукенов',
+    'kurmanbaev-zhandos': 'Жандос Құрманбаев',
+    'maksutov-kalel-mukataevich': 'Кәлел Мұқатайұлы Мақсұтов',
+  };
   for (const member of await prisma.teamMember.findMany({ include: { translations: true } })) {
     const source = member.translations.find((item) => item.lang === 'ru');
     if (!source) continue;
     const approved = member.slug ? leaders.get(member.slug) : undefined;
+    const approvedName = member.slug ? leaderNamesKz[member.slug] : undefined;
+    const biography = member.slug ? biographies.get(member.slug) : undefined;
+    const biographyName = member.slug ? biographyNamesKz[member.slug] : undefined;
     const data = {
-      name: approved?.name ?? translate(source.name) ?? source.name,
+      name: approvedName ?? approved?.name ?? translate(source.name) ?? source.name,
       position: approved?.position ?? translate(source.position) ?? source.position,
       bio: approved?.bio ?? translate(source.bio),
-      fullBio: member.slug ? biographies.get(member.slug) ?? translate(source.fullBio) : translate(source.fullBio),
+      fullBio: biography && biographyName && approvedName
+        ? biography.replace(biographyName, approvedName)
+        : biography ?? translate(source.fullBio),
     };
     await prisma.teamMemberTranslation.upsert({
       where: { memberId_lang: { memberId: member.id, lang: 'kz' } },
