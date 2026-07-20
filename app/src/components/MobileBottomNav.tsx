@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Newspaper, Play, Menu, X, ChevronRight, Youtube, Send, Instagram, Facebook, Globe, Search, Glasses } from 'lucide-react';
 import { useA11y } from '@/contexts/A11yContext';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 /* ─── Menu sections ─────────────────────────────────────────────── */
 const MENU_SECTIONS = [
@@ -48,7 +49,7 @@ const SOCIALS = [
 /* ─── Hamburger drawer ──────────────────────────────────────────── */
 function MenuDrawer({ onClose }: { onClose: () => void }) {
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [lang, setLang] = useState<'ru' | 'kz'>('ru');
+  const { language: lang, setLanguage: setLang } = useLanguage();
   const location = useLocation();
   const { openPanel } = useA11y();
 
@@ -249,7 +250,7 @@ export function MobileBottomNav() {
         }}>
           {TABS.map((tab, idx) => {
             /* Center FAB */
-            if (tab.isCenter) return (
+            if ('isCenter' in tab && tab.isCenter) return (
               <button key={idx} className="npk-tab"
                 onClick={() => setJoinOpen(true)}
                 style={{
@@ -277,7 +278,7 @@ export function MobileBottomNav() {
             );
 
             /* Menu button */
-            if (tab.isMenu) return (
+            if ('isMenu' in tab && tab.isMenu) return (
               <button key={idx} className="npk-tab"
                 onClick={() => setMenuOpen(true)}
                 style={{

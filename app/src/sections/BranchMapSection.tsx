@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getLenis } from '@/hooks/useLenis';
 import { branchProfiles } from '@/lib/branchProfiles';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { approvedBranchesKz, localizeBranchMapItem } from '@/i18n/branchContent';
 
 // ─── Branch data ──────────────────────────────────────────────────────────────
 const BRANCHES = [
@@ -28,7 +30,8 @@ const BRANCHES = [
 ];
 
 function branchHref(branch: (typeof BRANCHES)[number]) {
-  const profile = branchProfiles.find((item) => item.title === branch.name);
+  const index = BRANCHES.findIndex((item) => item.email === branch.email);
+  const profile = index >= 0 ? branchProfiles[index] : undefined;
   return profile ? `/filialy/${profile.slug}` : '/filialy';
 }
 
@@ -62,7 +65,6 @@ class GlobeController {
   private _fullZoom   = 1.32;
   private drag = { on:false, x:0, y:0, l:0, p:0 };
   private parallax = { x:0, y:0, tx:0, ty:0 };
-  private lastUser = 0;
   private hoverFeat = -1;
   private hoverMarker = -1;
   private _moved = false;
@@ -82,7 +84,6 @@ class GlobeController {
   private _labelEls: {el:SVGTextElement,o:{t:string,lng:number,lat:number,big?:boolean},kind:string,lines:string[]}[] = [];
   private _markerEls: any[] = [];
   private _ro: ResizeObserver | null = null;
-  private svg: SVGSVGElement | null = null;
   private els: Record<string,any> = {};
 
   constructor(host: HTMLElement, onChange: (s: GlobeState) => void) {
@@ -153,7 +154,7 @@ class GlobeController {
   }
 
   private _limb(A: any, B: any) {
-    const V=this.view, D=this.D2R, tol=1e-4; let lo=0,hi=1;
+    const V=this.view, tol=1e-4; let lo=0,hi=1;
     for(let k=0;k<14;k++){ const m=(lo+hi)/2, lm=A.rx+m*(B.rx-A.rx); lm<tol?hi=m:lo=m; }
     const t=(lo+hi)/2;
     const Ry=A.ry+t*(B.ry-A.ry), Rz=A.rz+t*(B.rz-A.rz), n=Math.sqrt(Ry*Ry+Rz*Rz);
@@ -267,7 +268,7 @@ class GlobeController {
     const gLabels=this._S('g',{'pointer-events':'none'}); svg.appendChild(gLabels);
     const gMarkers=this._S('g'); svg.appendChild(gMarkers);
 
-    this.host.innerHTML=''; this.host.appendChild(svg); this.svg=svg;
+    this.host.innerHTML=''; this.host.appendChild(svg);
     this.els={ svg,defs,clipC,gStars,atmBlur,atmBlur2,ocean,gWorld,gLights,gRegions,shade,rim,gLabels,gMarkers };
 
     svg.addEventListener('pointerdown', e=>this._down(e));
@@ -302,7 +303,11 @@ class GlobeController {
       lines.forEach((ln: string,i: number)=>{ const ts=this._S('tspan',{x:'0',dy:i===0?'0':(kind==='country'?'1.15em':'1.1em')}); ts.textContent=ln; el.appendChild(ts); });
       g.appendChild(el); this._labelEls.push({el,o,kind,lines});
     };
-    GEO_LABELS.forEach(o=>mk(o,'country')); REGION_LABELS.forEach(o=>mk(o,'region'));
+    GEO_LABELS.forEach(o=>mk(o,'country'));
+    const regionLabels = document.documentElement.lang === 'kz'
+      ? REGION_LABELS.map((label, index) => ({ ...label, t: approvedBranchesKz[index + 3]?.city.toUpperCase() ?? label.t }))
+      : REGION_LABELS;
+    regionLabels.forEach(o=>mk(o,'region'));
   }
 
   private _makeMarkers() {
@@ -355,7 +360,7 @@ class GlobeController {
     const g=this.els.gLights; if(!g||!this._world) return; g.innerHTML=''; this._lightPts=[]; this._lightEls=[];
     const feats=this._world.map(f=>{ let mnx=180,mxx=-180,mny=90,mxy=-90; const rings: number[][][] = [];
       const visit=(r: number[][])=>{ rings.push(r); for(const p of r){ if(p[0]<mnx)mnx=p[0]; if(p[0]>mxx)mxx=p[0]; if(p[1]<mny)mny=p[1]; if(p[1]>mxy)mxy=p[1]; } };
-      if(f.type==='Polygon') (f.coords as number[][][]).forEach(visit); else (f.coords as number[][][][]).forEach(p=>(p as number[][][]).forEach(visit));
+      if(f.type==='Polygon') (f.coords as unknown as number[][][]).forEach(visit); else (f.coords as number[][][][]).forEach(p=>p.forEach(visit));
       return {rings,mnx,mxx,mny,mxy}; });
     let s=0x4d2a; const rnd=()=>{ s=(s*16807+12345)&0x7fffffff; return (s%100000)/100000; };
     const warm=['rgba(255,196,128,','rgba(255,224,170,','rgba(190,214,255,','rgba(255,170,120,'];
@@ -428,7 +433,7 @@ class GlobeController {
     V.phi=Math.max(-20,Math.min(78,this.drag.p+(m.y-this.drag.y)*0.32));
   }
 
-  private _up() { if(this.drag.on){ this.drag.on=false; this.lastUser=performance.now(); this.host.style.cursor='grab'; } }
+  private _up() { if(this.drag.on){ this.drag.on=false; this.host.style.cursor='grab'; } }
 
   onWheel(deltaY: number) {
     // Called by parent React component — always pass to Lenis
@@ -577,6 +582,8 @@ function KZRealMap({ activeBi, onSelect }: { activeBi: number|null; onSelect: (i
 }
 
 function BranchMapMobile() {
+  const { language } = useLanguage();
+  const visibleBranches = BRANCHES.map((branch, index) => localizeBranchMapItem(branch, index, language));
   const [listOpen, setListOpen] = useState(false);
   const [activeBi, setActiveBi] = useState<number|null>(null);
 
@@ -585,9 +592,9 @@ function BranchMapMobile() {
     setListOpen(false);
   };
 
-  const cities  = BRANCHES.filter(b=>b.city);
-  const oblasts = BRANCHES.filter(b=>!b.city);
-  const selBranch = activeBi!=null ? BRANCHES[activeBi] : null;
+  const cities  = visibleBranches.filter(b=>b.city);
+  const oblasts = visibleBranches.filter(b=>!b.city);
+  const selBranch = activeBi!=null ? visibleBranches[activeBi] : null;
 
   return (
     <section style={{background:'var(--surface)',fontFamily:"'Formular',Arial,sans-serif"}}>
@@ -597,7 +604,7 @@ function BranchMapMobile() {
           Наши филиалы
         </p>
         <h2 style={{fontSize:28,fontWeight:700,color:'var(--text)',lineHeight:'92%',letterSpacing:'-0.03em',margin:0}}>
-          {BRANCHES.length} отделений<br/>по всему Казахстану
+          {visibleBranches.length} отделений<br/>по всему Казахстану
         </h2>
       </div>
 
@@ -648,7 +655,7 @@ function BranchMapMobile() {
               <div style={{fontSize:9.5,letterSpacing:'0.14em',color:'var(--text-muted)',textTransform:'uppercase',fontWeight:600,marginBottom:4}}>
                 Города респ. значения
               </div>
-              {cities.map(b=>{const bi=BRANCHES.indexOf(b);return(
+              {cities.map(b=>{const bi=visibleBranches.indexOf(b);return(
                 <button key={bi} onClick={()=>select(bi)} style={{
                   width:'100%',display:'flex',alignItems:'center',gap:12,
                   padding:'10px 0',background:'none',border:'none',
@@ -668,7 +675,7 @@ function BranchMapMobile() {
               <div style={{fontSize:9.5,letterSpacing:'0.14em',color:'var(--text-muted)',textTransform:'uppercase',fontWeight:600,marginBottom:4}}>
                 Областные филиалы
               </div>
-              {oblasts.map(b=>{const bi=BRANCHES.indexOf(b);return(
+              {oblasts.map(b=>{const bi=visibleBranches.indexOf(b);return(
                 <button key={bi} onClick={()=>select(bi)} style={{
                   width:'100%',display:'flex',alignItems:'center',gap:12,
                   padding:'10px 0',background:'none',border:'none',
@@ -737,6 +744,8 @@ function BranchMapMobile() {
 // ─── React component ─────────────────────────────────────────────────────────
 export function BranchMapSection() {
   const isMobile = useIsMobile();
+  const { language } = useLanguage();
+  const visibleBranches = BRANCHES.map((branch, index) => localizeBranchMapItem(branch, index, language));
   const sectionRef   = useRef<HTMLElement>(null);
   const hostRef      = useRef<HTMLDivElement>(null);
   const controllerRef= useRef<GlobeController | null>(null);
@@ -777,7 +786,7 @@ export function BranchMapSection() {
   }, [isMobile]);
 
   const displayBi = globeState.selected ?? globeState.hovered;
-  const selBranch = displayBi != null ? BRANCHES[displayBi] : null;
+  const selBranch = displayBi != null ? visibleBranches[displayBi] : null;
 
   if (isMobile) return <BranchMapMobile />;
 
@@ -796,10 +805,10 @@ export function BranchMapSection() {
           style={{width:296,maxHeight:'76vh',background:'rgb(var(--globe-panel-rgb) / .86)',border:'1px solid rgb(var(--globe-panel-border-rgb) / .1)',backdropFilter:'blur(20px)',boxShadow:'0 30px 80px rgba(0,0,0,.55)',fontFamily:"'Formular',Arial,sans-serif"}}>
           <div className="flex items-center justify-between px-[18px] py-[14px]" style={{borderBottom:'1px solid rgb(var(--globe-panel-border-rgb) / .08)'}}>
             <span style={{fontSize:11,letterSpacing:'0.18em',color:'var(--text-muted)',fontWeight:600}}>ВЫБЕРИТЕ ФИЛИАЛ</span>
-            <span style={{fontSize:11,color:'#db1f26',fontWeight:700}}>{BRANCHES.length}</span>
+            <span style={{fontSize:11,color:'#db1f26',fontWeight:700}}>{visibleBranches.length}</span>
           </div>
           <div className="overflow-y-auto p-[6px]" data-lenis-prevent>
-            {BRANCHES.map((b,i)=>{
+            {visibleBranches.map((b,i)=>{
               const active=globeState.selected===i||(globeState.selected===null&&globeState.hovered===i);
               return (
                 <button key={i} onClick={()=>controllerRef.current?.selectBranch(i)}

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 
 const VIDEOS = [
   { id: 'McSNWo1FcuU', title: 'Нурсұлтан Шоқанов Қазақстан Халық партиясының төрағасы болып сайланды', date: '27.06.2026' },

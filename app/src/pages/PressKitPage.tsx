@@ -6,12 +6,12 @@ import { DarkActionButton } from '@/components/DarkActionButton';
 import { fetchDocuments, type PublicDocument } from '@/lib/api';
 
 const FALLBACK: PublicDocument[] = [
-  { id: '1', title: 'Логотип НПК (PNG, SVG)', description: null, type: 'press_kit', fileUrl: '#', fileName: 'logo.zip', fileSize: 2_400_000, year: null },
-  { id: '2', title: 'Предвыборная программа 2026 (PDF)', description: null, type: 'press_kit', fileUrl: '#', fileName: 'program.pdf', fileSize: 4_800_000, year: 2026 },
-  { id: '3', title: 'Пресс-релиз: запуск кампании (PDF)', description: null, type: 'press_kit', fileUrl: '#', fileName: 'release.pdf', fileSize: 1_200_000, year: 2026 },
-  { id: '4', title: 'Биографии кандидатов (PDF)', description: null, type: 'press_kit', fileUrl: '#', fileName: 'bios.pdf', fileSize: 3_100_000, year: null },
-  { id: '5', title: 'Фото кандидатов (ZIP)', description: null, type: 'press_kit', fileUrl: '#', fileName: 'photos.zip', fileSize: 18_500_000, year: null },
-  { id: '6', title: 'Брендбук партии (PDF)', description: null, type: 'press_kit', fileUrl: '#', fileName: 'brandbook.pdf', fileSize: 8_200_000, year: null },
+  { id: '1', title: 'Логотип НПК (PNG, SVG)', description: null, type: 'press_kit', fileUrl: '#', fileName: 'logo.zip', fileSize: 2_400_000, year: null, publishedAt: null },
+  { id: '2', title: 'Предвыборная программа 2026 (PDF)', description: null, type: 'press_kit', fileUrl: '#', fileName: 'program.pdf', fileSize: 4_800_000, year: 2026, publishedAt: null },
+  { id: '3', title: 'Пресс-релиз: запуск кампании (PDF)', description: null, type: 'press_kit', fileUrl: '#', fileName: 'release.pdf', fileSize: 1_200_000, year: 2026, publishedAt: null },
+  { id: '4', title: 'Биографии кандидатов (PDF)', description: null, type: 'press_kit', fileUrl: '#', fileName: 'bios.pdf', fileSize: 3_100_000, year: null, publishedAt: null },
+  { id: '5', title: 'Фото кандидатов (ZIP)', description: null, type: 'press_kit', fileUrl: '#', fileName: 'photos.zip', fileSize: 18_500_000, year: null, publishedAt: null },
+  { id: '6', title: 'Брендбук партии (PDF)', description: null, type: 'press_kit', fileUrl: '#', fileName: 'brandbook.pdf', fileSize: 8_200_000, year: null, publishedAt: null },
 ];
 
 function formatSize(bytes: number) {

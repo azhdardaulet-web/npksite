@@ -9,6 +9,8 @@ export const cmsTestimonialsRouter = Router();
 const TestimonialInputSchema = z.object({
   quote: z.string().min(1),
   author: z.string().min(1),
+  quoteKz: z.string().optional().nullable(),
+  authorKz: z.string().optional().nullable(),
   approved: z.boolean().optional(),
   sortOrder: z.number().int().min(0).optional(),
 });
@@ -26,10 +28,15 @@ const requireContent = [
 
 // ─── Public: GET /api/v1/testimonials ─────────────────────────────────────────
 
-publicTestimonialsRouter.get('/', async (_req: Request, res: Response): Promise<void> => {
+publicTestimonialsRouter.get('/', async (req: Request, res: Response): Promise<void> => {
+  const lang = req.query.lang === 'kz' ? 'kz' : 'ru';
   try {
     const testimonials = await prisma.testimonial.findMany({ where: { approved: true }, orderBy: { sortOrder: 'asc' } });
-    res.json(testimonials);
+    res.json(testimonials.map((item) => ({
+      ...item,
+      quote: lang === 'kz' && item.quoteKz?.trim() ? item.quoteKz : item.quote,
+      author: lang === 'kz' && item.authorKz?.trim() ? item.authorKz : item.author,
+    })));
   } catch (err) {
     handleError(err, res);
   }

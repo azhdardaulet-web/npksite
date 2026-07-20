@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const IconGlobe = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -16,7 +17,7 @@ const IconChevron = ({ open }: { open: boolean }) => (
 );
 
 export function MobileHeader() {
-  const [lang, setLang] = useState<'ru' | 'kz'>('ru');
+  const { language: lang, setLanguage: setLang } = useLanguage();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 

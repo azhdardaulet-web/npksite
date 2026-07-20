@@ -4,12 +4,13 @@ import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { usePageVisibility } from '@/contexts/PageVisibilityContext';
 import { useA11y } from '@/contexts/A11yContext';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { useT } from '@/i18n/useT';
+import type { TranslationKey } from '@/i18n/ru';
 
 /* ─── Dropdown nav structure ───────────────────────────────────────── */
 type SubLink = { label: string; href: string; desc?: string };
-type NavItem =
-  | { label: string; href: string; children?: SubLink[]; branches?: true }
-  | { label: string; href: string; children?: SubLink[]; branches?: true };
+type NavItem = { label: string; href: string; children?: SubLink[]; branches?: true };
 
 const BRANCHES_LIST = [
   { short: 'Алматы',                        href: '/filialy' },
@@ -85,6 +86,40 @@ const NAV: NavItem[] = [
     label: 'Магазин',
     href: '/magazin',
   },
+];
+
+const NAV_LABEL_KEYS: Record<string, TranslationKey> = {
+  'О партии': 'nav.about',
+  'История партии': 'nav.history',
+  'Руководство': 'nav.leadership',
+  'Устав': 'nav.charter',
+  'Программа': 'nav.program',
+  'Проекты': 'nav.projects',
+  'Фракция': 'nav.faction',
+  'О фракции': 'nav.factionAbout',
+  'Состав фракции': 'nav.factionComposition',
+  'Депутатские запросы': 'nav.factionRequests',
+  'Общественная приёмная': 'nav.reception',
+  'Филиалы': 'nav.branches',
+  'Пресс-центр': 'nav.pressCenter',
+  'Новости и релизы': 'nav.newsReleases',
+  'СМИ о нас': 'nav.mediaAboutUs',
+  'Галерея': 'nav.gallery',
+  'О портале «Халық үні Қазақстан»': 'nav.portal',
+  'Народный подкаст': 'nav.podcast',
+  'Видео': 'nav.video',
+  'Контакты': 'nav.contacts',
+  'Магазин': 'nav.shop',
+};
+
+const BRANCH_LABEL_KEYS: TranslationKey[] = [
+  'nav.branch.almaty', 'nav.branch.astana', 'nav.branch.shymkent',
+  'nav.branch.akmola', 'nav.branch.aktobe', 'nav.branch.almatyRegion',
+  'nav.branch.atyrau', 'nav.branch.eastKazakhstan', 'nav.branch.jetisu',
+  'nav.branch.zhambyl', 'nav.branch.westKazakhstan', 'nav.branch.karaganda',
+  'nav.branch.kostanay', 'nav.branch.abay', 'nav.branch.kyzylorda',
+  'nav.branch.mangystau', 'nav.branch.pavlodar', 'nav.branch.northKazakhstan',
+  'nav.branch.turkistan', 'nav.branch.ulytau',
 ];
 
 const PATH_TO_PAGE_SLUG: Record<string, string> = {
@@ -167,6 +202,7 @@ const socials = [
 
 /* ─── Dropdown menu components ─────────────────────────────────────── */
 function StandardDropdown({ items }: { items: SubLink[] }) {
+  const t = useT();
   return (
     <div className="absolute top-full left-0 pt-1 z-50 min-w-[220px]">
       <div className="bg-surface border border-line shadow-2xl py-1.5">
@@ -176,7 +212,7 @@ function StandardDropdown({ items }: { items: SubLink[] }) {
             to={item.href}
             className="block px-5 py-2.5 text-[12px] font-medium tracking-[0.03em] text-text-muted hover:text-text-base hover:bg-surface-2 transition-colors duration-100 whitespace-nowrap"
           >
-            {item.label}
+            {t(NAV_LABEL_KEYS[item.label])}
           </Link>
         ))}
       </div>
@@ -185,32 +221,33 @@ function StandardDropdown({ items }: { items: SubLink[] }) {
 }
 
 function BranchesDropdown() {
+  const t = useT();
   const cities = BRANCHES_LIST.slice(0, 3);
   const oblasts = BRANCHES_LIST.slice(3);
   return (
     <div className="absolute top-full left-0 pt-1 z-50 w-[480px]">
       <div className="bg-surface border border-line shadow-2xl p-4">
-        <div className="text-[10px] font-semibold tracking-[0.12em] uppercase text-text-muted mb-2 px-1">Города республиканского значения</div>
+        <div className="text-[10px] font-semibold tracking-[0.12em] uppercase text-text-muted mb-2 px-1">{t('nav.branchesCities')}</div>
         <div className="flex gap-1 mb-3 flex-wrap">
-          {cities.map((b) => (
+          {cities.map((b, index) => (
             <Link key={b.short} to={b.href}
               className="px-3 py-1.5 text-[12px] font-medium text-text-muted hover:text-text-base bg-surface-2 hover:bg-line border border-line transition-all duration-100">
-              {b.short}
+              {t(BRANCH_LABEL_KEYS[index])}
             </Link>
           ))}
         </div>
-        <div className="text-[10px] font-semibold tracking-[0.12em] uppercase text-text-muted mb-2 px-1">Областные филиалы</div>
+        <div className="text-[10px] font-semibold tracking-[0.12em] uppercase text-text-muted mb-2 px-1">{t('nav.branchesRegions')}</div>
         <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
-          {oblasts.map((b) => (
+          {oblasts.map((b, index) => (
             <Link key={b.short} to={b.href}
               className="px-1 py-1.5 text-[12px] font-medium text-text-muted hover:text-text-base hover:bg-surface-2 transition-colors duration-100 truncate">
-              {b.short}
+              {t(BRANCH_LABEL_KEYS[index + 3])}
             </Link>
           ))}
         </div>
         <div className="mt-3 pt-3 border-t border-line">
           <Link to="/filialy" className="text-[11px] font-semibold text-accent-brand hover:brightness-125 tracking-[0.06em] uppercase transition-colors">
-            Все филиалы →
+            {t('nav.allBranches')}
           </Link>
         </div>
       </div>
@@ -220,6 +257,7 @@ function BranchesDropdown() {
 
 /* ─── NavItem with hover dropdown ──────────────────────────────────── */
 function NavMenuItem({ item }: { item: NavItem }) {
+  const t = useT();
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -250,7 +288,7 @@ function NavMenuItem({ item }: { item: NavItem }) {
             : 'text-text-muted hover:text-text-base'
         )}
       >
-        {item.label}
+        {t(NAV_LABEL_KEYS[item.label])}
         {hasDropdown && (
           <span className={cn('transition-transform duration-150', open && 'rotate-180')}>
             <ChevronDown />
@@ -272,7 +310,8 @@ function NavMenuItem({ item }: { item: NavItem }) {
 
 /* ─── Component ─────────────────────────────────────────────────── */
 export function DesktopHeader() {
-  const [lang, setLang] = useState<'ru' | 'kz'>('ru');
+  const { language, setLanguage } = useLanguage();
+  const t = useT();
   const { isVisible } = usePageVisibility();
   const { openPanel } = useA11y();
   const visibleNav = NAV
@@ -290,7 +329,7 @@ export function DesktopHeader() {
           <Link to="/" className="shrink-0 flex items-center">
             <img
               src="/images/logo-rus.svg"
-              alt="Народная партия Казахстана"
+              alt={t('brand.fullName')}
               className="h-[38px] w-auto"
             />
           </Link>
@@ -312,7 +351,7 @@ export function DesktopHeader() {
           <div className="w-px h-6 bg-line shrink-0" />
           <Link to="/vstupit" className="shrink-0">
             <button className="px-6 py-2.5 bg-accent-brand hover:brightness-90 text-accent-brand-text text-[13px] font-semibold tracking-[0.08em] uppercase transition-colors duration-150 rounded-none">
-              Присоединиться
+              {t('nav.join')}
             </button>
           </Link>
         </div>
@@ -328,24 +367,24 @@ export function DesktopHeader() {
           </nav>
 
           <div className="flex items-center gap-0.5 shrink-0">
-            <Link to="/search" className="w-9 h-9 flex items-center justify-center text-text-muted hover:text-text-base hover:bg-surface-2 rounded-none transition-all duration-150">
+            <Link to="/search" aria-label={t('search.title')} className="w-9 h-9 flex items-center justify-center text-text-muted hover:text-text-base hover:bg-surface-2 rounded-none transition-all duration-150">
               <IconSearch />
             </Link>
             <div className="flex items-center gap-1 mx-2 border-r border-line pr-3">
               <IconGlobe />
               <button
-                onClick={() => setLang('kz')}
-                className={cn('text-[12px] font-medium tracking-[0.04em] transition-colors', lang === 'kz' ? 'text-text-base' : 'text-text-muted hover:text-text-base')}
-              >ҚАЗ</button>
+                onClick={() => setLanguage('kz')}
+                className={cn('text-[12px] font-medium tracking-[0.04em] transition-colors', language === 'kz' ? 'text-text-base' : 'text-text-muted hover:text-text-base')}
+              >{t('language.kz')}</button>
               <span className="text-text-muted text-[10px]">|</span>
               <button
-                onClick={() => setLang('ru')}
-                className={cn('text-[12px] font-medium tracking-[0.04em] transition-colors', lang === 'ru' ? 'text-text-base' : 'text-text-muted hover:text-text-base')}
-              >РУС</button>
+                onClick={() => setLanguage('ru')}
+                className={cn('text-[12px] font-medium tracking-[0.04em] transition-colors', language === 'ru' ? 'text-text-base' : 'text-text-muted hover:text-text-base')}
+              >{t('language.ru')}</button>
             </div>
             <ThemeToggle />
             <button
-              aria-label="Версия для слабовидящих"
+              aria-label={t('accessibility.open')}
               onClick={openPanel}
               className="w-9 h-9 flex items-center justify-center text-text-muted hover:text-text-base hover:bg-surface-2 rounded-none transition-all duration-150"
             >
