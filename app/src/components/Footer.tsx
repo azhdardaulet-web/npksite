@@ -39,7 +39,7 @@ export function Footer() {
             <img
               src={language === 'kz' ? '/images/logo-kz.svg' : '/images/logo-rus.svg'}
               alt="Народная партия Казахстана"
-              className="h-8 w-auto mb-3"
+              className={language === 'kz' ? 'h-[52px] w-auto mb-3' : 'h-8 w-auto mb-3'}
             />
             <p className="text-body text-text-muted">Народная Партия Казахстана</p>
           </div>

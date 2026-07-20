@@ -129,6 +129,8 @@ export const ru = {
   'carousel.forward': 'Вперёд',
   'carousel.slide': 'Слайд {number}',
 
+  'home.hero.title': 'Официальный сайт\nНародной партии\nКазахстана',
+  'home.hero.subtitle': 'Новости, программа партии, депутатская деятельность, общественная приёмная, филиалы, документы и контакты.',
   'home.hero.join': 'Вступить в партию',
   'home.hero.program': 'Программа партии',
   'home.news.title': 'Новости',

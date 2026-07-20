@@ -330,7 +330,10 @@ export function DesktopHeader() {
             <img
               src={language === 'kz' ? '/images/logo-kz.svg' : '/images/logo-rus.svg'}
               alt={t('brand.fullName')}
-              className="h-[38px] w-auto"
+              /* WHY: у logo-kz.svg почти вдвое больше пустого поля вокруг эмблемы
+                 внутри своего viewBox, чем у logo-rus.svg — при одинаковой высоте
+                 контейнера видимый рисунок казахского логотипа был заметно мельче. */
+              className={language === 'kz' ? 'h-[60px] w-auto' : 'h-[38px] w-auto'}
             />
           </Link>
           <div className="flex-1" />

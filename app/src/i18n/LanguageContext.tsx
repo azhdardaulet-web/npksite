@@ -93,8 +93,15 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
     const localizeText = (node: Text) => {
       const current = node.nodeValue ?? '';
-      const previousApplied = appliedText.get(node);
-      if (!originalText.has(node) || (previousApplied !== undefined && current !== previousApplied)) {
+      const knownOriginal = originalText.get(node);
+      const knownApplied = appliedText.get(node);
+      // WHY: если текущее значение не совпадает ни с тем, что мы сами когда-то
+      // применили, ни с ранее запомненным «оригиналом» — значит текст поменял
+      // кто-то другой (React перерендерил узел с новыми данными из CMS), и
+      // кэш нужно сбросить. Иначе при отсутствии перевода (target === source)
+      // appliedText не выставлялся, и следующий реальный React-апдейт текста
+      // ошибочно откатывался обратно к самому первому увиденному значению.
+      if (knownOriginal === undefined || (current !== knownOriginal && current !== knownApplied)) {
         originalText.set(node, current);
         appliedText.delete(node);
       }
@@ -126,12 +133,16 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       for (const attribute of attributes) {
         const current = element.getAttribute(attribute);
         if (current === null) continue;
+        const knownSaved = saved.get(attribute);
         const previousApplied = applied.get(attribute);
-        if (previousApplied !== undefined && current !== previousApplied) {
+        // WHY: та же логика, что и в localizeText — сброс кэша нужен, если
+        // текущее значение не совпадает ни с сохранённым «оригиналом», ни с
+        // ранее применённым переводом (иначе легитимный React-апдейт атрибута
+        // без перевода откатывался обратно к самому первому значению).
+        if (knownSaved === undefined || (current !== knownSaved && current !== previousApplied)) {
           saved.set(attribute, current);
           applied.delete(attribute);
         }
-        if (!saved.has(attribute)) saved.set(attribute, current);
         const source = saved.get(attribute) ?? current;
         const target = language === 'kz' ? translateValue(source) ?? source : source;
         if (current !== target) {

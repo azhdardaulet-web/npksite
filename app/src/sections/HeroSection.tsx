@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { OutlinedButton } from '@/components/OutlinedButton';
 import { useHomeBlocks } from '@/hooks/useHomeBlocks';
+import { useT } from '@/i18n/useT';
 import gsap from 'gsap';
 
 interface HomeHeroBlock {
@@ -17,13 +18,14 @@ export function HeroSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const accentLineRef = useRef<HTMLDivElement>(null);
 
+  const t = useT();
   const { getBlock } = useHomeBlocks();
   const cms = getBlock<HomeHeroBlock>('home_hero');
-  const titleLines = (cms?.titleRu?.trim() || 'Официальный сайт\nНародной партии\nКазахстана').split('\n');
-  const subtitle = cms?.subtitleRu?.trim() || 'Новости, программа партии, депутатская деятельность, общественная приёмная, филиалы, документы и контакты.';
-  const cta1Label = cms?.cta1LabelRu?.trim() || 'Вступить в партию';
+  const titleLines = (cms?.titleRu?.trim() || t('home.hero.title')).split('\n');
+  const subtitle = cms?.subtitleRu?.trim() || t('home.hero.subtitle');
+  const cta1Label = cms?.cta1LabelRu?.trim() || t('home.hero.join');
   const cta1Href = cms?.cta1Href?.trim() || '/vstupit';
-  const cta2Label = cms?.cta2LabelRu?.trim() || 'Программа партии';
+  const cta2Label = cms?.cta2LabelRu?.trim() || t('home.hero.program');
   const cta2Href = cms?.cta2Href?.trim() || '/programma';
   // WHY: широкое кадрирование (mobileherosec) используется и на десктопе тоже —
   // узкий вариант (desktopherosec) при object-cover в высокой колонке обрезал

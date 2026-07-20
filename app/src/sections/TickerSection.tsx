@@ -1,24 +1,42 @@
 import { useHomeBlocks } from '@/hooks/useHomeBlocks';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface TickerBlock {
   phrasesRu?: string[];
 }
 
+const PHRASES_RU = [
+  'Человек труда',
+  'Государство, которое держит слово',
+  'Один закон для всех',
+  'Экономика для людей',
+  'Жильё для работающей семьи',
+  'Образование и социальные лифты',
+  'Сильные регионы — сильный Казахстан',
+  'Экономика будущего',
+  'Здоровье и семья',
+];
+
+const PHRASES_KZ = [
+  'Еңбек адамы',
+  'Уәдесіне берік мемлекет',
+  'Заң бәріне ортақ',
+  'Адамға қызмет ететін экономика',
+  'Еңбек ететін отбасыға баспана',
+  'Білім және әлеуметтік өрлеу мүмкіндіктері',
+  'Қуатты өңірлер — қуатты Қазақстан',
+  'Болашақ экономикасы',
+  'Денсаулық пен отбасы',
+];
+
 export function TickerSection() {
+  const { language } = useLanguage();
   const { getBlock } = useHomeBlocks();
   const cms = getBlock<TickerBlock>('ticker');
 
-  const phrases = cms?.phrasesRu?.filter(Boolean).length ? cms.phrasesRu.filter(Boolean) : [
-    'Человек труда',
-    'Государство, которое держит слово',
-    'Один закон для всех',
-    'Экономика для людей',
-    'Жильё для работающей семьи',
-    'Образование и социальные лифты',
-    'Сильные регионы — сильный Казахстан',
-    'Экономика будущего',
-    'Здоровье и семья',
-  ];
+  const phrases = cms?.phrasesRu?.filter(Boolean).length
+    ? cms.phrasesRu.filter(Boolean)
+    : (language === 'kz' ? PHRASES_KZ : PHRASES_RU);
 
   const allPhrases = [...phrases, ...phrases, ...phrases, ...phrases];
 
