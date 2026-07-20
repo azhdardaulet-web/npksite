@@ -38,7 +38,7 @@ export function MobileHeader() {
       <div className="flex items-center justify-between gap-1.5 px-3 h-[56px]">
         {/* Logo: на узких экранах сжимаем, чтобы кнопка «Присоединиться» не вылезала */}
         <Link to="/" className="shrink min-w-0 flex items-center">
-          <img src="/images/logo-rus.svg" alt="Народная партия Казахстана" className="h-[28px] w-auto max-w-full" />
+          <img src={lang === 'kz' ? '/images/logo-kz.svg' : '/images/logo-rus.svg'} alt="Народная партия Казахстана" className="h-[28px] w-auto max-w-full" />
         </Link>
 
         <div className="flex items-center gap-1.5 shrink-0">

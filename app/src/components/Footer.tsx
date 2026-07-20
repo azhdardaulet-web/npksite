@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Youtube, Instagram, Facebook, Send } from 'lucide-react';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const navLinks = [
   { label: 'О партии', href: '/o-partii' },
@@ -26,6 +27,8 @@ const socialIcons = [
 ];
 
 export function Footer() {
+  const { language } = useLanguage();
+
   return (
     <footer className="bg-surface border-t border-line">
       <div className="max-w-[1280px] mx-auto px-4 md:px-10">
@@ -33,12 +36,11 @@ export function Footer() {
         <div className="py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Col 1: Logo */}
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 bg-red rounded-none flex items-center justify-center">
-                <span className="text-accent-brand-text font-bold text-sm">НП</span>
-              </div>
-              <span className="text-text-base font-bold text-sm">НПК</span>
-            </div>
+            <img
+              src={language === 'kz' ? '/images/logo-kz.svg' : '/images/logo-rus.svg'}
+              alt="Народная партия Казахстана"
+              className="h-8 w-auto mb-3"
+            />
             <p className="text-body text-text-muted">Народная Партия Казахстана</p>
           </div>
 

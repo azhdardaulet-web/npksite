@@ -3,6 +3,7 @@ import { ScrollReveal } from '@/components/ScrollReveal';
 import { TickerSection } from '@/sections/TickerSection';
 import { fetchProgramBlocks, type PublicProgramBlock } from '@/lib/api';
 import { ArrowUpRight, FileText } from 'lucide-react';
+import { useT } from '@/i18n/useT';
 
 const FALLBACK_BLOCKS: PublicProgramBlock[] = [
   { id: '1', n: 1, keyword: 'ТРУД', title: 'Человек труда', lead1: 'Страна держится не на должностях.', lead2: 'Страна держится на людях труда.', points: ['Рабочие профессии — почёт, уважение и достойный доход', 'Национальная программа «Человек труда»', 'Жилищные, образовательные и соцпрограммы для рабочих, инженеров, учителей, врачей', 'Рост производительности = рост зарплат', 'Государство защищает права каждого работника', 'Новые профессии — через массовую переподготовку кадров'], imageUrl: null, sortOrder: 0 },
@@ -45,6 +46,7 @@ function VideoSection() {
 }
 
 export function ProgramPage() {
+  const t = useT();
   const [blocks, setBlocks] = useState<PublicProgramBlock[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -68,7 +70,7 @@ export function ProgramPage() {
               <div className="w-12 h-[3px] bg-accent-brand mb-7" />
               <p className="text-label font-bold tracking-[0.16em] uppercase text-accent-brand mb-5">Предвыборная программа</p>
               <h1 className="font-formular text-[36px] sm:text-[44px] md:text-[36px] lg:text-[42px] xl:text-[52px] font-bold text-text-base leading-[1.04] tracking-tight">
-                Казахстан <span className="text-accent-brand dark:text-text-base">справедливых возможностей</span>
+                {t('program.page.titleMain')} <span className="text-accent-brand dark:text-text-base">{t('program.page.titleAccent')}</span>
               </h1>
               <p className="text-[17px] md:text-[19px] text-text-muted leading-relaxed mt-7 max-w-[42ch]">
                 Каждый, кто честно работает, должен жить достойно.
@@ -159,9 +161,9 @@ export function ProgramPage() {
             <div className="flex items-start gap-4">
               <FileText size={28} className="text-accent-brand shrink-0 mt-1" />
               <div>
-                <p className="text-label font-bold tracking-[0.14em] uppercase text-accent-brand">Документ</p>
-                <h2 className="text-heading-sm md:text-heading font-bold text-text-base mt-2">Полная программа партии</h2>
-                <p className="text-body text-text-muted mt-2">Официальный документ в формате PDF, 32 страницы.</p>
+                <p className="text-label font-bold tracking-[0.14em] uppercase text-accent-brand">{t('program.document.label')}</p>
+                <h2 className="text-heading-sm md:text-heading font-bold text-text-base mt-2">{t('program.document.title')}</h2>
+                <p className="text-body text-text-muted mt-2">{t('program.document.description')}</p>
               </div>
             </div>
             <a
@@ -170,7 +172,7 @@ export function ProgramPage() {
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-3 bg-accent-brand text-white px-7 py-4 text-body font-bold hover:brightness-90 transition shrink-0"
             >
-              Прочитать полную программу <ArrowUpRight size={18} />
+              {t('program.document.cta')} <ArrowUpRight size={18} />
             </a>
           </div>
         </ScrollReveal>

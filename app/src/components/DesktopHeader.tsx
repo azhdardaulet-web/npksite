@@ -328,7 +328,7 @@ export function DesktopHeader() {
         <div className="max-w-[1440px] mx-auto px-8 h-[64px] flex items-center gap-6">
           <Link to="/" className="shrink-0 flex items-center">
             <img
-              src="/images/logo-rus.svg"
+              src={language === 'kz' ? '/images/logo-kz.svg' : '/images/logo-rus.svg'}
               alt={t('brand.fullName')}
               className="h-[38px] w-auto"
             />
