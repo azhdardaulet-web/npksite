@@ -421,12 +421,14 @@ export function fetchAddressSuggest(q: string) {
   return api.get<{ suggestions: AddressSuggestion[] }>('/api/v1/address/suggest', { q });
 }
 
-// ─── Проверка заявления по QR с онлайн-партбилета (/verify/:id) ────────────────
+// ─── Проверка онлайн-партбилета по UUID из QR (/verify/:id) ────────────────────
 
 export interface JoinRequestVerifyResult {
   found: boolean;
   status?: 'NEW' | 'PROCESSING' | 'ACCEPTED' | 'REJECTED';
-  createdAt?: string;
+  fullName?: string;
+  memberNumber?: string | null;
+  joinDate?: string | null;
 }
 
 export function fetchVerifyJoinRequest(id: string) {

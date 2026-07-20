@@ -10,8 +10,8 @@ const STATUS_LABEL: Record<string, string> = {
   REJECTED: 'отклонено',
 };
 
-// Публичная страница проверки заявления по QR-коду с онлайн-партбилета.
-// Персональные данные заявителя намеренно не показываются (план правок №2, D3).
+// Публичная проверка онлайн-партбилета показывает только разрешённые данные:
+// имя, номер билета и дату вступления.
 export function VerifyPage() {
   const { id } = useParams<{ id: string }>();
   const [result, setResult] = useState<JoinRequestVerifyResult | null>(null);
@@ -39,17 +39,18 @@ export function VerifyPage() {
             ) : (
               <Clock size={56} className="text-text-muted mx-auto mb-4" />
             )}
-            <h1 className="text-heading-sm font-bold text-text-base mb-2">
-              Заявление №{id} от {result.createdAt ? new Date(result.createdAt).toLocaleDateString('ru-RU') : '—'}
-            </h1>
-            <p className="text-body text-text-muted">
-              Статус: {STATUS_LABEL[result.status ?? ''] ?? result.status}
-            </p>
+            <h1 className="text-heading-sm font-bold text-text-base mb-4">Подлинность подтверждена</h1>
+            <div className="space-y-2 text-body text-text-muted">
+              <p><span className="text-text-base font-medium">ФИО:</span> {result.fullName ?? '—'}</p>
+              <p><span className="text-text-base font-medium">Номер билета:</span> {result.memberNumber ?? '—'}</p>
+              <p><span className="text-text-base font-medium">Дата вступления:</span> {result.joinDate ? new Date(result.joinDate).toLocaleDateString('ru-RU') : '—'}</p>
+              <p>Статус: {STATUS_LABEL[result.status ?? ''] ?? result.status}</p>
+            </div>
           </>
         ) : (
           <>
             <XCircle size={56} className="text-text-muted mx-auto mb-4" />
-            <h1 className="text-heading-sm font-bold text-text-base mb-2">Заявление не найдено</h1>
+            <h1 className="text-heading-sm font-bold text-text-base mb-2">Партийный билет не найден</h1>
             <p className="text-body text-text-muted">Проверьте ссылку из партбилета — возможно, она устарела.</p>
           </>
         )}
