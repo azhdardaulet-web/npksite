@@ -6,7 +6,8 @@ import { prisma } from '../../lib/prisma';
 import { authenticateToken, requireRole } from '../../middleware/auth';
 import { verifyHCaptcha } from '../../lib/hcaptcha';
 import { sendMail } from '../../lib/mailer';
-import { generateCertificatePdf } from '../../lib/certificate';
+import { generateMembershipCardPdf } from '../../lib/certificate';
+import { ensurePrivateMembershipCardsBucket, MEMBERSHIP_CARDS_BUCKET, minioClient } from '../../lib/minio';
 import { sendSms } from '../../lib/sms';
 import { getSetting } from '../../lib/settings';
 import { logger } from '../../lib/logger';
@@ -125,7 +126,6 @@ joinRequestsRouter.post('/', async (req: Request, res: Response): Promise<void> 
     res.status(400).json({ error: 'Ошибка валидации', details: parsed.error.flatten() });
     return;
   }
-
   try {
     const captchaOk = await verifyHCaptcha(parsed.data.hCaptchaToken);
     if (!captchaOk) {
@@ -188,6 +188,21 @@ joinRequestsRouter.post('/', async (req: Request, res: Response): Promise<void> 
 // роли отвечают за новости/контент/обращения, но не за приём в партию.
 
 const requireCms = [authenticateToken, requireRole('ADMIN')];
+
+async function getNextMemberNumber(): Promise<string> {
+  const requests = await prisma.joinRequest.findMany({
+    where: { memberNumber: { not: null } },
+    select: { memberNumber: true },
+  });
+  const currentMax = requests.reduce((max, item) => Math.max(max, Number(item.memberNumber) || 0), 0);
+  const configuredStart = Number(await getSetting('member_number_start')) || 1;
+  const next = currentMax > 0 ? currentMax + 1 : configuredStart;
+  return String(next).padStart(Math.max(8, String(configuredStart).length), '0');
+}
+
+cmsJoinRequestsRouter.get('/membership-card/next-number', ...requireCms, async (_req, res) => {
+  res.json({ memberNumber: await getNextMemberNumber() });
+});
 
 const ListQuerySchema = z.object({
   status: z.enum(['NEW', 'PROCESSING', 'ACCEPTED', 'REJECTED']).optional(),
@@ -317,48 +332,90 @@ const UpdateStatusSchema = z.object({
   status: z.enum(['NEW', 'PROCESSING', 'ACCEPTED', 'REJECTED']),
 });
 
+const AcceptMembershipSchema = z.object({
+  memberNumber: z.string().regex(/^\d+$/).min(1).max(30),
+  fullNameKz: z.string().trim().min(3).max(250),
+  fullNameRu: z.string().trim().min(3).max(250),
+  joinDate: z.coerce.date(),
+});
+
+cmsJoinRequestsRouter.post('/:id/membership-card', ...requireCms, async (req: Request, res: Response): Promise<void> => {
+  const parsed = AcceptMembershipSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'Проверьте данные партбилета', details: parsed.error.flatten() });
+    return;
+  }
+  try {
+    const id = String(req.params['id']);
+    const request = await prisma.joinRequest.findUnique({ where: { id } });
+    if (!request) {
+      res.status(404).json({ error: 'Заявка не найдена' });
+      return;
+    }
+    if (!request.email) {
+      res.status(400).json({ error: 'У заявки не указан email' });
+      return;
+    }
+    if (request.status === 'ACCEPTED') {
+      res.status(409).json({ error: 'Заявка уже принята' });
+      return;
+    }
+
+    const numberOwner = await prisma.joinRequest.findUnique({ where: { memberNumber: parsed.data.memberNumber } });
+    if (numberOwner && numberOwner.id !== id) {
+      res.status(409).json({ error: 'Этот номер билета уже используется' });
+      return;
+    }
+
+    const pdfBuffer = await generateMembershipCardPdf({ ...parsed.data, verifyUuid: request.verifyUuid });
+    await ensurePrivateMembershipCardsBucket();
+    const objectName = `${request.verifyUuid}.pdf`;
+    await minioClient.putObject(
+      MEMBERSHIP_CARDS_BUCKET,
+      objectName,
+      pdfBuffer,
+      pdfBuffer.length,
+      { 'Content-Type': 'application/pdf' },
+    );
+    const verifyUrl = `${process.env.SITE_URL ?? 'http://localhost:3000'}/verify/${request.verifyUuid}`;
+    const updated = await prisma.joinRequest.update({
+      where: { id },
+      data: { ...parsed.data, status: 'ACCEPTED', cardFileUrl: `minio://${MEMBERSHIP_CARDS_BUCKET}/${objectName}` },
+    });
+    try {
+      await sendMail({
+        to: request.email,
+        subject: 'Вы вступили в Народную партию Казахстана',
+        html: `<p>Здравствуйте, ${parsed.data.fullNameRu}!</p><p>Вы вступили в Народную партию Казахстана.</p><p>Онлайн-партбилет приложен к письму.</p><p>Проверить подлинность:</p><p><a href="${verifyUrl}">${verifyUrl}</a></p>`,
+        attachments: [{ filename: `partbilet-${parsed.data.memberNumber}.pdf`, content: pdfBuffer, contentType: 'application/pdf' }],
+      });
+    } catch (mailErr) {
+      // Принятую заявку и сохранённый билет не откатываем из-за временного сбоя почты.
+      logger.error('Не удалось отправить партбилет', { requestId: id, error: (mailErr as Error).message });
+    }
+    res.json(updated);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
+
 cmsJoinRequestsRouter.put('/:id/status', ...requireCms, async (req: Request, res: Response): Promise<void> => {
   const parsed = UpdateStatusSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: 'Ошибка валидации', details: parsed.error.flatten() });
     return;
   }
+  if (parsed.data.status === 'ACCEPTED') {
+    res.status(400).json({ error: 'Для принятия используйте генерацию партбилета' });
+    return;
+  }
 
   try {
     const id = String(req.params['id']);
-    const before = await prisma.joinRequest.findUnique({ where: { id } });
-
     const joinRequest = await prisma.joinRequest.update({
       where: { id },
       data: { status: parsed.data.status },
     });
-
-    // Партбилет с QR отправляем только на переходе В статус «Принята» (не при повторном
-    // сохранении того же статуса) — план правок №2, D3.
-    if (parsed.data.status === 'ACCEPTED' && before?.status !== 'ACCEPTED' && joinRequest.email) {
-      try {
-        const pdfBuffer = await generateCertificatePdf({
-          fullName: joinRequest.fullName,
-          requestId: joinRequest.id,
-          acceptedDate: joinRequest.updatedAt,
-        });
-        await sendMail({
-          to: joinRequest.email,
-          subject: 'Вы вступили в Народную партию Казахстана',
-          html: `
-            <p>Здравствуйте, ${joinRequest.fullName}!</p>
-            <p>Ваше заявление принято — вы официально вступили в Народную партию Казахстана.</p>
-            <p>Во вложении — ваш онлайн-партийный билет.</p>
-          `,
-          attachments: [
-            { filename: 'partbilet.pdf', content: pdfBuffer, contentType: 'application/pdf' },
-          ],
-        });
-      } catch (mailErr) {
-        // Смену статуса не откатываем из-за проблем с письмом — только логируем.
-        logger.error('Не удалось отправить партбилет', { error: (mailErr as Error).message });
-      }
-    }
 
     res.json(joinRequest);
   } catch (err) {
@@ -366,11 +423,18 @@ cmsJoinRequestsRouter.put('/:id/status', ...requireCms, async (req: Request, res
   }
 });
 
-// GET /api/v1/join-requests/verify/:id — публичная проверка заявления по QR/ссылке
-// с партбилета. Без персональных данных (план правок №2, D3, техрешение).
+// GET /api/v1/join-requests/verify/:id — публичная проверка принятого партбилета.
+// Возвращаем только имя, номер и дату вступления, без контактов и документов.
 joinRequestsRouter.get('/verify/:id', async (req: Request, res: Response): Promise<void> => {
   try {
-    const joinRequest = await prisma.joinRequest.findUnique({ where: { id: String(req.params['id']) } });
+    const joinRequest = await prisma.joinRequest.findFirst({
+      where: {
+        verifyUuid: String(req.params['id']),
+        status: 'ACCEPTED',
+        memberNumber: { not: null },
+        joinDate: { not: null },
+      },
+    });
     if (!joinRequest) {
       res.status(404).json({ found: false });
       return;
@@ -378,7 +442,9 @@ joinRequestsRouter.get('/verify/:id', async (req: Request, res: Response): Promi
     res.json({
       found: true,
       status: joinRequest.status,
-      createdAt: joinRequest.createdAt,
+      fullName: joinRequest.fullNameRu ?? joinRequest.fullName,
+      memberNumber: joinRequest.memberNumber,
+      joinDate: joinRequest.joinDate,
     });
   } catch (err) {
     handleError(err, res);

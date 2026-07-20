@@ -10,6 +10,7 @@ export const minioClient = new Client({
 });
 
 export const MINIO_BUCKET = process.env.MINIO_BUCKET ?? 'darrail-media';
+export const MEMBERSHIP_CARDS_BUCKET = process.env.MINIO_MEMBERSHIP_CARDS_BUCKET ?? 'membership-cards';
 export const MINIO_PUBLIC_URL = (process.env.MINIO_PUBLIC_URL ?? '').replace(/\/$/, '');
 
 export async function ensureBucketExists(): Promise<void> {
@@ -36,6 +37,11 @@ export async function ensureBucketExists(): Promise<void> {
     logger.error('Failed to ensure MinIO bucket', { err });
     throw err;
   }
+}
+
+export async function ensurePrivateMembershipCardsBucket(): Promise<void> {
+  const exists = await minioClient.bucketExists(MEMBERSHIP_CARDS_BUCKET);
+  if (!exists) await minioClient.makeBucket(MEMBERSHIP_CARDS_BUCKET, 'us-east-1');
 }
 
 export async function deleteObject(objectName: string): Promise<void> {
