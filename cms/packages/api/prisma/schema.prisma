@@ -511,8 +511,11 @@ model ShopSubscriber {
 model Candidate {
   id           String                 @id @default(uuid())
   name         String
+  nameKz       String?
   region       String
+  regionKz     String?
   district     String?
+  districtKz   String?
   photoUrl     String?
   sortOrder    Int                    @default(0)
   translations CandidateTranslation[]
@@ -630,6 +633,8 @@ model MediaPublication {
   mediaName  String
   title      String
   excerpt    String?
+  titleKz    String?
+  excerptKz  String?
   imageUrl   String?
   url        String?
   sortOrder  Int      @default(0)
@@ -646,6 +651,8 @@ model Testimonial {
   id        String   @id @default(uuid())
   quote     String   @db.Text
   author    String
+  quoteKz   String?  @db.Text
+  authorKz  String?
   approved  Boolean  @default(true)
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())

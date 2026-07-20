@@ -1,8 +1,9 @@
 /**
  * Идемпотентное заполнение казахского контента из утверждённых источников.
  *
- * Источники пар берутся из app/src/i18n и SQL-файлов этапа 2. Если пары нет,
- * русское значение сохраняется как явный фолбэк — новых переводов скрипт не создаёт.
+ * Источники пар берутся из app/src/i18n, SQL-файлов этапа 2 и переданного
+ * дополнения content/kz-missing-translations.md. Если пары нет, русское значение
+ * сохраняется как явный фолбэк — новых переводов скрипт не создаёт.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -25,6 +26,174 @@ function loadDictionary(fileName: string, exportName: 'ru' | 'kz'): Record<strin
 
 const ru = loadDictionary('ru.ts', 'ru');
 const kz = loadDictionary('kz.ts', 'kz');
+const supplementalSource = fs.readFileSync(
+  path.join(repositoryRoot, 'content/kz-missing-translations.md'),
+  'utf8',
+);
+
+function sourceSection(start: string, end: string): string {
+  const from = supplementalSource.indexOf(start);
+  const to = supplementalSource.indexOf(end, from + start.length);
+  if (from < 0) return '';
+  return supplementalSource.slice(from, to < 0 ? undefined : to);
+}
+
+function tableCells(line: string): string[] {
+  return line.split('|').slice(1, -1).map((cell) => cell.trim());
+}
+
+function extractSupplementalHistory(): Map<number, { title: string; text: string }> {
+  const result = new Map<number, { title: string; text: string }>();
+  const section = sourceSection('## 1. Партия тарихы', '## 2. Партия бағдарламасы');
+  for (const line of section.split('\n')) {
+    const cells = tableCells(line);
+    if (!/^\d{4}$/.test(cells[0] ?? '') || cells.length < 3) continue;
+    result.set(Number(cells[0]), { title: cells[1] ?? '', text: cells[2] ?? '' });
+  }
+  return result;
+}
+
+interface SupplementalProgram {
+  keyword: string;
+  title: string;
+  lead1: string;
+  lead2: string;
+  points: string[];
+}
+
+function extractSupplementalProgram(): Map<number, SupplementalProgram> {
+  const result = new Map<number, SupplementalProgram>();
+  const section = sourceSection('## 2. Партия бағдарламасы', '## 3. Басшылықтың толық өмірбаяны');
+  const headings = [...section.matchAll(/^### n=(\d+) — ([^\n]+)$/gm)];
+  headings.forEach((heading, index) => {
+    const body = section.slice((heading.index ?? 0) + heading[0].length, headings[index + 1]?.index ?? section.length);
+    const field = (name: string) => body.match(new RegExp(`^- \\*\\*${name}:\\*\\* (.+)$`, 'm'))?.[1]?.trim() ?? '';
+    const points = [...body.matchAll(/^\s+\d+\. (.+)$/gm)].map((match) => match[1]?.trim() ?? '').filter(Boolean);
+    result.set(Number(heading[1]), {
+      keyword: field('keyword') || heading[2]?.trim() || '',
+      title: field('title'),
+      lead1: field('lead1'),
+      lead2: field('lead2'),
+      points,
+    });
+  });
+  return result;
+}
+
+function extractSupplementalBiographies(): Map<string, string> {
+  const result = new Map<string, string>();
+  const section = sourceSection('## 3. Басшылықтың толық өмірбаяны', '## 4. Жаңалықтар');
+  const slugs = [
+    'shokanov-nursultan',
+    'kusainov-bejbut-bulatovich',
+    'aukenov-miras',
+    'kurmanbaev-zhandos',
+    'maksutov-kalel-mukataevich',
+  ];
+  const biographies = [...section.matchAll(/^### [^\n]+\n```\n([\s\S]*?)```/gm)];
+  biographies.forEach((match, index) => {
+    const slug = slugs[index];
+    if (slug && match[1]) result.set(slug, match[1].trim());
+  });
+  return result;
+}
+
+interface SupplementalNews {
+  title: string;
+  excerpt: string;
+  content: string;
+}
+
+function extractSupplementalNews(): Map<string, SupplementalNews> {
+  const result = new Map<string, SupplementalNews>();
+  const section = sourceSection('## 4. Жаңалықтар', '## 5. Жаңалықтардың қосалқы тақырыптары');
+  const slugs = [
+    'so-shkolnoj-skami',
+    'zayavlenie-narodnoj-partii-kazahstana-v-svyazi-s-naznacheniem-daty-vyborov-deputatov-kurultaya-respubliki-kazahstan',
+    'dostupnost-ravnopraviya',
+    'oshchutimoe-ravnopravie',
+    'zayavlenie-narodnoj-partii-kazahstana-v-svyazi-so-vstupleniem-v-silu-novoj-konstitucii-respubliki-kazahstan',
+    'pamyat-epohi',
+    'nasledie-parlamenta',
+    'blagodarnost-na-proshchanie',
+    'pohorony-arykov',
+    'nursultan-shokanov-izbran-predsedatelem-narodnoj-partii-kazahstana',
+    'poslednij-akkord',
+    'dolg-v-zhizni',
+  ];
+  const headings = [...section.matchAll(/^### \d+\. «(.+)» \([^\n]+\)$/gm)];
+  headings.forEach((heading, index) => {
+    const body = section.slice((heading.index ?? 0) + heading[0].length, headings[index + 1]?.index ?? section.length);
+    const excerpt = body.match(/^\*\*Аңдатпа:\*\*\s*(.+)$/m)?.[1]?.trim() ?? '';
+    const content = body.match(/```\n([\s\S]*?)```/)?.[1]?.trim() ?? '';
+    const slug = slugs[index];
+    if (slug && heading[1] && content) result.set(slug, { title: heading[1].trim(), excerpt, content });
+  });
+
+  const extra = section.match(/\*\(Тағы бір мақала — «([^»]+)»[\s\S]*?\*\*Аңдатпа:\*\*\s*(.+)\n\*\*Мәтін:\*\*\s*```\n([\s\S]*?)```/);
+  if (extra?.[1] && extra[3]) {
+    result.set('plata-za-neeffektivnost', {
+      title: extra[1].trim(),
+      excerpt: extra[2]?.trim() ?? '',
+      content: extra[3].trim(),
+    });
+  }
+  return result;
+}
+
+interface SupplementalCandidate {
+  nameKz: string;
+  regionKz: string;
+  districtKz: string;
+  promise: string;
+}
+
+function extractSupplementalCandidates(): Map<string, SupplementalCandidate> {
+  const result = new Map<string, SupplementalCandidate>();
+  const section = sourceSection('## 6. Кандидаттар', '## 7. «БАҚ біз туралы»');
+  const ruNames = ['Ерлан Смагулов', 'Айгуль Нурланова', 'Марат Бекетов', 'Гульнара Таспихова', 'Данияр Куатбеков', 'Сауле Аманжолова'];
+  let index = 0;
+  for (const line of section.split('\n')) {
+    const cells = tableCells(line);
+    if (cells.length >= 3 && !cells[0]?.includes('Кандидат') && !cells[0]?.startsWith('---')) {
+      const ruName = ruNames[index++];
+      const regionParts = (cells[1] ?? '').split(',').map((part) => part.trim());
+      if (ruName) result.set(ruName, {
+        nameKz: cells[0] ?? '',
+        regionKz: regionParts[0] ?? '',
+        districtKz: regionParts.slice(1).join(', '),
+        promise: cells[2] ?? '',
+      });
+    }
+  }
+  return result;
+}
+
+function extractSupplementalMedia(): Map<string, { titleKz: string; excerptKz: string }> {
+  const result = new Map<string, { titleKz: string; excerptKz: string }>();
+  const section = sourceSection('## 7. «БАҚ біз туралы»', '## 8. Азаматтардың пікірлері');
+  for (const line of section.split('\n')) {
+    const cells = tableCells(line);
+    if (cells.length >= 4 && /^\d{2}\.\d{2}\.\d{4}$/.test(cells[0] ?? '')) {
+      result.set(cells[1] ?? '', { titleKz: cells[2] ?? '', excerptKz: cells[3] ?? '' });
+    }
+  }
+  return result;
+}
+
+function extractSupplementalTestimonials(): Map<string, { authorKz: string; quoteKz: string }> {
+  const result = new Map<string, { authorKz: string; quoteKz: string }>();
+  const section = sourceSection('## 8. Азаматтардың пікірлері', '## 9. Аударылмаған тұрақты интерфейс мәтіндері');
+  const ruAuthors = ['Айгуль К., Алматы', 'Бауыржан М., Астана', 'Гульмира Т., Шымкент'];
+  let index = 0;
+  for (const line of section.split('\n')) {
+    const cells = tableCells(line);
+    if (cells.length < 2 || cells[0]?.includes('Автор') || cells[0]?.startsWith('---')) continue;
+    const authorRu = ruAuthors[index++];
+    if (authorRu) result.set(authorRu, { authorKz: cells[0] ?? '', quoteKz: cells[1] ?? '' });
+  }
+  return result;
+}
 
 const textMap = new Map<string, string>();
 for (const key of Object.keys(ru)) {
@@ -139,15 +308,6 @@ function migrationText(fileName: string): string {
   return fs.readFileSync(path.join(migrationDirectory, fileName), 'utf8');
 }
 
-function extractHistory(): Map<number, string> {
-  const result = new Map<number, string>();
-  const sql = migrationText('202607190003_kz_history_events.sql');
-  for (const match of sql.matchAll(/\(\s*(\d{4})\s*,\s*'((?:''|[^'])*)'\s*\)/g)) {
-    result.set(Number(match[1]), unescapeSql(match[2] ?? ''));
-  }
-  return result;
-}
-
 function extractLeaders(): Map<string, { name: string; position: string; bio: string }> {
   const result = new Map<string, { name: string; position: string; bio: string }>();
   const sql = migrationText('202607190005_kz_leaders.sql');
@@ -191,18 +351,20 @@ async function syncPageBlocks(): Promise<number> {
 }
 
 async function syncTranslatedEntities(): Promise<void> {
-  const history = extractHistory();
+  const history = extractSupplementalHistory();
   for (const event of await prisma.historyEvent.findMany({ include: { translations: true } })) {
     const source = event.translations.find((item) => item.lang === 'ru');
     if (!source) continue;
+    const approved = history.get(event.year);
     await prisma.historyEventTranslation.upsert({
       where: { historyEventId_lang: { historyEventId: event.id, lang: 'kz' } },
-      create: { historyEventId: event.id, lang: 'kz', title: translate(source.title) ?? source.title, text: history.get(event.year) ?? source.text },
-      update: { title: translate(source.title) ?? source.title, text: history.get(event.year) ?? source.text },
+      create: { historyEventId: event.id, lang: 'kz', title: approved?.title ?? translate(source.title) ?? source.title, text: approved?.text ?? source.text },
+      update: { title: approved?.title ?? translate(source.title) ?? source.title, text: approved?.text ?? source.text },
     });
   }
 
   const leaders = extractLeaders();
+  const biographies = extractSupplementalBiographies();
   for (const member of await prisma.teamMember.findMany({ include: { translations: true } })) {
     const source = member.translations.find((item) => item.lang === 'ru');
     if (!source) continue;
@@ -211,7 +373,7 @@ async function syncTranslatedEntities(): Promise<void> {
       name: approved?.name ?? translate(source.name) ?? source.name,
       position: approved?.position ?? translate(source.position) ?? source.position,
       bio: approved?.bio ?? translate(source.bio),
-      fullBio: translate(source.fullBio),
+      fullBio: member.slug ? biographies.get(member.slug) ?? translate(source.fullBio) : translate(source.fullBio),
     };
     await prisma.teamMemberTranslation.upsert({
       where: { memberId_lang: { memberId: member.id, lang: 'kz' } },
@@ -220,6 +382,7 @@ async function syncTranslatedEntities(): Promise<void> {
     });
   }
 
+  const supplementalProgram = extractSupplementalProgram();
   for (const block of await prisma.programBlock.findMany({ include: { translations: true } })) {
     const source = block.translations.find((item) => item.lang === 'ru');
     if (!source) continue;
@@ -236,11 +399,12 @@ async function syncTranslatedEntities(): Promise<void> {
       4: { lead1: 'Экономика көрсеткіш үшін емес, адам үшін жұмыс істеуге тиіс.', points: ['Отбасы табысын арттыру', 'Бағаның негізсіз өсуін тежеу', 'Шағын және орта бизнесті қорғау', 'Өңірлерде жаңа жұмыс орындарын ашу', 'Ауыл шаруашылығы мен отандық өндірісті қолдау', 'Қолжетімді баспана бағдарламаларын кеңейту'] },
     };
     const approved = approvedProgram[block.n];
+    const supplemental = supplementalProgram.get(block.n);
     const data = {
-      title: approvedTitles[block.n] ?? translate(source.title) ?? source.title,
-      lead1: approved?.lead1 ?? translate(source.lead1),
-      lead2: approved ? null : translate(source.lead2),
-      points: (approved?.points ?? (source.points as string[]).map((point) => translate(point) ?? point)) as Prisma.InputJsonValue,
+      title: supplemental?.title || (approvedTitles[block.n] ?? translate(source.title) ?? source.title),
+      lead1: supplemental?.lead1 || (approved?.lead1 ?? translate(source.lead1)),
+      lead2: supplemental?.lead2 || (approved ? null : translate(source.lead2)),
+      points: (supplemental?.points.length ? supplemental.points : approved?.points ?? (source.points as string[]).map((point) => translate(point) ?? point)) as Prisma.InputJsonValue,
     };
     await prisma.programBlockTranslation.upsert({
       where: { programBlockId_lang: { programBlockId: block.id, lang: 'kz' } },
@@ -249,14 +413,22 @@ async function syncTranslatedEntities(): Promise<void> {
     });
   }
 
+  const candidates = extractSupplementalCandidates();
   for (const candidate of await prisma.candidate.findMany({ include: { translations: true } })) {
     const source = candidate.translations.find((item) => item.lang === 'ru');
     if (!source) continue;
-    const promise = translate(source.promise) ?? source.promise;
+    const approved = candidates.get(candidate.name);
+    const promise = approved?.promise ?? translate(source.promise) ?? source.promise;
+    if (approved) {
+      await prisma.candidate.update({
+        where: { id: candidate.id },
+        data: { nameKz: approved.nameKz, regionKz: approved.regionKz, districtKz: approved.districtKz },
+      });
+    }
     await prisma.candidateTranslation.upsert({
       where: { candidateId_lang: { candidateId: candidate.id, lang: 'kz' } },
-      create: { candidateId: candidate.id, lang: 'kz', name: translate(source.name) ?? source.name, promise },
-      update: { name: translate(source.name) ?? source.name, promise },
+      create: { candidateId: candidate.id, lang: 'kz', promise },
+      update: { promise },
     });
   }
 
@@ -271,13 +443,15 @@ async function syncTranslatedEntities(): Promise<void> {
     });
   }
 
+  const news = extractSupplementalNews();
   for (const item of await prisma.news.findMany({ include: { translations: true } })) {
     const source = item.translations.find((translation) => translation.lang === 'ru');
     if (!source) continue;
+    const approved = news.get(item.slug);
     const data = {
-      title: translate(source.title) ?? source.title,
-      excerpt: translate(source.excerpt),
-      content: translate(source.content) ?? source.content,
+      title: approved?.title ?? translate(source.title) ?? source.title,
+      excerpt: approved?.excerpt ?? translate(source.excerpt),
+      content: approved?.content ?? translate(source.content) ?? source.content,
       seoTitle: translate(source.seoTitle),
       seoDescription: translate(source.seoDescription),
       seoKeywords: source.seoKeywords,
@@ -287,6 +461,26 @@ async function syncTranslatedEntities(): Promise<void> {
       where: { newsId_lang: { newsId: item.id, lang: 'kz' } },
       create: { newsId: item.id, lang: 'kz', ...data },
       update: data,
+    });
+  }
+
+  const media = extractSupplementalMedia();
+  for (const item of await prisma.mediaPublication.findMany()) {
+    const approved = media.get(item.mediaName);
+    if (!approved) continue;
+    await prisma.mediaPublication.update({
+      where: { id: item.id },
+      data: approved,
+    });
+  }
+
+  const testimonials = extractSupplementalTestimonials();
+  for (const item of await prisma.testimonial.findMany()) {
+    const approved = testimonials.get(item.author);
+    if (!approved) continue;
+    await prisma.testimonial.update({
+      where: { id: item.id },
+      data: approved,
     });
   }
 }

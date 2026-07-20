@@ -370,8 +370,28 @@ Fallback-наборы из раздела 4 источника назначаю�
 
 Не требуют перевода и переносятся одинаково в обе версии: номера телефонов, email, URL, social handles, даты в ISO-формате, числовые показатели, валютные значения, названия платформ YouTube/TikTok/Instagram/Telegram/Facebook, `SMS`, `PDF`, `JPG`, `PNG`, `SVG`, `ZIP`, `WhatsApp`, `Google Maps`, `HALYQ KOMPAS`, `Medfusion`, `TALAP`.
 
-## 4. Контроль границ этапа
+## 4. Исторический контроль границ этапа 1
+
+Пункты ниже фиксируют состояние на момент первоначального mapping до разрешения на подключение. Последующие изменения этапа 4 и дополнительного источника описаны в разделе 5.
 
 - Существующие файлы `app/src/sections`, `app/src/pages`, `app/src/components` не менялись.
 - Файлы `src/i18n/*` и SQL-миграции не создавались.
 - Все неполные или неподтверждённые пары вынесены в `docs/kz-missing.md`; KZ-текст не придумывался.
+
+## 5. Дополнение переводов от 20.07.2026
+
+Источник `content/kz-missing-translations.md` закрывает ранее зафиксированные пропуски:
+
+| RU-адресат | Перевод KZ | Куда идёт |
+|---|---|---|
+| 6 заголовков и текстов истории | Раздел 1 дополнительного источника | `HistoryEventTranslation.title/text`, `lang='kz'` |
+| Программные блоки 5–10 | Раздел 2 | `ProgramBlockTranslation.title/lead1/lead2/points`; KZ-keyword выбирается API по `n` |
+| Полные биографии пяти руководителей | Раздел 3 | `TeamMemberTranslation.fullBio`, сопоставление по действующему `slug` |
+| 13 новостей из seed | Раздел 4 | `NewsTranslation.title/excerpt/content`, сопоставление по `slug` |
+| 6 fallback-заголовков новостей | Раздел 5 | `fallbackNews.1..6` в словаре интерфейса |
+| 6 кандидатов | Раздел 6 | `Candidate.nameKz/regionKz/districtKz`, `CandidateTranslation.promise` |
+| 12 публикаций «СМИ о нас» | Раздел 7 | `MediaPublication.titleKz/excerptKz`, сопоставление по `mediaName` |
+| 3 отзыва | Раздел 8 | `Testimonial.authorKz/quoteKz`, сопоставление по исходному RU-автору |
+| Оставшиеся UI-фолбэки | Раздел 9 | одноимённые ключи `kz.ts`; шаблонные переменные сохранены без изменений |
+
+Полные KZ-тексты не дублируются в этой таблице: они сохранены дословно в дополнительном источнике и читаются идемпотентным `cms/packages/api/prisma/kz-content-sync.ts`. Актуальный остаток находится в `docs/kz-missing.md`.

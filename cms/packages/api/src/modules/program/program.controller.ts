@@ -48,7 +48,18 @@ publicProgramRouter.get('/', async (req: Request, res: Response): Promise<void> 
     const result = blocks.map((b) => {
       const ru = b.translations.find((tr) => tr.lang === 'ru') ?? null;
       const t = b.translations.find((tr) => tr.lang === lang) ?? ru;
-      const keywordKz: Record<number, string> = { 1: 'ЕҢБЕК', 2: 'СӨЗ', 3: 'ЗАҢ', 4: 'АДАМ' };
+      const keywordKz: Record<number, string> = {
+        1: 'ЕҢБЕК',
+        2: 'СӨЗ',
+        3: 'ЗАҢ',
+        4: 'АДАМ',
+        5: 'БАСПАНА',
+        6: 'БІЛІМ',
+        7: 'ӨҢІРЛЕР',
+        8: 'БОЛАШАҚ',
+        9: 'ДЕНСАУЛЫҚ',
+        10: 'ОТБАСЫ',
+      };
       return {
         id: b.id,
         n: b.n,

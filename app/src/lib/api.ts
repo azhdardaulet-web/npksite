@@ -316,7 +316,7 @@ export interface PublicMediaPublication {
 }
 
 export function fetchMediaPublications() {
-  return api.get<PublicMediaPublication[]>('/api/v1/media-publications');
+  return api.get<PublicMediaPublication[]>('/api/v1/media-publications', { lang: getCurrentLanguage() });
 }
 
 // ─── Документы (/mediakits — пресс-кит) ────────────────────────────────────────
@@ -348,7 +348,7 @@ export interface PublicTestimonial {
 }
 
 export function fetchTestimonials() {
-  return api.get<PublicTestimonial[]>('/api/v1/testimonials');
+  return api.get<PublicTestimonial[]>('/api/v1/testimonials', { lang: getCurrentLanguage() });
 }
 
 // ─── Филиалы (/filialy, /priemnaya — выбор филиала) ────────────────────────────

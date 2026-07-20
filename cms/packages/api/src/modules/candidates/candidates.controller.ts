@@ -15,8 +15,11 @@ const TranslationSchema = z.object({
 
 const CandidateInputSchema = z.object({
   name: z.string().min(1),
+  nameKz: z.string().optional().nullable(),
   region: z.string().min(1),
+  regionKz: z.string().optional().nullable(),
   district: z.string().optional().nullable(),
+  districtKz: z.string().optional().nullable(),
   photoUrl: z.string().url().optional().nullable(),
   sortOrder: z.number().int().min(0).optional(),
   translations: z.array(TranslationSchema).min(1),
@@ -47,9 +50,9 @@ publicCandidatesRouter.get('/', async (req: Request, res: Response): Promise<voi
       const t = c.translations.find((tr) => tr.lang === lang) ?? ru;
       return {
         id: c.id,
-        name: c.name,
-        region: c.region,
-        district: c.district,
+        name: lang === 'kz' && c.nameKz?.trim() ? c.nameKz : c.name,
+        region: lang === 'kz' && c.regionKz?.trim() ? c.regionKz : c.region,
+        district: lang === 'kz' && c.districtKz?.trim() ? c.districtKz : c.district,
         photoUrl: c.photoUrl,
         sortOrder: c.sortOrder,
         promise: localizedValue(t?.promise, ru?.promise) ?? '',
@@ -91,8 +94,11 @@ cmsCandidatesRouter.post('/', ...requireContent, async (req: Request, res: Respo
     const candidate = await prisma.candidate.create({
       data: {
         name: parsed.data.name,
+        nameKz: parsed.data.nameKz ?? null,
         region: parsed.data.region,
+        regionKz: parsed.data.regionKz ?? null,
         district: parsed.data.district ?? null,
+        districtKz: parsed.data.districtKz ?? null,
         photoUrl: parsed.data.photoUrl ?? null,
         sortOrder: parsed.data.sortOrder ?? nextOrder,
         translations: { create: parsed.data.translations },

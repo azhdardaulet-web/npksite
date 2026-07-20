@@ -12,6 +12,8 @@ const MediaPublicationInputSchema = z.object({
   mediaName: z.string().min(1),
   title: z.string().min(1),
   excerpt: z.string().optional().nullable(),
+  titleKz: z.string().optional().nullable(),
+  excerptKz: z.string().optional().nullable(),
   imageUrl: z.string().url().optional().nullable(),
   url: z.string().url().optional().nullable(),
   sortOrder: z.number().int().min(0).optional(),
@@ -30,10 +32,15 @@ const requireContent = [
 
 // ─── Public: GET /api/v1/media-publications ───────────────────────────────────
 
-publicMediaPublicationsRouter.get('/', async (_req: Request, res: Response): Promise<void> => {
+publicMediaPublicationsRouter.get('/', async (req: Request, res: Response): Promise<void> => {
+  const lang = req.query.lang === 'kz' ? 'kz' : 'ru';
   try {
     const publications = await prisma.mediaPublication.findMany({ orderBy: [{ date: 'desc' }, { sortOrder: 'asc' }] });
-    res.json(publications);
+    res.json(publications.map((item) => ({
+      ...item,
+      title: lang === 'kz' && item.titleKz?.trim() ? item.titleKz : item.title,
+      excerpt: lang === 'kz' && item.excerptKz?.trim() ? item.excerptKz : item.excerpt,
+    })));
   } catch (err) {
     handleError(err, res);
   }
@@ -64,6 +71,8 @@ cmsMediaPublicationsRouter.post('/', ...requireContent, async (req: Request, res
       data: {
         ...parsed.data,
         excerpt: parsed.data.excerpt ?? null,
+        titleKz: parsed.data.titleKz ?? null,
+        excerptKz: parsed.data.excerptKz ?? null,
         imageUrl: parsed.data.imageUrl ?? null,
         url: parsed.data.url ?? null,
         sortOrder: parsed.data.sortOrder ?? 0,
