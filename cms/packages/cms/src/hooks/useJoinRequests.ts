@@ -21,8 +21,32 @@ export interface JoinRequestItem {
   status: JoinRequestStatus;
   phoneVerified: boolean;
   merchAddress: string | null;
+  memberNumber: string | null;
+  fullNameKz: string | null;
+  fullNameRu: string | null;
+  joinDate: string | null;
+  cardFileUrl: string | null;
+  verifyUuid: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface MembershipCardInput { memberNumber: string; fullNameKz: string; fullNameRu: string; joinDate: string; }
+
+export async function fetchNextMemberNumber(): Promise<string> {
+  const { data } = await api.get<{ memberNumber: string }>('/cms/api/v1/join-requests/membership-card/next-number');
+  return data.memberNumber;
+}
+
+export function useGenerateMembershipCard() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, input }: { id: string; input: MembershipCardInput }) => {
+      const { data } = await api.post<JoinRequestItem>(`/cms/api/v1/join-requests/${id}/membership-card`, input);
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['join-requests'] }),
+  });
 }
 
 export interface JoinRequestListResponse {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, X, Download, Check, Ban } from 'lucide-react';
 import {
   useJoinRequests,
@@ -7,6 +7,9 @@ import {
   JoinRequestStatus,
   JoinRequestRole,
   JoinRequestItem,
+  fetchNextMemberNumber,
+  useGenerateMembershipCard,
+  MembershipCardInput,
 } from '@/hooks/useJoinRequests';
 
 const STATUS_LABEL: Record<JoinRequestStatus, string> = {
@@ -34,15 +37,15 @@ const ROLE_LABEL: Record<JoinRequestRole, string> = {
 function AcceptRejectButtons({
   item,
   onChange,
+  onAccept,
 }: {
   item: JoinRequestItem;
   onChange: (id: string, status: JoinRequestStatus) => void;
+  onAccept: (item: JoinRequestItem) => void;
 }) {
   const accept = () => {
     if (item.status === 'ACCEPTED') return;
-    if (window.confirm(`Принять заявку «${item.fullName}»? На указанный email уйдёт партбилет.`)) {
-      onChange(item.id, 'ACCEPTED');
-    }
+    onAccept(item);
   };
   const reject = () => {
     if (item.status === 'REJECTED') return;
@@ -76,10 +79,12 @@ function JoinRequestModal({
   item,
   onClose,
   onStatusChange,
+  onAccept,
 }: {
   item: JoinRequestItem;
   onClose: () => void;
   onStatusChange: (id: string, status: JoinRequestStatus) => void;
+  onAccept: (item: JoinRequestItem) => void;
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -163,7 +168,7 @@ function JoinRequestModal({
               Отклонить
             </button>
             <button
-              onClick={() => { if (window.confirm(`Принять заявку «${item.fullName}»? На указанный email уйдёт партбилет.`)) onStatusChange(item.id, 'ACCEPTED'); }}
+              onClick={() => onAccept(item)}
               disabled={item.status === 'ACCEPTED'}
               className="text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-4 py-2"
             >
@@ -176,20 +181,107 @@ function JoinRequestModal({
   );
 }
 
+function todayInputValue() {
+  const now = new Date();
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
+}
+
+function MembershipCardModal({
+  item,
+  onClose,
+  onSubmit,
+  loading,
+  submitError,
+}: {
+  item: JoinRequestItem;
+  onClose: () => void;
+  onSubmit: (input: MembershipCardInput) => void;
+  loading: boolean;
+  submitError?: string;
+}) {
+  const [form, setForm] = useState<MembershipCardInput>({
+    memberNumber: item.memberNumber ?? '',
+    fullNameKz: item.fullNameKz ?? item.fullName,
+    fullNameRu: item.fullNameRu ?? item.fullName,
+    joinDate: item.joinDate?.slice(0, 10) ?? todayInputValue(),
+  });
+  const [numberError, setNumberError] = useState('');
+
+  useEffect(() => {
+    if (item.memberNumber) return;
+    fetchNextMemberNumber()
+      .then((memberNumber) => setForm((current) => ({ ...current, memberNumber })))
+      .catch(() => setNumberError('Не удалось получить следующий номер'));
+  }, [item.memberNumber]);
+
+  const field = (key: keyof MembershipCardInput, label: string, type = 'text') => (
+    <label className="block">
+      <span className="block text-sm text-gray-600 mb-1">{label}</span>
+      <input
+        type={type}
+        required
+        value={form[key]}
+        onChange={(event) => setForm({ ...form, [key]: event.target.value })}
+        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+      />
+    </label>
+  );
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+      <form
+        onSubmit={(event) => { event.preventDefault(); onSubmit(form); }}
+        className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 space-y-4"
+      >
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-lg font-semibold">Принятие заявки</h2>
+            <p className="text-sm text-gray-500">Проверьте данные перед генерацией</p>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Закрыть"><X size={20} /></button>
+        </div>
+        {field('memberNumber', 'Номер билета')}
+        {field('fullNameKz', 'ФИО на казахском')}
+        {field('fullNameRu', 'ФИО на русском')}
+        {field('joinDate', 'Дата вступления', 'date')}
+        {(numberError || submitError) && <p className="text-sm text-red-600">{numberError || submitError}</p>}
+        <div className="flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="px-4 py-2 text-sm">Отмена</button>
+          <button disabled={loading || !form.memberNumber} className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm disabled:opacity-50">
+            {loading ? 'Генерация…' : 'Сгенерировать и отправить'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 export default function JoinRequestsPage() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<JoinRequestStatus | ''>('');
   const [roleFilter, setRoleFilter] = useState<JoinRequestRole | ''>('');
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<JoinRequestItem | null>(null);
+  const [accepting, setAccepting] = useState<JoinRequestItem | null>(null);
   const [exporting, setExporting] = useState(false);
 
   const filters = { status: statusFilter, role: roleFilter, q: search };
   const { data, isLoading, isError } = useJoinRequests(filters, page);
   const updateStatusMut = useUpdateJoinRequestStatus();
+  const generateCardMut = useGenerateMembershipCard();
 
   const handleStatusChange = (id: string, newStatus: JoinRequestStatus) => {
     updateStatusMut.mutate({ id, status: newStatus });
+  };
+
+  const openAcceptModal = (item: JoinRequestItem) => {
+    generateCardMut.reset();
+    setAccepting(item);
+  };
+
+  const closeAcceptModal = () => {
+    generateCardMut.reset();
+    setAccepting(null);
   };
 
   const handleExport = async () => {
@@ -317,7 +409,7 @@ export default function JoinRequestsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <AcceptRejectButtons item={item} onChange={handleStatusChange} />
+                      <AcceptRejectButtons item={item} onChange={handleStatusChange} onAccept={openAcceptModal} />
                     </td>
                   </tr>
                 ))}
@@ -354,6 +446,19 @@ export default function JoinRequestsPage() {
           item={selected}
           onClose={() => setSelected(null)}
           onStatusChange={(id, status) => { handleStatusChange(id, status); setSelected(null); }}
+          onAccept={(item) => { setSelected(null); openAcceptModal(item); }}
+        />
+      )}
+      {accepting && (
+        <MembershipCardModal
+          item={accepting}
+          onClose={closeAcceptModal}
+          loading={generateCardMut.isPending}
+          submitError={(generateCardMut.error as { response?: { data?: { error?: string } } } | null)?.response?.data?.error}
+          onSubmit={(input) => generateCardMut.mutate(
+            { id: accepting.id, input },
+            { onSuccess: closeAcceptModal },
+          )}
         />
       )}
     </div>
