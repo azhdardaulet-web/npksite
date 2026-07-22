@@ -1,19 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
-import { TextReveal } from '@/components/TextReveal';
-import { useHomeBlocks } from '@/hooks/useHomeBlocks';
 import { fetchTeam, type PublicTeamMember } from '@/lib/api';
 import { LEADERSHIP_FALLBACK } from '../../../shared/leadershipData';
-
-interface CandidatesIntroBlock { headingRu?: string; textRu?: string; }
+import { useT } from '@/i18n/useT';
 
 export function CandidatesSection() {
   const [leaders, setLeaders] = useState<PublicTeamMember[]>(LEADERSHIP_FALLBACK);
-  const { getBlock } = useHomeBlocks();
-  const cms = getBlock<CandidatesIntroBlock>('candidates_intro');
-  const heading = cms?.headingRu?.trim() || 'Лица партии';
-  const subtitle = cms?.textRu?.trim() || 'Люди, которые уже сделали выбор — быть с народом. Депутаты, общественные деятели и лидеры регионов, которые каждый день работают для страны.';
+  const t = useT();
+  // Временная формулировка заказчика до публикации списка топ-10 кандидатов.
+  const heading = t('home.candidates.temporaryTitle');
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -43,15 +39,9 @@ export function CandidatesSection() {
         <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-8">
           <div>
             <p className="text-label text-accent-brand font-medium mb-3 uppercase tracking-wider">Партия</p>
-            <TextReveal
-              tag="h2"
-              className="font-formular text-heading-md md:text-heading-lg text-text-base"
-            >
+            <h2 className="font-formular text-heading-md md:text-heading-lg font-bold text-text-base">
               {heading}
-            </TextReveal>
-            <p className="text-body-lg font-light text-text-muted mt-3 max-w-[560px]">
-              {subtitle}
-            </p>
+            </h2>
           </div>
           <Link
             to="/rukovodstvo"

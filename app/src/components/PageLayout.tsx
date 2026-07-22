@@ -16,12 +16,21 @@ export function PageLayout() {
 
   useEffect(() => {
     const lenis = getLenis();
+    const hash = decodeURIComponent(location.hash.replace(/^#/, ''));
+    if (hash) {
+      const frame = window.requestAnimationFrame(() => {
+        const target = document.getElementById(hash);
+        if (target && lenis) lenis.scrollTo(target, { offset: -160, immediate: true });
+        else target?.scrollIntoView();
+      });
+      return () => window.cancelAnimationFrame(frame);
+    }
     if (lenis) {
       lenis.scrollTo(0, { immediate: true });
     } else {
       window.scrollTo(0, 0);
     }
-  }, [location.pathname]);
+  }, [location.pathname, location.hash]);
 
   return (
     <div className="min-h-[100dvh] bg-bg">

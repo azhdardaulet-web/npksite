@@ -16,6 +16,21 @@ const FALLBACK_VIDEOS = [
   { id: 'FBn32VnYdCQ', title: 'Каспий теңізінде жоғалған ер адамды төртінші күн іздеуде', date: '26.06.2026' },
 ];
 
+const ASTANA_OFFSET_MS = 5 * 60 * 60 * 1000;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+function millisecondsUntilNextAstanaRefresh(now = new Date()) {
+  const astanaNow = new Date(now.getTime() + ASTANA_OFFSET_MS);
+  let nextRefresh = Date.UTC(
+    astanaNow.getUTCFullYear(),
+    astanaNow.getUTCMonth(),
+    astanaNow.getUTCDate(),
+    7,
+  ) - ASTANA_OFFSET_MS;
+  if (nextRefresh <= now.getTime()) nextRefresh += ONE_DAY_MS;
+  return nextRefresh - now.getTime();
+}
+
 const SOCIAL = [
   { name: 'YouTube',   count: '139 тыс.', href: 'https://www.youtube.com/channel/UCYq_KOlsxp8H2r3GIq6hWtA', icon: <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.52 3.5 12 3.5 12 3.5s-7.52 0-9.38.55A3.02 3.02 0 0 0 .5 6.19C0 8.07 0 12 0 12s0 3.93.5 5.81a3.02 3.02 0 0 0 2.12 2.14C4.48 20.5 12 20.5 12 20.5s7.52 0 9.38-.55a3.02 3.02 0 0 0 2.12-2.14C24 15.93 24 12 24 12s0-3.93-.5-5.81zM9.75 15.5V8.5l6.5 3.5-6.5 3.5z"/></svg> },
   { name: 'TikTok',    count: '113 тыс.', href: 'https://www.tiktok.com/@halyk_partiyasy',              icon: <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.73a4.85 4.85 0 0 1-1.01-.04z"/></svg> },
@@ -49,17 +64,32 @@ export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } =
 
   useEffect(() => {
     let cancelled = false;
-    // На главной показываем только новости с включённым тумблером
-    // «Показать на главной странице» (isFeatured) в CMS. Если таких пока
-    // нет — не молчим белым экраном, а показываем последние опубликованные.
-    fetchNews({ limit: 9, isFeatured: true, lang: language })
-      .then((res) => {
-        if (cancelled) return;
-        if (res.data.length > 0) { setNews(res.data); return; }
-        return fetchNews({ limit: 9, lang: language }).then((all) => { if (!cancelled && all.data.length > 0) setNews(all.data); });
-      })
-      .catch(() => { /* остаёмся на демо-данных */ });
-    return () => { cancelled = true; };
+    let dailyInterval: ReturnType<typeof setInterval> | undefined;
+
+    // По требованию заказчика оба слайдера показывают 10 последних публикаций,
+    // без ручного отбора через признак isFeatured.
+    const loadLatestNews = () => {
+      fetchNews({ limit: 10, lang: language })
+        .then((res) => {
+          if (!cancelled && res.data.length > 0) {
+            setNews(res.data.slice(0, 10));
+            setMainIdx(0);
+          }
+        })
+        .catch(() => { /* остаёмся на демо-данных */ });
+    };
+
+    loadLatestNews();
+    const dailyTimeout = window.setTimeout(() => {
+      loadLatestNews();
+      dailyInterval = setInterval(loadLatestNews, ONE_DAY_MS);
+    }, millisecondsUntilNextAstanaRefresh());
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(dailyTimeout);
+      if (dailyInterval) clearInterval(dailyInterval);
+    };
   }, [language]);
 
   const mainNews = news[mainIdx] ?? news[0];
@@ -194,13 +224,28 @@ export function NarodnoeMediaSection({ videoRef: externalRef }: { videoRef?: Rea
 
   useEffect(() => {
     let cancelled = false;
-    fetchYoutubeFeed()
-      .then((res) => {
-        if (cancelled || res.videos.length === 0) return;
-        setVideos(res.videos.map((v) => ({ id: v.id, title: v.title, date: formatDate(v.publishedAt) })));
-      })
-      .catch(() => { /* остаёмся на демо-данных */ });
-    return () => { cancelled = true; };
+    let dailyInterval: ReturnType<typeof setInterval> | undefined;
+
+    const loadLatestVideos = () => {
+      fetchYoutubeFeed()
+        .then((res) => {
+          if (cancelled || res.videos.length === 0) return;
+          setVideos(res.videos.slice(0, 10).map((v) => ({ id: v.id, title: v.title, date: formatDate(v.publishedAt) })));
+        })
+        .catch(() => { /* остаёмся на демо-данных */ });
+    };
+
+    loadLatestVideos();
+    const dailyTimeout = window.setTimeout(() => {
+      loadLatestVideos();
+      dailyInterval = setInterval(loadLatestVideos, ONE_DAY_MS);
+    }, millisecondsUntilNextAstanaRefresh());
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(dailyTimeout);
+      if (dailyInterval) clearInterval(dailyInterval);
+    };
   }, []);
 
   return (

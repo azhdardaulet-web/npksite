@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useHomeBlocks } from '@/hooks/useHomeBlocks';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -10,8 +11,10 @@ export function StatsVideoSection() {
   const videoWrapRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  const { language } = useLanguage();
   const { getBlock } = useHomeBlocks();
-  const videoUrl = getBlock<{ videoUrl?: string }>('video')?.videoUrl?.trim() || '/stats-video.mp4';
+  const videoUrl = getBlock<{ videoUrl?: string }>('video')?.videoUrl?.trim()
+    || (language === 'kz' ? '/videos/home-kz.mp4' : '/videos/home-ru.mp4');
 
   // Force play on mobile — iOS Safari sometimes ignores autoPlay attribute
   useEffect(() => {

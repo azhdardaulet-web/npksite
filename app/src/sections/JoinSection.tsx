@@ -1,16 +1,20 @@
 import { useState } from 'react';
 import { submitJoinRequest, ApiError } from '@/lib/api';
 import { useHomeBlocks } from '@/hooks/useHomeBlocks';
+import { useT } from '@/i18n/useT';
 
 const KZ_PHONE_RE = /^\+7\s?7\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/;
 
 interface JoinBlock { titleRu?: string; subtitleRu?: string; imageUrl?: string; }
 
 export function JoinSection() {
+  const t = useT();
   const { getBlock } = useHomeBlocks();
   const cms = getBlock<JoinBlock>('join');
   const titleLines = (cms?.titleRu?.trim() || 'Стань частью\nнародной силы').split('\n');
-  const subtitle = cms?.subtitleRu?.trim() || 'Казахстан справедливых возможностей начинается с людей, которые готовы за него работать.';
+  const legacySubtitle = 'Казахстан справедливых возможностей начинается с людей, которые готовы за него работать.';
+  const cmsSubtitle = cms?.subtitleRu?.trim();
+  const subtitle = !cmsSubtitle || cmsSubtitle === legacySubtitle ? t('home.join.newSubtitle') : cmsSubtitle;
   const image = cms?.imageUrl?.trim() || '/images/congress-hall-applause.jpg';
 
   const [consent, setConsent] = useState(false);

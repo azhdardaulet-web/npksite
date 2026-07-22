@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useHomeBlocks } from '@/hooks/useHomeBlocks';
+import { useT } from '@/i18n/useT';
 
 interface ProgramIntroBlock { headingRu?: string; textRu?: string; }
 
@@ -83,6 +84,7 @@ const MOBILE_STYLES = `
 `;
 
 export function ProgramSection() {
+  const t = useT();
   const { getBlock } = useHomeBlocks();
   const cms = getBlock<ProgramIntroBlock>('program_intro');
   const heading = cms?.headingRu?.trim() || 'Предвыборная программа Народной партии Казахстана';
@@ -129,9 +131,9 @@ export function ProgramSection() {
                 Ответственная власть
               </h3>
               <p className="mt-3 text-[13px] leading-[138%]" style={{ color:'rgba(255,255,255,0.88)' }}>
-                Законы должны работать, обещания — выполняться, а решения власти — быть понятными, открытыми и полезными для людей.
+                {t('home.program.responsibleText')}
               </p>
-              <Cta />
+              <Cta to="/programma#program-02" />
             </div>
           </article>
 
@@ -150,7 +152,7 @@ export function ProgramSection() {
               <p className="mt-3 text-[12px] leading-[138%]" style={{ color:'rgba(0,0,0,0.68)' }}>
                 Страна, где успех зависит от труда, знаний и ответственности, а не от связей, должности или места рождения.
               </p>
-              <Cta dark />
+              <Cta to="/programma#program-01" dark />
             </div>
           </article>
 
@@ -168,7 +170,7 @@ export function ProgramSection() {
               <p className="mt-3 text-[13px] leading-[138%]" style={{ color:'rgba(255,255,255,0.88)' }}>
                 Рост экономики должен ощущаться в жизни каждой семьи: в доходах, жилье, рабочих местах и уверенности в будущем.
               </p>
-              <Cta />
+              <Cta to="/programma#program-04" />
             </div>
           </article>
 
@@ -187,7 +189,7 @@ export function ProgramSection() {
               <p className="mt-3 text-[12px] leading-[138%]" style={{ color:'rgba(0,0,0,0.68)' }}>
                 Сильная страна начинается со здоровых людей, крепких семей и равных возможностей для каждого ребенка.
               </p>
-              <Cta dark />
+              <Cta to="/programma#program-09" dark />
             </div>
           </article>
 
@@ -205,9 +207,9 @@ export function ProgramSection() {
                 Человек труда
               </h3>
               <p className="mt-3 text-[13px] leading-[138%]" style={{ color:'rgba(255,255,255,0.88)' }}>
-                Рабочие, учителя, врачи, инженеры, фермеры и предприниматели создают настоящее и будущее страны. Их труд должен давать достойную жизнь.
+                {t('home.program.labourText')}
               </p>
-              <Cta />
+              <Cta to="/programma#program-01" />
             </div>
           </article>
 
@@ -229,9 +231,9 @@ export function ProgramSection() {
                 Полная программа НПК
               </h3>
               <p className="mt-3 text-[12px] leading-[138%]" style={{ color:'rgba(255,255,255,0.72)' }}>
-                На главной — ключевые акценты. В полной программе — все предложения партии: от регионов и образования до технологий, жилья и народного государства.
+                {t('home.program.fullText')}
               </p>
-              <Link to="/programma" className="prog-cta inline-flex items-center gap-2 font-bold text-white hover:bg-[#b9141d] transition-colors"
+              <Link to="/programma#full-program" className="prog-cta inline-flex items-center gap-2 font-bold text-white hover:bg-[#b9141d] transition-colors"
                 style={{ marginTop:18, background:'#db1f26', padding:'10px 16px', borderRadius:0, fontSize:13, textDecoration:'none' }}>
                 Читать программу →
               </Link>
@@ -252,11 +254,11 @@ function Diamond() {
   );
 }
 
-function Cta({ dark = false }: { dark?: boolean }) {
+function Cta({ to, dark = false }: { to: string; dark?: boolean }) {
   return (
-    <a href="#" className="prog-cta inline-flex items-center gap-3 mt-4 font-bold text-[14px] transition-all hover:gap-4"
+    <Link to={to} className="prog-cta inline-flex items-center gap-3 mt-4 font-bold text-[14px] transition-all hover:gap-4"
       style={{ color: dark ? '#db1f26' : 'white', textDecoration:'none' }}>
       Читать →
-    </a>
+    </Link>
   );
 }

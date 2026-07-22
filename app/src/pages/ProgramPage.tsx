@@ -4,17 +4,28 @@ import { TickerSection } from '@/sections/TickerSection';
 import { fetchProgramBlocks, type PublicProgramBlock } from '@/lib/api';
 import { ArrowUpRight, FileText } from 'lucide-react';
 import { useT } from '@/i18n/useT';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { useLocation } from 'react-router-dom';
+import { getLenis } from '@/hooks/useLenis';
 
 const FALLBACK_BLOCKS: PublicProgramBlock[] = [
   { id: '1', n: 1, keyword: 'ТРУД', title: 'Человек труда', lead1: 'Страна держится не на должностях.', lead2: 'Страна держится на людях труда.', points: ['Рабочие профессии — почёт, уважение и достойный доход', 'Национальная программа «Человек труда»', 'Жилищные, образовательные и соцпрограммы для рабочих, инженеров, учителей, врачей', 'Рост производительности = рост зарплат', 'Государство защищает права каждого работника', 'Новые профессии — через массовую переподготовку кадров'], imageUrl: null, sortOrder: 0 },
   { id: '2', n: 2, keyword: 'СЛОВО', title: 'Государство, которое держит слово', lead1: 'Если принимаются законы — они должны работать.', lead2: 'Если даются обещания — они должны выполняться.', points: ['Государство держит слово', 'Человек важнее отчёта', 'Оценка чиновников — только по реальной жизни людей', 'Персональная ответственность за каждую госпрограмму', 'Открытый бюджет: каждый тенге на виду у общества', 'Общественный контроль и прозрачность решений'], imageUrl: null, sortOrder: 1 },
   { id: '3', n: 3, keyword: 'ЗАКОН', title: 'Справедливость работает', lead1: 'Один закон для всех.', lead2: 'Не должность. Не влияние. Только закон.', points: ['Закон одинаков для всех — от гражданина до чиновника', 'Успех зависит от знаний и труда, не от связей', 'Справедливость — не лозунг, а основа государственной политики', 'Территориальная справедливость: одинаковые возможности в каждом регионе', 'Рост экономики должен ощущаться в жизни каждой семьи'], imageUrl: null, sortOrder: 2 },
   { id: '4', n: 4, keyword: 'ЛЮДИ', title: 'Экономика для людей', lead1: 'Экономика должна работать не ради отчётов —', lead2: 'ради человека.', points: ['Главная цель — рост доходов и благополучия семей', 'Честная конкуренция без административных привилегий', 'Сильный средний класс — стратегическая цель государства', 'Новые рабочие места во всех регионах страны', 'Предпринимательство — главная социальная сила', 'Природные богатства — на образование, медицину, инфраструктуру'], imageUrl: null, sortOrder: 3 },
+  { id: '5', n: 5, keyword: 'ЖИЛЬЁ', title: 'Жильё для работающей семьи', lead1: 'Собственное жильё — не мечта.', lead2: 'Это достижимая цель работающей семьи.', points: ['Народная ипотека для работающих семей, молодых специалистов, учителей и врачей', 'Доступная аренда с правом выкупа', 'Жилищное строительство по всей стране — не только в мегаполисах', 'Прозрачные жилищные программы без бюрократии'], imageUrl: null, sortOrder: 4 },
+  { id: '6', n: 6, keyword: 'ЗНАНИЯ', title: 'Образование и социальные лифты', lead1: 'Будущее ребёнка не должно зависеть', lead2: 'от почтового индекса его дома.', points: ['Качественная школа — в каждом городе и ауле страны', 'Развитие технического и профессионального образования', 'Поддержка талантливой молодёжи из всех регионов', 'Обучение на протяжении всей жизни'], imageUrl: null, sortOrder: 5 },
+  { id: '7', n: 7, keyword: 'РЕГИОНЫ', title: 'Сильные регионы — сильный Казахстан', lead1: 'Не должно быть Казахстана', lead2: 'первого и второго сорта.', points: ['Рабочие места — рядом с домом', 'Доступная медицина в каждом районном центре', 'Современная школа, дорога и интернет — по всей стране', 'Новые центры роста во всех регионах'], imageUrl: null, sortOrder: 6 },
+  { id: '8', n: 8, keyword: 'БУДУЩЕЕ', title: 'Экономика будущего', lead1: 'Будущее нельзя ждать.', lead2: 'Его нужно создавать.', points: ['Технологии должны работать на человека', 'От сырьевой экономики — к экономике знаний', 'Переподготовка кадров для профессий нового времени', 'Инновационные кластеры и технопарки'], imageUrl: null, sortOrder: 7 },
+  { id: '9', n: 9, keyword: 'ЗДОРОВЬЕ', title: 'Здоровье и достойная жизнь', lead1: 'Никто не должен становиться', lead2: 'беднее из-за болезни.', points: ['Доступная медицина — базовое право каждого гражданина', 'Единые стандарты помощи от аула до столицы', 'Профилактика и ранняя диагностика', 'Достойные условия труда для врачей и медсестёр'], imageUrl: null, sortOrder: 8 },
+  { id: '10', n: 10, keyword: 'СЕМЬЯ', title: 'Семья и дети', lead1: 'Сильная семья — сильная страна.', lead2: 'Дети — главный национальный капитал.', points: ['Поддержка семьи — приоритет государственной политики', 'Жильё и работа для молодых семей', 'Доступные детские сады, секции и кружки', 'Равные возможности для каждого ребёнка'], imageUrl: null, sortOrder: 9 },
 ];
 
 function VideoSection() {
+  const { language } = useLanguage();
   const [playing, setPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const videoUrl = language === 'kz' ? '/videos/home-kz.mp4' : '/videos/home-ru.mp4';
 
   const play = () => {
     if (videoRef.current) {
@@ -34,7 +45,7 @@ function VideoSection() {
         <a href="/vstupit" style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '15px 26px', background: 'transparent', border: '1.5px solid rgba(255,255,255,.24)', color: '#fff', textDecoration: 'none', fontSize: 15, fontWeight: 700 }}>Присоединиться →</a>
       </div>
       <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden', border: '1px solid rgba(255,255,255,.12)', background: '#000' }}>
-        <video ref={videoRef} src="/agitvideo.mp4" playsInline preload="metadata" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        <video ref={videoRef} src={videoUrl} playsInline preload="metadata" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
         {!playing && (
           <button type="button" onClick={play} aria-label="Воспроизвести" style={{ position: 'absolute', inset: 0, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.5))' }}>
             <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 'clamp(72px,9vw,110px)', height: 'clamp(72px,9vw,110px)', borderRadius: '50%', background: '#db1f26', color: '#fff', fontSize: 'clamp(24px,3vw,34px)', paddingLeft: 6 }}>▶</span>
@@ -47,6 +58,9 @@ function VideoSection() {
 
 export function ProgramPage() {
   const t = useT();
+  const { language } = useLanguage();
+  const location = useLocation();
+  const programPdfUrl = language === 'kz' ? '/documents/program-kz.pdf' : '/documents/program-ru.pdf';
   const [blocks, setBlocks] = useState<PublicProgramBlock[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -58,6 +72,20 @@ export function ProgramPage() {
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, []);
+
+  useEffect(() => {
+    if (loading || !location.hash) return;
+    const id = decodeURIComponent(location.hash.slice(1));
+    const frame = window.requestAnimationFrame(() => {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const top = window.scrollY + target.getBoundingClientRect().top - 160;
+      const lenis = getLenis();
+      if (lenis) lenis.scrollTo(top, { immediate: true, force: true });
+      window.scrollTo(0, top);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [loading, blocks, location.hash]);
 
   return (
     <div style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh', overflowX: 'hidden' }}>
@@ -105,7 +133,7 @@ export function ProgramPage() {
           const isRed = (i + 1) % 4 === 0;
           return (
           <ScrollReveal key={b.id} delay={0.05}>
-            <section style={{ position: 'relative', overflow: 'hidden', borderRadius: '0', padding: 'clamp(38px,5vw,80px) clamp(26px,4vw,72px)', background: isRed ? '#db1f26' : '#0e0e0f', color: '#fff', border: isRed ? '1px solid rgba(0,0,0,.12)' : '1px solid rgba(255,255,255,.09)' }}>
+            <section id={`program-${String(b.n).padStart(2, '0')}`} style={{ position: 'relative', overflow: 'hidden', borderRadius: '0', padding: 'clamp(38px,5vw,80px) clamp(26px,4vw,72px)', background: isRed ? '#db1f26' : '#0e0e0f', color: '#fff', border: isRed ? '1px solid rgba(0,0,0,.12)' : '1px solid rgba(255,255,255,.09)', scrollMarginTop: 180 }}>
               <span aria-hidden style={{ position: 'absolute', top: '-.28em', right: '.04em', fontSize: 'clamp(150px,26vw,400px)', fontWeight: 800, lineHeight: 1, letterSpacing: '-.04em', color: isRed ? 'rgba(0,0,0,.09)' : 'rgba(255,255,255,.035)', pointerEvents: 'none', zIndex: 0 }}>{b.keyword}</span>
               <div style={{ position: 'relative', zIndex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 18, flexWrap: 'wrap' }}>
@@ -155,7 +183,7 @@ export function ProgramPage() {
       </section>
 
       {/* FULL PROGRAM PDF */}
-      <section className="max-w-[1180px] mx-auto px-4 md:px-11 pb-16 md:pb-24">
+      <section id="full-program" className="max-w-[1180px] mx-auto px-4 md:px-11 pb-16 md:pb-24" style={{ scrollMarginTop: 180 }}>
         <ScrollReveal>
           <div className="border-y border-line py-8 md:py-10 flex flex-col md:flex-row md:items-center justify-between gap-7">
             <div className="flex items-start gap-4">
@@ -167,7 +195,7 @@ export function ProgramPage() {
               </div>
             </div>
             <a
-              href="https://halykpartiyasy.kz/storage/app/media/PartyProgramRU.pdf"
+              href={programPdfUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-3 bg-accent-brand text-white px-7 py-4 text-body font-bold hover:brightness-90 transition shrink-0"

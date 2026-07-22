@@ -4,8 +4,9 @@ import { prisma } from '../../lib/prisma';
 export const publicYoutubeRouter = Router();
 
 const CACHE_KEY = 'youtube_feed_cache';
-const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 часов, чтобы не жечь квоту YouTube Data API
-const MAX_RESULTS = 6;
+const ASTANA_OFFSET_MS = 5 * 60 * 60 * 1000;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const MAX_RESULTS = 10;
 // Канал НПК — тот же ID, что используется во всех соцссылках на сайте (Footer, DesktopHeader и т.д.)
 const DEFAULT_CHANNEL_ID = 'UCYq_KOlsxp8H2r3GIq6hWtA';
 
@@ -13,6 +14,18 @@ export interface YoutubeFeedItem {
   id: string;
   title: string;
   publishedAt: string;
+}
+
+function latestAstanaRefreshAt(now = new Date()) {
+  const astanaNow = new Date(now.getTime() + ASTANA_OFFSET_MS);
+  let refreshAt = Date.UTC(
+    astanaNow.getUTCFullYear(),
+    astanaNow.getUTCMonth(),
+    astanaNow.getUTCDate(),
+    7,
+  ) - ASTANA_OFFSET_MS;
+  if (refreshAt > now.getTime()) refreshAt -= ONE_DAY_MS;
+  return refreshAt;
 }
 
 async function fetchFromYoutube(): Promise<YoutubeFeedItem[]> {
@@ -45,12 +58,11 @@ async function fetchFromYoutube(): Promise<YoutubeFeedItem[]> {
     }));
 }
 
-// GET /api/v1/youtube/feed — последние ролики канала, кэш на 6 часов в Setting (key=youtube_feed_cache).
-// Новый ролик на канале появляется на сайте автоматически при первом запросе после истечения кэша —
-// без ручного обновления контента.
+// GET /api/v1/youtube/feed — 10 последних роликов канала. Кэш обновляется
+// при первом запросе после 07:00 по времени Астаны.
 publicYoutubeRouter.get('/feed', async (_req, res) => {
   const cached = await prisma.setting.findUnique({ where: { key: CACHE_KEY } }).catch(() => null);
-  const isFresh = !!cached && Date.now() - cached.updatedAt.getTime() < CACHE_TTL_MS;
+  const isFresh = !!cached && cached.updatedAt.getTime() >= latestAstanaRefreshAt();
 
   if (isFresh) {
     res.json({ videos: JSON.parse(cached!.value) });
