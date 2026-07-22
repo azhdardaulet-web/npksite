@@ -53,7 +53,6 @@ const NAV: NavItem[] = [
     href: '/frakciya',
     children: [
       { label: 'О фракции',           href: '/frakciya' },
-      { label: 'Состав фракции',      href: '/frakciya/sostav' },
       { label: 'Депутатские запросы', href: '/frakciya/zaprosy' },
     ],
   },
@@ -72,10 +71,8 @@ const NAV: NavItem[] = [
     children: [
       { label: 'Новости и релизы',                  href: '/novosti' },
       { label: 'СМИ о нас',                         href: '/smi-o-nas' },
-      { label: 'Галерея',                            href: '/galereya' },
-      { label: 'О портале «Халық үні Қазақстан»',   href: '/narodnoe-media' },
+      { label: 'О портале «Халық Үні Қазақстан»',   href: '/narodnoe-media' },
       { label: 'Народный подкаст',                   href: '/podcast' },
-      { label: 'Видео',                              href: '/media' },
     ],
   },
   {
@@ -97,7 +94,6 @@ const NAV_LABEL_KEYS: Record<string, TranslationKey> = {
   'Проекты': 'nav.projects',
   'Фракция': 'nav.faction',
   'О фракции': 'nav.factionAbout',
-  'Состав фракции': 'nav.factionComposition',
   'Депутатские запросы': 'nav.factionRequests',
   'Общественная приёмная': 'nav.reception',
   'Филиалы': 'nav.branches',
@@ -105,7 +101,7 @@ const NAV_LABEL_KEYS: Record<string, TranslationKey> = {
   'Новости и релизы': 'nav.newsReleases',
   'СМИ о нас': 'nav.mediaAboutUs',
   'Галерея': 'nav.gallery',
-  'О портале «Халық үні Қазақстан»': 'nav.portal',
+  'О портале «Халық Үні Қазақстан»': 'nav.portal',
   'Народный подкаст': 'nav.podcast',
   'Видео': 'nav.video',
   'Контакты': 'nav.contacts',

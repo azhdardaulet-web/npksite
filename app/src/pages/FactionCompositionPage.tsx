@@ -3,30 +3,22 @@ import { Link } from 'react-router-dom';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { TextReveal } from '@/components/TextReveal';
 import { fetchTeam, type PublicTeamMember } from '@/lib/api';
-
-export const FACTION_FALLBACK: PublicTeamMember[] = [
-  { id: 'f1', slug: 'marat-beketov', group: 'FACTION', sortOrder: 0, name: 'Марат Бекетов', position: 'Руководитель фракции', bio: 'Комитет по социально-культурному развитию', fullBio: null, photoUrl: '/images/candidate-3.jpg' },
-  { id: 'f2', slug: 'ajkyn-konurov', group: 'FACTION', sortOrder: 1, name: 'Айкын Конуров', position: 'Первый заместитель председателя партии', bio: 'Комитет по финансам и бюджету', fullBio: null, photoUrl: '/images/candidate-1.jpg' },
-  { id: 'f3', slug: 'zhambyl-ahmetbekov', group: 'FACTION', sortOrder: 2, name: 'Жамбыл Ахметбеков', position: 'Депутат Мажилиса', bio: 'Комитет по аграрным вопросам', fullBio: null, photoUrl: '/images/candidate-2.jpg' },
-  { id: 'f4', slug: 'irina-smirnova', group: 'FACTION', sortOrder: 3, name: 'Ирина Смирнова', position: 'Депутат Мажилиса', bio: 'Комитет по социально-культурному развитию', fullBio: null, photoUrl: '/images/candidate-4.jpg' },
-  { id: 'f5', slug: 'aleksandr-milyutin', group: 'FACTION', sortOrder: 4, name: 'Александр Милютин', position: 'Депутат Мажилиса', bio: 'Комитет по вопросам экономической реформы и региональному развитию', fullBio: null, photoUrl: '/images/candidate-5.jpg' },
-  { id: 'f6', slug: 'sergej-reshetnikov', group: 'FACTION', sortOrder: 5, name: 'Сергей Решетников', position: 'Депутат Мажилиса', bio: 'Комитет по законодательству и судебно-правовой реформе', fullBio: null, photoUrl: '/images/candidate-6.jpg' },
-  { id: 'f7', slug: 'ajbek-payaev', group: 'FACTION', sortOrder: 6, name: 'Айбек Паяев', position: 'Депутат Мажилиса', bio: 'Комитет по международным делам, обороне и безопасности', fullBio: null, photoUrl: '/images/candidate-1.jpg' },
-  { id: 'f8', slug: 'gaziz-kulahmetov', group: 'FACTION', sortOrder: 7, name: 'Газиз Кулахметов', position: 'Депутат Мажилиса', bio: 'Комитет по вопросам экологии и природопользования', fullBio: null, photoUrl: '/images/candidate-2.jpg' },
-  { id: 'f9', slug: 'erlan-smajlov', group: 'FACTION', sortOrder: 8, name: 'Ерлан Смайлов', position: 'Депутат Мажилиса', bio: 'Комитет по финансам и бюджету', fullBio: null, photoUrl: '/images/candidate-3.jpg' },
-  { id: 'f10', slug: 'fajzolla-kamenov', group: 'FACTION', sortOrder: 9, name: 'Файзолла Каменов', position: 'Депутат Мажилиса', bio: 'Комитет по аграрным вопросам', fullBio: null, photoUrl: '/images/candidate-4.jpg' },
-];
+import { useLanguage } from '@/i18n/LanguageContext';
+import { getFactionFallback, mergeFactionMembers } from '@/lib/faction';
 
 export function FactionCompositionPage() {
-  const [deputies, setDeputies] = useState<PublicTeamMember[]>([]);
+  const { language } = useLanguage();
+  const [deputies, setDeputies] = useState<PublicTeamMember[]>(getFactionFallback(language));
 
   useEffect(() => {
     let cancelled = false;
-    fetchTeam('FACTION')
-      .then((items) => { if (!cancelled) setDeputies(items.length > 0 ? items : FACTION_FALLBACK); })
-      .catch(() => { if (!cancelled) setDeputies(FACTION_FALLBACK); });
+    fetchTeam('FACTION', language)
+      .then((items) => { if (!cancelled) setDeputies(mergeFactionMembers(items, language)); })
+      .catch(() => { if (!cancelled) setDeputies(getFactionFallback(language)); });
     return () => { cancelled = true; };
-  }, []);
+  }, [language]);
+
+  const isKazakh = language === 'kz';
 
   return (
     <div className="bg-bg min-h-screen">
@@ -47,7 +39,7 @@ export function FactionCompositionPage() {
             </BreadcrumbItem>
             <BreadcrumbSeparator style={{ color: 'var(--text-muted)' }} />
             <BreadcrumbItem>
-              <BreadcrumbPage style={{ color: 'var(--text)' }}>Состав фракции</BreadcrumbPage>
+              <BreadcrumbPage style={{ color: 'var(--text)' }}>{isKazakh ? 'Фракция құрамы' : 'Состав фракции'}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -62,21 +54,22 @@ export function FactionCompositionPage() {
           fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em',
           marginBottom: 24,
         }}>
-          Фракция НПК
+          {isKazakh ? 'ҚХП фракциясы' : 'Фракция НПК'}
         </div>
         <h1 style={{
           fontSize: 'clamp(36px, 6vw, 64px)', fontWeight: 800,
           lineHeight: 0.95, letterSpacing: '-0.04em', margin: 0, color: 'var(--text)',
         }}>
-          Состав <span style={{ color: '#db1f26' }}>фракции</span>
+          {isKazakh ? 'Қазақстан Республикасы Парламенті Мәжілісінің ' : 'Состав фракции '}
+          <span style={{ color: '#db1f26' }}>{isKazakh ? 'VIII шақырылымы' : '8 созыва Мажилиса Парламента'}</span>
         </h1>
         <p style={{
           fontSize: 16, color: 'var(--text-muted)', lineHeight: 1.65,
           marginTop: 20, maxWidth: 640,
         }}>
-          Депутаты Народной партии Казахстана в Мажилисе Парламента РК — люди, которые
-          представляют интересы избирателей в ключевых комитетах и продвигают инициативы
-          партии на законодательном уровне.
+          {isKazakh
+            ? 'Қазақстан Халық партиясының депутаттары сайлаушылардың мүддесін Мәжілістің негізгі комитеттерінде қорғайды және партия бастамаларын заңнамалық деңгейде ілгерілетеді.'
+            : 'Депутаты Народной партии Казахстана представляют интересы избирателей в ключевых комитетах Мажилиса и продвигают инициативы партии на законодательном уровне.'}
         </p>
       </section>
 
@@ -86,23 +79,24 @@ export function FactionCompositionPage() {
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-8">
             <div>
-              <p className="text-label text-accent-brand font-medium mb-3 uppercase tracking-wider">Фракция</p>
+              <p className="text-label text-accent-brand font-medium mb-3 uppercase tracking-wider">{isKazakh ? 'Фракция' : 'Фракция'}</p>
               <TextReveal
                 tag="h2"
                 className="font-formular text-heading-md md:text-heading-lg text-text-base"
               >
-                Наши лица
+                {isKazakh ? 'Біздің өкілдер' : 'Наши представители'}
               </TextReveal>
               <p className="text-body-lg font-light text-text-muted mt-3 max-w-[560px]">
-                Депутаты фракции НПК в Мажилисе Парламента РК — представители народа,
-                которые каждый день работают над законами для страны.
+                {isKazakh
+                  ? 'ҚХП фракциясының Мәжілістегі депутаттары — ел үшін қажетті заңдармен күн сайын жұмыс істейтін халық өкілдері.'
+                  : 'Депутаты фракции НПК в Мажилисе — представители народа, которые ежедневно работают над необходимыми стране законами.'}
               </p>
             </div>
           </div>
 
           {/* Grid of deputy cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {(deputies.length > 0 ? deputies : FACTION_FALLBACK).map((d) => (
+            {deputies.map((d) => (
               <Link
                 key={d.id}
                 to={d.slug ? `/frakciya/sostav/${d.slug}` : '/frakciya/sostav'}

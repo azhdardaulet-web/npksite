@@ -3,6 +3,7 @@
 // пока передаём заглушку токена, бэкенд пропускает проверку, если
 // HCAPTCHA_SECRET не задан на сервере.
 import { approvedBranchesKz } from '@/i18n/branchContent';
+import { regions } from '@/lib/data';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 
@@ -367,19 +368,46 @@ export interface PublicBranch {
   sortOrder: number;
 }
 
-export async function fetchBranches() {
-  const branches = await api.get<PublicBranch[]>('/api/v1/branches');
-  if (getCurrentLanguage() !== 'kz') return branches;
+function getFallbackBranches(): PublicBranch[] {
+  const isKazakh = getCurrentLanguage() === 'kz';
 
-  return branches.map((branch) => {
-    const approved = approvedBranchesKz.find((item) => item.city === branch.cityKz);
+  return regions.map((region, index) => {
+    const approved = approvedBranchesKz[index];
     return {
-      ...branch,
-      cityRu: branch.cityKz?.trim() || branch.cityRu,
-      addressRu: branch.addressKz?.trim() || branch.addressRu,
-      chairman: approved?.chairman || branch.chairman,
+      id: region.id,
+      cityRu: isKazakh ? approved?.city || region.name : region.name,
+      cityKz: approved?.city || region.name,
+      addressRu: isKazakh ? approved?.address || region.address : region.address,
+      addressKz: approved?.address || region.address,
+      phone: region.phone,
+      email: region.email || '',
+      chairman: isKazakh ? approved?.chairman || region.chairman : region.chairman,
+      lng: null,
+      lat: null,
+      sortOrder: index,
     };
   });
+}
+
+export async function fetchBranches() {
+  try {
+    const branches = await api.get<PublicBranch[]>('/api/v1/branches');
+    if (!Array.isArray(branches) || branches.length === 0) return getFallbackBranches();
+    if (getCurrentLanguage() !== 'kz') return branches;
+
+    return branches.map((branch) => {
+      const approved = approvedBranchesKz.find((item) => item.city === branch.cityKz);
+      return {
+        ...branch,
+        cityRu: branch.cityKz?.trim() || branch.cityRu,
+        addressRu: branch.addressKz?.trim() || branch.addressRu,
+        chairman: approved?.chairman || branch.chairman,
+      };
+    });
+  } catch {
+    // Форма и карточки филиалов остаются рабочими при временной недоступности CMS.
+    return getFallbackBranches();
+  }
 }
 
 // ─── Страницы (блоки для CMS-редактируемых секций, /pages/:slug) ───────────────

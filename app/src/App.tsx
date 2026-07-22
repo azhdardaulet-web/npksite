@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Navigate, Routes, Route } from 'react-router-dom';
 import { PageLayout } from '@/components/PageLayout';
 import { HomePage } from '@/pages/HomePage';
 import { AboutPage } from '@/pages/AboutPage';
@@ -21,13 +21,13 @@ import { ShopPage } from '@/pages/ShopPage';
 import { NewsArticlePage } from '@/pages/NewsArticlePage';
 import { SmiPage } from '@/pages/SmiPage';
 import { NarodnoeMediaPage } from '@/pages/NarodnoeMediaPage';
+import { MediaTeamDetailPage } from '@/pages/MediaTeamDetailPage';
 import { HistoryPage } from '@/pages/HistoryPage';
 import { UstavPage } from '@/pages/UstavPage';
 import { ProjectsPage } from '@/pages/ProjectsPage';
 import { ProjectDetailPage } from '@/pages/ProjectDetailPage';
-import { FactionCompositionPage } from '@/pages/FactionCompositionPage';
-import { FactionDetailPage } from '@/pages/FactionDetailPage';
 import { FactionRequestsPage } from '@/pages/FactionRequestsPage';
+import { FactionRequestDetailPage } from '@/pages/FactionRequestDetailPage';
 import { VerifyPage } from '@/pages/VerifyPage';
 import { VisiblePageRoute } from '@/components/VisiblePageRoute';
 
@@ -68,15 +68,16 @@ function App() {
         <Route path="/rukovodstvo" element={<VisiblePageRoute slug="leadership"><LeadershipPage /></VisiblePageRoute>} />
         <Route path="/rukovodstvo/:slug" element={<VisiblePageRoute slug="leadership"><LeadershipDetailPage /></VisiblePageRoute>} />
         <Route path="/frakciya" element={<VisiblePageRoute slug="faction"><FactionPage /></VisiblePageRoute>} />
-        <Route path="/frakciya/sostav" element={<VisiblePageRoute slug="faction"><FactionCompositionPage /></VisiblePageRoute>} />
-        <Route path="/frakciya/sostav/:slug" element={<VisiblePageRoute slug="faction"><FactionDetailPage /></VisiblePageRoute>} />
+        <Route path="/frakciya/sostav/*" element={<Navigate to="/frakciya" replace />} />
         <Route path="/frakciya/zaprosy" element={<VisiblePageRoute slug="faction"><FactionRequestsPage /></VisiblePageRoute>} />
+        <Route path="/frakciya/zaprosy/:slug" element={<VisiblePageRoute slug="faction"><FactionRequestDetailPage /></VisiblePageRoute>} />
         <Route path="/mediakits" element={<VisiblePageRoute slug="press-kit"><PressKitPage /></VisiblePageRoute>} />
         <Route path="/search" element={<VisiblePageRoute slug="search"><SearchPage /></VisiblePageRoute>} />
         <Route path="/magazin" element={<VisiblePageRoute slug="shop"><ShopPage /></VisiblePageRoute>} />
         <Route path="/novosti/:slug" element={<VisiblePageRoute slug="news"><NewsArticlePage /></VisiblePageRoute>} />
         <Route path="/smi-o-nas" element={<VisiblePageRoute slug="smi"><SmiPage /></VisiblePageRoute>} />
         <Route path="/narodnoe-media" element={<VisiblePageRoute slug="press-center"><NarodnoeMediaPage /></VisiblePageRoute>} />
+        <Route path="/narodnoe-media/:slug" element={<VisiblePageRoute slug="press-center"><MediaTeamDetailPage /></VisiblePageRoute>} />
         <Route path="/verify/:id" element={<VerifyPage />} />
       </Route>
     </Routes>

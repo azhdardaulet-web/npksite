@@ -2,21 +2,23 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { fetchTeam, type PublicTeamMember } from '@/lib/api';
 import { TeamMemberProfile } from '@/components/TeamMemberProfile';
-import { FACTION_FALLBACK } from '@/pages/FactionCompositionPage';
+import { getFactionFallback, mergeFactionMembers } from '@/lib/faction';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 export function FactionDetailPage() {
   const { slug } = useParams<{ slug: string }>();
+  const { language } = useLanguage();
   const [members, setMembers] = useState<PublicTeamMember[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
-    fetchTeam('FACTION')
-      .then((items) => { if (!cancelled) setMembers(items.length > 0 ? items : FACTION_FALLBACK); })
-      .catch(() => { if (!cancelled) setMembers(FACTION_FALLBACK); })
+    fetchTeam('FACTION', language)
+      .then((items) => { if (!cancelled) setMembers(mergeFactionMembers(items, language)); })
+      .catch(() => { if (!cancelled) setMembers(getFactionFallback(language)); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, []);
+  }, [language]);
 
   const member = members.find((item) => item.slug === slug);
 

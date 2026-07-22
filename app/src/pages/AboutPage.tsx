@@ -52,14 +52,14 @@ const principles = [
 ];
 
 const communityGroups = [
-  'Трудящиеся',
-  'Безработные',
-  'Пенсионеры',
-  'Молодёжь',
-  'Бюджетники',
-  'Предприниматели',
-  'Многодетные семьи',
-  'Люди с инвалидностью',
+  { label: 'Трудящиеся', position: '0% 0%' },
+  { label: 'Безработные', position: '33.333% 0%' },
+  { label: 'Пенсионеры', position: '66.667% 0%' },
+  { label: 'Молодёжь', position: '100% 0%' },
+  { label: 'Бюджетники', position: '0% 100%' },
+  { label: 'Предприниматели', position: '33.333% 100%' },
+  { label: 'Многодетные семьи', position: '66.667% 100%' },
+  { label: 'Люди с инвалидностью', position: '100% 100%' },
 ];
 
 const cooperation = [
@@ -206,21 +206,28 @@ export function AboutPage() {
             <ScrollReveal>
               <p className="about-lead">{communityText}</p>
             </ScrollReveal>
-            <div className="about-groups" aria-label="Кого объединяет партия">
-              {communityGroups.map((group, index) => (
-                <ScrollReveal key={group} delay={(index % 4) * 0.04}>
-                  <div className="about-group">
-                    <span>{String(index + 1).padStart(2, '0')}</span>
-                    <strong>{group}</strong>
-                  </div>
-                </ScrollReveal>
-              ))}
-            </div>
             <ScrollReveal>
               <Link to="/vstupit" className="about-statement">
                 Приходи к нам, если считаешь так же!<ArrowRight size={20} aria-hidden="true" />
               </Link>
             </ScrollReveal>
+            <div className="about-groups" aria-label="Кого объединяет партия">
+              {communityGroups.map((group, index) => (
+                <ScrollReveal key={group.label} delay={(index % 4) * 0.04}>
+                  <div className="about-group">
+                    <div
+                      className="about-group__photo"
+                      style={{ backgroundPosition: group.position }}
+                      aria-hidden="true"
+                    />
+                    <div className="about-group__caption">
+                      <span>{String(index + 1).padStart(2, '0')}</span>
+                      <strong>{group.label}</strong>
+                    </div>
+                  </div>
+                </ScrollReveal>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -245,7 +252,7 @@ export function AboutPage() {
                     <Landmark size={24} strokeWidth={1.6} aria-hidden="true" />
                     <h3>Политическое участие</h3>
                     <p>Представительство интересов граждан, законодательная работа и решения в интересах народа.</p>
-                    <Link to="/frakciya">Состав фракции<ArrowRight size={15} /></Link>
+                    <Link to="/frakciya">О фракции<ArrowRight size={15} /></Link>
                   </article>
                   <article>
                     <Building2 size={24} strokeWidth={1.6} aria-hidden="true" />
@@ -257,7 +264,7 @@ export function AboutPage() {
               </div>
             </ScrollReveal>
             <ScrollReveal>
-              <p className="about-callout">Изменим государственную систему естественным путём!</p>
+              <p className="about-callout">Изменим государственную систему эволюционным путём!</p>
             </ScrollReveal>
           </div>
         </section>

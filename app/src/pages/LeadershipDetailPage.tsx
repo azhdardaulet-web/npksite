@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { fetchTeam, type PublicTeamMember } from '@/lib/api';
 import { TeamMemberProfile } from '@/components/TeamMemberProfile';
 import { FALLBACK } from './LeadershipPage';
+import { mergeLeadership } from '@/lib/leadership';
 
 export function LeadershipDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -12,7 +13,7 @@ export function LeadershipDetailPage() {
   useEffect(() => {
     let cancelled = false;
     fetchTeam('LEADERSHIP')
-      .then((data) => { if (!cancelled) setLeaders(data.length > 0 ? data : FALLBACK); })
+      .then((data) => { if (!cancelled) setLeaders(mergeLeadership(data)); })
       .catch(() => { if (!cancelled) setLeaders(FALLBACK); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };

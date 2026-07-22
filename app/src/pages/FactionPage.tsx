@@ -108,13 +108,13 @@ export function FactionPage() {
           <div className="npf-hero__stats">
             <div className="npf-hero__stat npf-hero__stat--red">
               <span>
-                <div className="npf-hero__stat-num">3</div>
-                <div className="npf-hero__stat-label">законопроекта инициировано</div>
+                <div className="npf-hero__stat-num">7</div>
+                <div className="npf-hero__stat-label">законопроектов инициировано</div>
               </span>
             </div>
             <div className="npf-hero__stat npf-hero__stat--dark">
               <span>
-                <div className="npf-hero__stat-num">66+</div>
+                <div className="npf-hero__stat-num">154+</div>
                 <div className="npf-hero__stat-label">депутатских запросов</div>
               </span>
             </div>
@@ -128,9 +128,9 @@ export function FactionPage() {
           {Array(4).fill(null).map((_, i) => (
             <span key={i} className="npf-ticker__item">
               <span className="npf-ticker__dot" />ФРАКЦИЯ НПК В МАЖИЛИСЕ
-              <span className="npf-ticker__dot" />3 ЗАКОНОПРОЕКТА
-              <span className="npf-ticker__dot" />1500+ ПОПРАВОК
-              <span className="npf-ticker__dot" />66+ ДЕПУТАТСКИХ ЗАПРОСОВ
+              <span className="npf-ticker__dot" />7 ЗАКОНОПРОЕКТОВ
+              <span className="npf-ticker__dot" />3217+ ПОПРАВОК
+              <span className="npf-ticker__dot" />154+ ДЕПУТАТСКИХ ЗАПРОСОВ
               <span className="npf-ticker__dot" />НПК ОПРАВДЫВАЕТ ОЖИДАНИЯ НАРОДА!
             </span>
           ))}
@@ -151,13 +151,13 @@ export function FactionPage() {
         <div className="npf-numbers__grid">
           <ScrollReveal delay={0}>
             <div className="npf-num npf-num--red">
-              <div className="npf-num__value">3</div>
-              <div className="npf-num__label">законопроекта инициировано</div>
+              <div className="npf-num__value">7</div>
+              <div className="npf-num__label">законопроектов инициировано</div>
             </div>
           </ScrollReveal>
 
-          <StatCard num={1500} label="законодательных поправок" suffix="+" delay={0} />
-          <StatCard num={66} label="депутатских запросов" suffix="+" delay={200} />
+          <StatCard num={3217} label="законодательных поправок" suffix="+" delay={0} />
+          <StatCard num={154} label="депутатских запросов" suffix="+" delay={200} />
 
           <ScrollReveal delay={300}>
             <div className="npf-num npf-num--red">
@@ -216,9 +216,9 @@ export function FactionPage() {
             <ScrollReveal
               key={i}
               delay={i * 0.08}
-              className={a.highlight ? 'npf-achieve__card--wide' : ''}
+              className={`npf-achieve__item npf-achieve__item--${i + 1}`}
             >
-              <div className={`npf-achieve__card ${a.highlight ? 'npf-achieve__card--red npf-achieve__card--wide' : 'npf-achieve__card--dark'}`}>
+              <div className={`npf-achieve__card ${a.highlight ? 'npf-achieve__card--red' : 'npf-achieve__card--dark'}`}>
                 <div className="npf-achieve__icon"><a.icon size={22} strokeWidth={1.75} /></div>
                 <p className="npf-achieve__text">{a.text}</p>
               </div>
@@ -237,7 +237,7 @@ export function FactionPage() {
             </h2>
             <p className="npf-cta__text">
               Народные депутаты НПК продолжают работу на благо каждого казахстанца.
-              Присоединяйтесь к нам — вместе мы построим справедливый Казахстан.
+              Присоединяйтесь к нам — вместе мы построим Справедливый Казахстан.
             </p>
             <Link to="/vstupit" className="npf-cta__btn">
               Вступить в партию →

@@ -219,27 +219,41 @@
 .about-groups {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  margin-top: 22px;
   border-top: 1px solid var(--line);
   border-left: 1px solid var(--line);
 }
 
 .about-group {
-  min-height: 104px;
-  padding: 18px;
+  min-width: 0;
+  overflow: hidden;
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
+  background: var(--surface);
 }
 
-.about-group span {
+.about-group__photo {
+  aspect-ratio: 1;
+  background-image: url('/images/about/community-groups-v2.png');
+  background-repeat: no-repeat;
+  background-size: 400% 200%;
+}
+
+.about-group__caption {
+  min-height: 80px;
+  padding: 12px 14px 14px;
+}
+
+.about-group__caption span {
   display: block;
-  margin-bottom: 26px;
+  margin-bottom: 8px;
   color: var(--about-red);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: .12em;
 }
 
-.about-group strong {
+.about-group__caption strong {
   display: block;
   font-size: 14px;
   line-height: 1.28;
@@ -249,7 +263,7 @@
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  margin-top: 30px;
+  margin-top: 0;
   color: var(--about-red);
   font-size: 15px;
   font-weight: 700;

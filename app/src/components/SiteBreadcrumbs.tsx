@@ -32,18 +32,22 @@ function crumbsFor(pathname: string): SiteCrumb[] {
   if (pathname === '/novosti') return [{ label: 'Пресс-центр', href: '/novosti' }, { label: 'Новости и релизы' }];
   if (pathname === '/smi-o-nas') return [{ label: 'Пресс-центр', href: '/novosti' }, { label: 'СМИ о нас' }];
   if (pathname === '/narodnoe-media') return [{ label: 'Пресс-центр', href: '/novosti' }, { label: 'Народное медиа' }];
+  if (pathname.startsWith('/narodnoe-media/')) return [
+    { label: 'Пресс-центр', href: '/novosti' },
+    { label: 'Народное медиа', href: '/narodnoe-media' },
+    { label: 'Профиль медиакоманды' },
+  ];
 
   if (pathname === '/o-partii/istoriya') return [{ label: 'О партии', href: '/o-partii' }, { label: 'История партии' }];
   if (pathname === '/o-partii/ustav') return [{ label: 'О партии', href: '/o-partii' }, { label: 'Устав партии' }];
   if (pathname.startsWith('/o-partii/')) return [{ label: 'О партии', href: '/o-partii' }, { label: 'Раздел о партии' }];
 
-  if (pathname === '/frakciya/sostav') return [{ label: 'Фракция', href: '/frakciya' }, { label: 'Состав фракции' }];
-  if (pathname.startsWith('/frakciya/sostav/')) return [
-    { label: 'Фракция', href: '/frakciya' },
-    { label: 'Состав фракции', href: '/frakciya/sostav' },
-    { label: 'Профиль депутата' },
-  ];
   if (pathname === '/frakciya/zaprosy') return [{ label: 'Фракция', href: '/frakciya' }, { label: 'Депутатские запросы' }];
+  if (pathname.startsWith('/frakciya/zaprosy/')) return [
+    { label: 'Фракция', href: '/frakciya' },
+    { label: 'Депутатские запросы', href: '/frakciya/zaprosy' },
+    { label: 'Материал' },
+  ];
 
   if (pathname.startsWith('/rukovodstvo/')) return [{ label: 'Руководство партии', href: '/rukovodstvo' }, { label: 'Профиль руководителя' }];
   if (pathname.startsWith('/filialy/')) return [{ label: 'Филиалы', href: '/filialy' }, { label: 'Страница филиала' }];

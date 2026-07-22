@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { fetchTeam, type PublicTeamMember } from '@/lib/api';
-import { LEADERSHIP_FALLBACK } from '../../../shared/leadershipData';
 import { useT } from '@/i18n/useT';
+import { leadershipFallback, mergeLeadership } from '@/lib/leadership';
 
 export function CandidatesSection() {
-  const [leaders, setLeaders] = useState<PublicTeamMember[]>(LEADERSHIP_FALLBACK);
+  const [leaders, setLeaders] = useState<PublicTeamMember[]>(leadershipFallback);
   const t = useT();
   // Временная формулировка заказчика до публикации списка топ-10 кандидатов.
   const heading = t('home.candidates.temporaryTitle');
@@ -18,7 +18,7 @@ export function CandidatesSection() {
     let cancelled = false;
     fetchTeam('LEADERSHIP')
       .then((data) => {
-        if (!cancelled && data.length > 0) setLeaders(data);
+        if (!cancelled) setLeaders(mergeLeadership(data));
       })
       .catch(() => {
         // Локальный список уже установлен как безопасный запасной источник.

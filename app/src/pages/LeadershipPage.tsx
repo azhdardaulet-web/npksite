@@ -4,12 +4,12 @@ import { SectionHeader } from '@/components/SectionHeader';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { ArrowUpRight } from 'lucide-react';
 import { fetchTeam, type PublicTeamMember } from '@/lib/api';
-import { LEADERSHIP_FALLBACK } from '../../../shared/leadershipData';
+import { leadershipFallback, mergeLeadership } from '@/lib/leadership';
 
 // Данные сверены с halykpartiyasy.kz/ru/rukovodstvo-partii (20.07.2026).
 // bio — короткая подпись в карточке, fullBio — полная биография на персональной странице.
 // Экспортируется — переиспользуется в LeadershipDetailPage как запасной источник.
-export const FALLBACK: PublicTeamMember[] = LEADERSHIP_FALLBACK;
+export const FALLBACK: PublicTeamMember[] = leadershipFallback;
 
 function LeaderSkeleton() {
   return (
@@ -64,7 +64,7 @@ export function LeadershipPage() {
   useEffect(() => {
     let cancelled = false;
     fetchTeam('LEADERSHIP')
-      .then((data) => { if (!cancelled) setLeaders(data.length > 0 ? data : FALLBACK); })
+      .then((data) => { if (!cancelled) setLeaders(mergeLeadership(data)); })
       .catch(() => { if (!cancelled) setLeaders(FALLBACK); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };

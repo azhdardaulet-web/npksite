@@ -21,7 +21,6 @@ const MENU_SECTIONS = [
     label: 'Фракция', href: '/frakciya',
     children: [
       { label: 'О фракции',           href: '/frakciya' },
-      { label: 'Состав фракции',      href: '/frakciya/sostav' },
       { label: 'Депутатские запросы', href: '/frakciya/zaprosy' },
     ],
   },
@@ -32,8 +31,7 @@ const MENU_SECTIONS = [
     children: [
       { label: 'Новости и релизы',               href: '/novosti' },
       { label: 'СМИ о нас',                      href: '/smi-o-nas' },
-      { label: 'О портале «Халық үні Қазақстан»', href: '/narodnoe-media' },
-      { label: 'Видео',                           href: '/media' },
+      { label: 'О портале «Халық Үні Қазақстан»', href: '/narodnoe-media' },
     ],
   },
   { label: 'Контакты', href: '/kontakty' },
