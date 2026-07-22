@@ -3,12 +3,12 @@ import { Youtube, Instagram, Facebook, Send } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 const navLinks = [
-  { label: 'О партии', href: '/o-partii' },
-  { label: 'Фракция', href: '/frakciya' },
-  { label: 'Программа', href: '/programma' },
-  { label: 'Общественная приёмная', href: '/priemnaya' },
-  { label: 'Медиа', href: '/media' },
-  { label: 'Контакты', href: '/kontakty' },
+  { labelRu: 'О партии', labelKz: 'Партия туралы', href: '/o-partii' },
+  { labelRu: 'Фракция', labelKz: 'Фракция', href: '/frakciya' },
+  { labelRu: 'Программа', labelKz: 'Бағдарлама', href: '/programma' },
+  { labelRu: 'Общественная приёмная', labelKz: 'Қоғамдық қабылдау', href: '/priemnaya' },
+  { labelRu: 'Медиа', labelKz: 'Медиа', href: '/media' },
+  { labelRu: 'Контакты', labelKz: 'Байланыс', href: '/kontakty' },
 ];
 
 // Ссылки — те же, что в DesktopHeader.tsx (components/DesktopHeader.tsx, массив socials).
@@ -28,6 +28,7 @@ const socialIcons = [
 
 export function Footer() {
   const { language } = useLanguage();
+  const isKz = language === 'kz';
 
   return (
     <footer className="bg-surface border-t border-line">
@@ -38,15 +39,15 @@ export function Footer() {
           <div>
             <img
               src={language === 'kz' ? '/images/logo-kz.svg' : '/images/logo-rus.svg'}
-              alt="Народная партия Казахстана"
+              alt={isKz ? 'Қазақстан Халық партиясы' : 'Народная партия Казахстана'}
               className={language === 'kz' ? 'h-[52px] w-auto mb-3' : 'h-8 w-auto mb-3'}
             />
-            <p className="text-body text-text-muted">Народная Партия Казахстана</p>
+            <p className="text-body text-text-muted">{isKz ? 'Қазақстан Халық партиясы' : 'Народная партия Казахстана'}</p>
           </div>
 
           {/* Col 2: Nav */}
           <div>
-            <h4 className="text-label font-medium text-text-base mb-4">Навигация</h4>
+            <h4 className="text-label font-medium text-text-base mb-4">{isKz ? 'Сайт бөлімдері' : 'Навигация'}</h4>
             <ul className="space-y-2">
               {navLinks.map((link) => (
                 <li key={link.href}>
@@ -54,7 +55,7 @@ export function Footer() {
                     to={link.href}
                     className="text-body text-text-muted hover:text-text-base transition-colors duration-150"
                   >
-                    {link.label}
+                    {isKz ? link.labelKz : link.labelRu}
                   </Link>
                 </li>
               ))}
@@ -63,9 +64,9 @@ export function Footer() {
 
           {/* Col 3: Contacts */}
           <div>
-            <h4 className="text-label font-medium text-text-base mb-4">Контакты</h4>
+            <h4 className="text-label font-medium text-text-base mb-4">{isKz ? 'Байланыс' : 'Контакты'}</h4>
             <div className="space-y-2 text-body text-text-muted">
-              <p>010000, Астана, ул. Желтоксан, 16</p>
+              <p>{isKz ? '010000, Астана, Желтоқсан көшесі, 16' : '010000, Астана, ул. Желтоксан, 16'}</p>
               <a href="mailto:info@halykpartiyasy.kz" className="inline-block hover:text-text-base transition-colors">
                 info@halykpartiyasy.kz
               </a>
@@ -74,7 +75,7 @@ export function Footer() {
 
           {/* Col 4: Social */}
           <div>
-            <h4 className="text-label font-medium text-text-base mb-4">Соцсети</h4>
+            <h4 className="text-label font-medium text-text-base mb-4">{isKz ? 'Әлеуметтік желілер' : 'Соцсети'}</h4>
             <div className="flex items-center gap-3">
               {socialIcons.map((s) => (
                 <a
@@ -95,14 +96,14 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-line py-6 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-label text-text-muted">
-            &copy; 2026 Народная партия Казахстана. Все права защищены.
+            &copy; 2026 {isKz ? 'Қазақстан Халық партиясы. Барлық құқық қорғалған.' : 'Народная партия Казахстана. Все права защищены.'}
           </p>
           <div className="flex gap-4 text-label text-text-muted">
-            <button className="hover:text-text-base transition-colors">Политика конфиденциальности</button>
+            <button className="hover:text-text-base transition-colors">{isKz ? 'Құпиялық саясаты' : 'Политика конфиденциальности'}</button>
             <span>·</span>
-            <button className="hover:text-text-base transition-colors">Условия использования</button>
+            <button className="hover:text-text-base transition-colors">{isKz ? 'Пайдалану шарттары' : 'Условия использования'}</button>
             <span>·</span>
-            <button className="hover:text-text-base transition-colors">Настройки cookies</button>
+            <button className="hover:text-text-base transition-colors">{isKz ? 'Cookie файлдарының баптаулары' : 'Настройки cookies'}</button>
           </div>
         </div>
       </div>

@@ -47,6 +47,13 @@ const FALLBACK_NEWS: PublicNewsItem[] = [
   { id: '4', slug: 'dolg-v-zhizni', format: 'article', imageUrl: '/images/marquee-4.jpg', isFeatured: false, readingTime: 3, tags: ['Общество'], publishedAt: '2026-06-26', title: 'Долг в жизни', excerpt: 'Гражданская ответственность и личный долг в контексте современного казахстанского общества.' },
 ];
 
+const FALLBACK_NEWS_KZ: PublicNewsItem[] = [
+  { id: '1-kz', slug: 'ot-obeshchaniy-k-garantiyam', format: 'news', imageUrl: '/images/marquee-1.jpg', isFeatured: false, readingTime: 5, tags: ['Саясат'], publishedAt: '2026-06-29', title: 'Уәдеден нақты кепілдікке дейін', excerpt: 'Сайлауалды уәделерді азаматтарға берілетін нақты кепілдіктерге айналдыру партияның басты басымдығы саналады.' },
+  { id: '2-kz', slug: 'shokanov-izbran-predsedatelem', format: 'party_release', imageUrl: '/images/marquee-2.jpg', isFeatured: false, readingTime: 5, tags: ['Партия'], publishedAt: '2026-06-27', title: 'Нұрсұлтан Шоқанов Қазақстан Халық партиясының төрағасы болып сайланды', excerpt: 'Кезектен тыс съезде делегаттар партияның жаңа басшысын бірауыздан сайлады.' },
+  { id: '3-kz', slug: 'posledniy-akkord', format: 'analytics', imageUrl: '/images/marquee-3.jpg', isFeatured: false, readingTime: 4, tags: ['Талдау'], publishedAt: '2026-06-26', title: 'Соңғы аккорд', excerpt: 'Саяси маусымның қорытындысы және партияның алдағы кезеңге арналған міндеттері.' },
+  { id: '4-kz', slug: 'dolg-v-zhizni', format: 'article', imageUrl: '/images/marquee-4.jpg', isFeatured: false, readingTime: 3, tags: ['Қоғам'], publishedAt: '2026-06-26', title: 'Өмірдегі жауапкершілік', excerpt: 'Қазіргі Қазақстан қоғамындағы азаматтық жауапкершілік пен жеке міндет туралы.' },
+];
+
 function getTag(item: PublicNewsItem) {
   return item.tags[0] ?? NEWS_FORMAT_LABELS[item.format];
 }
@@ -58,9 +65,10 @@ function formatDate(iso: string | null) {
 
 export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } = {}) {
   const { language } = useLanguage();
+  const isKz = language === 'kz';
   const [mainIdx, setMainIdx] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [news, setNews] = useState<PublicNewsItem[]>(FALLBACK_NEWS);
+  const [news, setNews] = useState<PublicNewsItem[]>(() => isKz ? FALLBACK_NEWS_KZ : FALLBACK_NEWS);
 
   useEffect(() => {
     let cancelled = false;
@@ -68,6 +76,7 @@ export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } =
 
     // По требованию заказчика оба слайдера показывают 10 последних публикаций,
     // без ручного отбора через признак isFeatured.
+    setNews(isKz ? FALLBACK_NEWS_KZ : FALLBACK_NEWS);
     const loadLatestNews = () => {
       fetchNews({ limit: 10, lang: language })
         .then((res) => {
@@ -90,7 +99,7 @@ export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } =
       window.clearTimeout(dailyTimeout);
       if (dailyInterval) clearInterval(dailyInterval);
     };
-  }, [language]);
+  }, [isKz, language]);
 
   const mainNews = news[mainIdx] ?? news[0];
   const sideNews = news.filter((_, i) => i !== mainIdx);
@@ -110,7 +119,7 @@ export function NewsSection({ hideAllNewsLink }: { hideAllNewsLink?: boolean } =
 
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-[28px] md:text-[36px] font-bold text-text-base">Новости</h2>
+          <h2 className="text-[28px] md:text-[36px] font-bold text-text-base">{isKz ? 'Жаңалықтар' : 'Новости'}</h2>
           {!hideAllNewsLink && (
             <Link to="/novosti"
                className="inline-flex items-center gap-1.5 text-[14px] font-medium text-red hover:text-red/70 transition-colors">

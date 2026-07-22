@@ -4,6 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { CountUp } from '@/components/CountUp';
 import { TextReveal } from '@/components/TextReveal';
 import { useHomeBlocks } from '@/hooks/useHomeBlocks';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -15,10 +16,15 @@ interface Counter {
 }
 
 const DEFAULT_COUNTERS: Counter[] = [
-  { label: 'лет деятельности', target: 25, suffix: '+' },
-  { label: 'подписчиков официальных медиаресурсов', target: 11, decimals: 1, suffix: ' млн+' },
-  { label: 'региональных филиалов', target: 20, suffix: '' },
-  { label: 'депутатских запросов', target: 500, suffix: '+' },
+  { label: 'лет на политической арене', target: 30, suffix: '+' },
+  { label: 'тысяч единомышленников', target: 200, suffix: ' тыс.+' },
+  { label: 'региональных отделений', target: 20, suffix: '' },
+];
+
+const DEFAULT_COUNTERS_KZ: Counter[] = [
+  { label: 'жылдан астам саяси аренада', target: 30, suffix: '+' },
+  { label: 'мыңнан астам жақтас', target: 200, suffix: ' мың+' },
+  { label: 'өңірлік бөлімше', target: 20, suffix: '' },
 ];
 
 interface StatsBlock {
@@ -28,16 +34,18 @@ interface StatsBlock {
 }
 
 export function TrustCountersSection() {
+  const { language } = useLanguage();
+  const isKz = language === 'kz';
   const sectionRef = useRef<HTMLDivElement>(null);
   const sloganRef = useRef<HTMLDivElement>(null);
   const [triggered, setTriggered] = useState(false);
 
   const { getBlock } = useHomeBlocks();
   const cms = getBlock<StatsBlock>('stats');
-  const heading = cms?.headingRu?.trim() || 'Народная партия в цифрах';
+  const heading = cms?.headingRu?.trim() || (isKz ? 'Халық партиясы сандар мен фактілерде' : 'Народная партия в цифрах и фактах');
   const counters: Counter[] = cms?.items?.length
     ? cms.items.map((it) => ({ label: it.labelRu, target: parseInt(it.value, 10) || 0, suffix: it.suffix ?? '', decimals: it.decimals }))
-    : DEFAULT_COUNTERS;
+    : (isKz ? DEFAULT_COUNTERS_KZ : DEFAULT_COUNTERS);
 
   useEffect(() => {
     const el = sectionRef.current;

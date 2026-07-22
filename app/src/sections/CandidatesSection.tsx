@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { fetchTeam, type PublicTeamMember } from '@/lib/api';
 import { useT } from '@/i18n/useT';
-import { leadershipFallback, mergeLeadership } from '@/lib/leadership';
+import { getLeadershipFallback, mergeLeadership } from '@/lib/leadership';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 export function CandidatesSection() {
-  const [leaders, setLeaders] = useState<PublicTeamMember[]>(leadershipFallback);
+  const { language } = useLanguage();
+  const [leaders, setLeaders] = useState<PublicTeamMember[]>(() => getLeadershipFallback(language));
   const t = useT();
   // Временная формулировка заказчика до публикации списка топ-10 кандидатов.
   const heading = t('home.candidates.temporaryTitle');
@@ -16,15 +18,16 @@ export function CandidatesSection() {
   // До публикации списка кандидатов секция показывает актуальное руководство.
   useEffect(() => {
     let cancelled = false;
-    fetchTeam('LEADERSHIP')
+    setLeaders(getLeadershipFallback(language));
+    fetchTeam('LEADERSHIP', language)
       .then((data) => {
-        if (!cancelled) setLeaders(mergeLeadership(data));
+        if (!cancelled) setLeaders(mergeLeadership(data, language));
       })
       .catch(() => {
         // Локальный список уже установлен как безопасный запасной источник.
       });
     return () => { cancelled = true; };
-  }, []);
+  }, [language]);
 
   const scroll = (dir: number) => {
     if (scrollRef.current) {

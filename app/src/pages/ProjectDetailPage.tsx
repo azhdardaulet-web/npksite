@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from '@/components/ui/breadcrumb';
+import { useLanguage } from '@/i18n/LanguageContext';
 import './ProjectDetailPage.css';
 
 const projectData: Record<string, {
@@ -168,17 +169,144 @@ const projectData: Record<string, {
   },
 };
 
+const projectDataKz: typeof projectData = {
+  'jas-orta': {
+    ...projectData['jas-orta'],
+    subtitle: 'ҚХП жастар қанаты',
+    desc: '«Жас Орта» Қазақстанның белсенді жастарын, жас көшбасшыларды, еріктілер мен елжанды азаматтарды біріктіреді. Жоба жастардың әлеуетін дамытуға, студенттік бастамаларды қолдауға және саясаттағы жаңа буын көшбасшыларын даярлауға бағытталған.',
+    stats: [
+      { num: '5000+', label: 'белсенді қатысушы' }, { num: '20', label: 'өңірлік бөлімше' },
+      { num: '150+', label: 'жыл сайынғы шара' }, { num: '2019', label: 'құрылған жыл' },
+    ],
+    values: [
+      { icon: Target, title: 'Көшбасшылық', text: 'Жастардың көшбасшылық қасиеттерін нақты істер арқылы дамыту.' },
+      { icon: Handshake, title: 'Ынтымақ', text: 'Жастарды әлеуметтік әділеттілік идеялары төңірегіне біріктіру.' },
+      { icon: BookOpen, title: 'Білім', text: 'Студенттер мен оқушылардың саяси сауатын арттыру.' },
+      { icon: Zap, title: 'Іс-қимыл', text: 'Өңірлердегі жастардың өміріне оң өзгеріс әкелетін нақты жобаларды жүзеге асыру.' },
+    ],
+    team: [
+      { name: 'Айдос Нұрланов', role: 'Жоба үйлестірушісі', bio: 'Жастар қозғалыстарын ұйымдастыру саласында 10 жылдық тәжірибесі бар.', photo: '/images/candidate-1.jpg' },
+      { name: 'Дана Ермұханова', role: 'Бағыт жетекшісі', bio: 'Жастар және студенттік ұйымдармен жұмыс істейтін маман.', photo: '/images/candidate-2.jpg' },
+      { name: 'Ерлан Нұрбаев', role: 'Өңірлік өкіл', bio: 'Қазақстандағы филиалдардың жұмысын үйлестіреді.', photo: '/images/candidate-3.jpg' },
+    ],
+  },
+  'halyq-kompas': {
+    ...projectData['halyq-kompas'],
+    subtitle: 'Халыққа бағыт көрсететін жоба',
+    desc: '«Halyq Kompas» азаматтарға күрделі өмірлік жағдайларда дұрыс шешім табуға көмектесетін әлеуметтік жоба. Мұнда еңбек құқықтары, зейнетақы мен әлеуметтік төлемдер мәселелері бойынша заң көмегі, әлеуметтік қолдау және кеңес беріледі.',
+    stats: [
+      { num: '10000+', label: 'кеңес' }, { num: '50+', label: 'заңгер' },
+      { num: '17', label: 'қамтылған облыс' }, { num: '95%', label: 'оң шешілген іс' },
+    ],
+    values: [
+      { icon: Scale, title: 'Әділет', text: 'Әлеуметтік тұрғыдан осал азаматтарға тегін заң көмегін көрсету.' },
+      { icon: Shield, title: 'Қорғау', text: 'Азаматтардың еңбек құқықтарын барлық деңгейде қорғау.' },
+      { icon: Megaphone, title: 'Үн', text: 'Мемлекеттік органдарға өтініш беруге көмектесу.' },
+      { icon: Heart, title: 'Қамқорлық', text: 'Қолдауға мұқтаж азаматтарға әлеуметтік көмек көрсету.' },
+    ],
+    team: [
+      { name: 'Азамат Сәтубалдин', role: 'Бас редактор', bio: 'Еңбек құқығы саласында маманданған, 15 жылдық тәжірибесі бар заңгер.', photo: '/images/candidate-1.jpg' },
+      { name: 'Айгүл Танабаева', role: 'Бағыт жетекшісі', bio: 'Халықты әлеуметтік қорғау саласының маманы.', photo: '/images/candidate-4.jpg' },
+      { name: 'Дана Ермұханова', role: 'Үйлестіруші', bio: 'Өңірлердегі заңгерлердің жұмысын ұйымдастырады.', photo: '/images/candidate-2.jpg' },
+    ],
+  },
+  'halyk-uni': {
+    ...projectData['halyk-uni'],
+    subtitle: 'Халықтың үні',
+    desc: '«Халық үні» партия мен халық арасында тікелей байланыс орнатуға арналған. Азаматтар өз пікірін айтып, мәселелері мен ұсыныстарын жеткізе алады. Әр өтініш сараланып, партиялық бастамалар мен заң жобаларын әзірлеуге негіз болады.',
+    stats: [
+      { num: '25000+', label: 'өтініш' }, { num: '300+', label: 'жүзеге асқан бастама' },
+      { num: '20', label: 'байланыс филиалы' }, { num: '2020', label: 'іске қосылған жыл' },
+    ],
+    values: [
+      { icon: Ear, title: 'Зейін', text: 'Әр азаматтың өтініші тыңдалып, назарға алынады.' },
+      { icon: BarChart3, title: 'Талдау', text: 'Елдегі қоғамдық пікірді жүйелі түрде зерделеу.' },
+      { icon: RefreshCw, title: 'Кері байланыс', text: 'Атқарылған жұмыс нәтижесін ашық жариялау.' },
+      { icon: Landmark, title: 'Ықпал', text: 'Халықтың ұсыныстарын заңнамалық бастамаға айналдыру.' },
+    ],
+    team: [
+      { name: 'Ерлан Нұрбаев', role: 'Жоба жетекшісі', bio: 'Сайлау технологиялары саласында маманданған саясаттанушы.', photo: '/images/candidate-3.jpg' },
+      { name: 'Айжан Скакова', role: 'Талдаушы', bio: 'Қоғамдық пікірді жинау және талдау маманы.', photo: '/images/candidate-2.jpg' },
+      { name: 'Айбек Паяев', role: 'Өңірлер үйлестірушісі', bio: 'Орталық аппарат пен өңірлік филиалдардың байланысын қамтамасыз етеді.', photo: '/images/candidate-1.jpg' },
+    ],
+  },
+  'medfusion': {
+    ...projectData.medfusion,
+    subtitle: 'Денсаулық сақтау',
+    desc: '«Medfusion» Қазақстандағы денсаулық сақтау жүйесін жаңғыртуға бағытталған. Жоба дәрігерлерді, пациенттерді және мемлекеттік органдарды біріктіріп, сапалы медициналық көмекті баршаға қолжетімді етуді көздейді. Негізгі бағыттары цифрландыруды, аурудың алдын алуды және медицина қызметкерлерін қолдауды қамтиды.',
+    stats: [
+      { num: '200+', label: 'серіктес емхана' }, { num: '5000+', label: 'дәрігер' },
+      { num: '100000+', label: 'пациент' }, { num: '15', label: 'цифрлық қызмет' },
+    ],
+    values: [
+      { icon: Hospital, title: 'Қолжетімділік', text: 'Медициналық көмек әр азаматқа қолжетімді болуы керек.' },
+      { icon: Monitor, title: 'Цифрландыру', text: 'Медицина сапасын жақсартуға арналған заманауи технологиялар.' },
+      { icon: Stethoscope, title: 'Қолдау', text: 'Медицина қызметкерлеріне көмектесу және олардың құқықтарын қорғау.' },
+      { icon: Pill, title: 'Алдын алу', text: 'Халық денсаулығын нығайтуға арналған алдын алу бағдарламалары.' },
+    ],
+    team: [
+      { name: 'Ирина Смирнова', role: 'Медицина жөніндегі директор', bio: 'Эпидемиолог дәрігер, Қазақстан Республикасы Мәжілісінің депутаты.', photo: '/images/candidate-2.jpg' },
+      { name: 'Александр Милютин', role: 'IT-директор', bio: 'Медициналық ақпараттық жүйелерді әзірлеуші.', photo: '/images/candidate-1.jpg' },
+      { name: 'Файзолла Каменов', role: 'Үйлестіруші', bio: 'Денсаулық сақтау саласын цифрландыру маманы.', photo: '/images/candidate-3.jpg' },
+    ],
+  },
+  'nagrady': {
+    ...projectData.nagrady,
+    title: 'ҚХП марапаттары',
+    subtitle: 'Партия сыйлықтары',
+    desc: 'Қазақстан Халық партиясының сыйлықтары мен марапаттары әлеуметтік саланы дамытуға, адам құқықтарын қорғауға және демократияны нығайтуға елеулі үлес қосқан азаматтарға беріледі. Жоба бірнеше аталымнан және жыл сайынғы марапаттау рәсімінен тұрады.',
+    stats: [
+      { num: '12', label: 'аталым' }, { num: '200+', label: 'лауреат' },
+      { num: '7', label: 'жылдық тарих' }, { num: '20', label: 'өңір' },
+    ],
+    values: [
+      { icon: Trophy, title: 'Мойындау', text: 'Елдің дамуына үлес қосқан азаматтардың еңбегін бағалау.' },
+      { icon: Star, title: 'Шабыт', text: 'Лауреаттардың жетістігі көпшілікке үлгі болады.' },
+      { icon: Award, title: 'Дәстүр', text: 'Жыл сайынғы марапаттау рәсімі маңызды оқиғаға айналды.' },
+      { icon: Flag, title: 'Отаншылдық', text: 'Қазақстанға деген мақтаныш сезімін нығайту.' },
+    ],
+    team: [
+      { name: 'Жамбыл Ахметбеков', role: 'Комитет төрағасы', bio: 'Тәжірибелі саясаткер, партияны құрушылардың бірі.', photo: '/images/candidate-1.jpg' },
+      { name: 'Ғазиз Құлахметов', role: 'Хатшы', bio: 'Марапаттау рәсімін ұйымдастырады.', photo: '/images/candidate-3.jpg' },
+      { name: 'Ерлан Смайылов', role: 'Үйлестіруші', bio: 'Аталымдар мен үміткерлерге қатысты жұмысты жүргізеді.', photo: '/images/candidate-4.jpg' },
+    ],
+  },
+  'partiynye-initsiativy': {
+    ...projectData['partiynye-initsiativy'],
+    title: 'Партиялық бастамалар',
+    subtitle: 'Даму бағдарламалары',
+    desc: 'Бұл жоба Қазақстан өңірлерін дамытуға арналған бағдарламаларды біріктіреді. Оның аясында инфрақұрылымдық және әлеуметтік жобалар, экологиялық бастамалар мен жергілікті өзін-өзі басқаруды қолдау шаралары жүзеге асырылады. Әр бағдарлама нақты өңірдің қажеттілігіне сай әзірленеді.',
+    stats: [
+      { num: '45+', label: 'бағдарлама' }, { num: '17', label: 'облыс' },
+      { num: '100+', label: 'жоба' }, { num: '2021', label: 'іске қосылған жыл' },
+    ],
+    values: [
+      { icon: Construction, title: 'Инфрақұрылым', text: 'Ел аумағындағы нысандарды салу және жаңғырту.' },
+      { icon: Sprout, title: 'Экология', text: 'Таза болашаққа арналған экологиялық бағдарламалар.' },
+      { icon: Home, title: 'Жергілікті даму', text: 'Қалалар мен ауылдардағы бастамаларды қолдау.' },
+      { icon: TrendingUp, title: 'Нәтиже', text: 'Әр бағдарламаның нақты әсерін бағалау.' },
+    ],
+    team: [
+      { name: 'Сергей Решетников', role: 'Бағдарламалар директоры', bio: 'Өңірлік бағдарламаларды әзірлеуші экономист.', photo: '/images/candidate-3.jpg' },
+      { name: 'Айбек Паяев', role: 'Үйлестіруші', bio: 'Филиалдар мен орталық аппараттың байланысын қамтамасыз етеді.', photo: '/images/candidate-1.jpg' },
+      { name: 'Айжан Скакова', role: 'Талдаушы', bio: 'Даму бағдарламаларының тиімділігін бағалайды.', photo: '/images/candidate-2.jpg' },
+    ],
+  },
+};
+
 export function ProjectDetailPage() {
   const { slug } = useParams<{ slug: string }>();
-  const p = projectData[slug || ''];
+  const { language } = useLanguage();
+  const isKz = language === 'kz';
+  const p = (isKz ? projectDataKz : projectData)[slug || ''];
 
   if (!p) {
     return (
       <div className="npd" style={{ padding: '200px 40px', textAlign: 'center' }}>
         <h1 style={{ fontSize: 48, fontWeight: 800 }}>404</h1>
-        <p style={{ color: 'var(--text-muted)', marginTop: 16 }}>Проект не найден</p>
+        <p style={{ color: 'var(--text-muted)', marginTop: 16 }}>{isKz ? 'Жоба табылмады' : 'Проект не найден'}</p>
         <Link to="/proekty" className="npd-cta__btn" style={{ marginTop: 32 }}>
-          ← Все проекты
+          ← {isKz ? 'Барлық жоба' : 'Все проекты'}
         </Link>
       </div>
     );
@@ -192,19 +320,19 @@ export function ProjectDetailPage() {
           <BreadcrumbList style={{ color: 'var(--text-muted)' }}>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/">Главная</Link>
+                <Link to="/">{isKz ? 'Басты бет' : 'Главная'}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator style={{ color: 'var(--text-muted)' }} />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/o-partii">О партии</Link>
+                <Link to="/o-partii">{isKz ? 'Партия туралы' : 'О партии'}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator style={{ color: 'var(--text-muted)' }} />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/proekty">Проекты</Link>
+                <Link to="/proekty">{isKz ? 'Жобалар' : 'Проекты'}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator style={{ color: 'var(--text-muted)' }} />
@@ -217,7 +345,7 @@ export function ProjectDetailPage() {
 
       {/* Back */}
       <div className="npd-back">
-        <Link to="/proekty" className="npd-back__link">← Все проекты</Link>
+        <Link to="/proekty" className="npd-back__link">← {isKz ? 'Барлық жоба' : 'Все проекты'}</Link>
       </div>
 
       {/* Hero */}
@@ -233,7 +361,7 @@ export function ProjectDetailPage() {
       <section className="npd-stats">
         <ScrollReveal>
           <div className="npd-stats__header">
-            <h2 className="npd-stats__title">Цифры, которые говорят сами за себя</h2>
+            <h2 className="npd-stats__title">{isKz ? 'Жоба нәтижесін көрсететін деректер' : 'Цифры, которые говорят сами за себя'}</h2>
           </div>
         </ScrollReveal>
         <div className="npd-stats__grid">
@@ -252,8 +380,8 @@ export function ProjectDetailPage() {
       <section className="npd-values">
         <ScrollReveal>
           <div className="npd-values__header">
-            <span className="npd-values__eyebrow">Ценности</span>
-            <h2 className="npd-values__title">На чём строится проект</h2>
+            <span className="npd-values__eyebrow">{isKz ? 'Құндылықтар' : 'Ценности'}</span>
+            <h2 className="npd-values__title">{isKz ? 'Жобаның негізгі қағидаттары' : 'На чём строится проект'}</h2>
           </div>
         </ScrollReveal>
         <div className="npd-values__layout">
@@ -279,7 +407,7 @@ export function ProjectDetailPage() {
       {/* Gallery */}
       <section className="npd-gallery">
         <ScrollReveal>
-          <h2 className="npd-gallery__title">Галерея</h2>
+          <h2 className="npd-gallery__title">{isKz ? 'Фотогалерея' : 'Галерея'}</h2>
         </ScrollReveal>
         <div className="npd-gallery__grid">
           {p.gallery.map((src, i) => (
@@ -296,10 +424,10 @@ export function ProjectDetailPage() {
       <section className="npd-team">
         <ScrollReveal>
           <div className="npd-team__header">
-            <span className="npd-team__eyebrow">Команда</span>
-            <h2 className="npd-team__title">Люди за проектом</h2>
+            <span className="npd-team__eyebrow">{isKz ? 'Команда' : 'Команда'}</span>
+            <h2 className="npd-team__title">{isKz ? 'Жобаны жүзеге асыратын мамандар' : 'Люди за проектом'}</h2>
             <p className="npd-team__text">
-              Профессиональная команда, которая ежедневно работает над реализацией проекта.
+              {isKz ? 'Жобаны күн сайын алға жылжытып жүрген кәсіби мамандар.' : 'Профессиональная команда, которая ежедневно работает над реализацией проекта.'}
             </p>
           </div>
         </ScrollReveal>
@@ -325,11 +453,11 @@ export function ProjectDetailPage() {
       <section className="npd-cta">
         <ScrollReveal>
           <div className="npd-cta__inner">
-            <h2 className="npd-cta__title">Поддержите проект</h2>
+            <h2 className="npd-cta__title">{isKz ? 'Жобаны қолдаңыз' : 'Поддержите проект'}</h2>
             <p className="npd-cta__text">
-              Присоединяйтесь к инициативе — вместе мы сделаем больше.
+              {isKz ? 'Бастамаға қосылыңыз. Бірге үлкен нәтижеге қол жеткізе аламыз.' : 'Присоединяйтесь к инициативе — вместе мы сделаем больше.'}
             </p>
-            <Link to="/vstupit" className="npd-cta__btn">Вступить в партию →</Link>
+            <Link to="/vstupit" className="npd-cta__btn">{isKz ? 'Партияға қосылу →' : 'Вступить в партию →'}</Link>
           </div>
         </ScrollReveal>
       </section>

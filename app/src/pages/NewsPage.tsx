@@ -24,6 +24,12 @@ const FALLBACK_NEWS: PublicNewsItem[] = [
   { id: '3', slug: 'posledniy-akkord', format: 'analytics', imageUrl: '/images/marquee-3.jpg', isFeatured: false, readingTime: 4, tags: ['Анализ'], publishedAt: '2026-06-26', title: 'Последний аккорд', excerpt: 'Итоги политического сезона: что успела сделать партия и что предстоит в новом году.' },
 ];
 
+const FALLBACK_NEWS_KZ: PublicNewsItem[] = [
+  { id: '1-kz', slug: 'ot-obeshchaniy-k-garantiyam', format: 'news', imageUrl: '/images/marquee-1.jpg', isFeatured: false, readingTime: 5, tags: ['Саясат'], publishedAt: '2026-06-29', title: 'Уәдеден нақты кепілдікке дейін', excerpt: 'Сайлауалды уәделерді азаматтарға берілетін нақты кепілдіктерге айналдыру партияның басты басымдығы саналады.' },
+  { id: '2-kz', slug: 'shokanov-izbran-predsedatelem', format: 'party_release', imageUrl: '/images/marquee-2.jpg', isFeatured: false, readingTime: 5, tags: ['Партия'], publishedAt: '2026-06-27', title: 'Нұрсұлтан Шоқанов Қазақстан Халық партиясының төрағасы болып сайланды', excerpt: 'Кезектен тыс съезде делегаттар партияның жаңа басшысын бірауыздан сайлады.' },
+  { id: '3-kz', slug: 'posledniy-akkord', format: 'analytics', imageUrl: '/images/marquee-3.jpg', isFeatured: false, readingTime: 4, tags: ['Талдау'], publishedAt: '2026-06-26', title: 'Соңғы аккорд', excerpt: 'Саяси маусымның қорытындысы және партияның алдағы кезеңге арналған міндеттері.' },
+];
+
 const FORMATS: Format[] = ['Все', 'Новости', 'Релизы партии', 'Статьи', 'Аналитика', 'Интервью'];
 const PER_PAGE = 6;
 
@@ -212,6 +218,7 @@ function CardSkeleton() {
 /* ─── Page ────────────────────────────────────────────────────────── */
 export function NewsPage() {
   const { language } = useLanguage();
+  const isKz = language === 'kz';
   const [keyword, setKeyword] = useState('');
   const [date, setDate] = useState('');
   const [format, setFormat] = useState<Format>('Все');
@@ -244,13 +251,14 @@ export function NewsPage() {
       .catch(() => {
         if (cancelled) return;
         // API недоступен — показываем демо-данные вместо белого экрана
-        setItems(FALLBACK_NEWS);
-        setTotal(FALLBACK_NEWS.length);
+        const fallback = isKz ? FALLBACK_NEWS_KZ : FALLBACK_NEWS;
+        setItems(fallback);
+        setTotal(fallback.length);
         setUsedFallback(true);
       })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [format, debouncedKeyword, language, page]);
+  }, [format, debouncedKeyword, isKz, language, page]);
 
   // Мягкий фильтр по дате публикации — применяется к уже загруженной странице.
   const visible = date
@@ -270,16 +278,16 @@ export function NewsPage() {
       {/* Main content — 48px top, 80px bottom */}
       {/* Heading row — full width, above the grid */}
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '48px clamp(16px,4vw,40px) 24px' }}>
-        <h2 style={{ margin: '0 0 8px', fontSize: 'clamp(24px,3vw,36px)', fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1.1 }}>Все новости</h2>
+        <h2 style={{ margin: '0 0 8px', fontSize: 'clamp(24px,3vw,36px)', fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1.1 }}>{isKz ? 'Барлық жаңалық' : 'Все новости'}</h2>
         <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 500 }}>
-          Найдено: <strong style={{ color: 'var(--text)' }}>{total}</strong> материалов
+          {isKz ? 'Табылды:' : 'Найдено:'} <strong style={{ color: 'var(--text)' }}>{total}</strong> {isKz ? 'материал' : 'материалов'}
           {format !== 'Все' && (
             <span style={{ marginLeft: 10, padding: '3px 10px', background: 'rgba(219,31,38,.12)', border: '1px solid rgba(219,31,38,.3)', fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#ff5a60' }}>
               {format}
             </span>
           )}
           {usedFallback && (
-            <span style={{ marginLeft: 10, fontSize: 11, color: 'var(--text-muted)' }}>· демо-данные (сервер недоступен)</span>
+            <span style={{ marginLeft: 10, fontSize: 11, color: 'var(--text-muted)' }}>{isKz ? '· демодеректер (сервер қолжетімсіз)' : '· демо-данные (сервер недоступен)'}</span>
           )}
         </span>
       </div>

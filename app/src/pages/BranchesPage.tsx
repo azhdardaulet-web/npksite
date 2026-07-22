@@ -25,11 +25,16 @@ function BranchPhoto({ branch }: { branch: BranchProfile }) {
 
 export function BranchesPage() {
   const { language } = useLanguage();
+  const isKz = language === 'kz';
   const visibleBranches = branchProfiles.map((branch, index) => localizeBranchProfile(branch, index, language));
   return (
     <div className="pb-16">
       <div className="max-w-[1280px] mx-auto px-4 md:px-10">
-        <SectionHeader light="Наши" bold="филиалы" subtitle="20 региональных филиалов по всему Казахстану" />
+        <SectionHeader
+          light={isKz ? 'Біздің' : 'Наши'}
+          bold={isKz ? 'филиалдарымыз' : 'филиалы'}
+          subtitle={isKz ? 'Қазақстан бойынша 20 өңірлік филиал' : '20 региональных филиалов по всему Казахстану'}
+        />
       </div>
 
       <div className="mb-12">
@@ -48,7 +53,7 @@ export function BranchesPage() {
                 <div className="p-5 md:p-7 flex flex-col min-w-0">
                   <h2 className="text-heading-sm font-bold text-text-base leading-tight">{branch.title}</h2>
                   <p className="text-label text-accent-brand font-semibold mt-3">
-                    {branch.chairman || 'Председатель не указан'}
+                    {branch.chairman || (isKz ? 'Төраға көрсетілмеген' : 'Председатель не указан')}
                   </p>
                   <div className="space-y-2 mt-5 text-label text-text-muted">
                     <p className="flex items-start gap-2"><MapPin size={15} className="shrink-0 mt-0.5" />{branch.address}</p>
@@ -56,7 +61,7 @@ export function BranchesPage() {
                     {branch.email && <p className="flex items-center gap-2 break-all"><Mail size={15} className="shrink-0" />{branch.email}</p>}
                   </div>
                   <span className="inline-flex items-center gap-2 text-label font-medium text-text-base mt-auto pt-6">
-                    Подробнее <ArrowUpRight size={15} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    {isKz ? 'Толығырақ' : 'Подробнее'} <ArrowUpRight size={15} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                   </span>
                 </div>
               </Link>

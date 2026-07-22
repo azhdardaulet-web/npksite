@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Search, X } from 'lucide-react';
 import { ReadAlsoSlider } from '@/sections/ReadAlsoSlider';
 import { fetchMediaPublications, type PublicMediaPublication } from '@/lib/api';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 /* ─── Data ────────────────────────────────────────────────────────── */
 type Source = 'Все' | 'Телевидение' | 'Радио' | 'Интернет-СМИ' | 'Газеты' | 'Информагентства';
@@ -95,6 +96,8 @@ function Sidebar({
 
 /* ─── Card ─────────────────────────────────────────────────────────── */
 function SmiCard({ item }: { item: PublicMediaPublication }) {
+  const { language } = useLanguage();
+  const isKz = language === 'kz';
   const [hovered, setHovered] = useState(false);
   return (
     <a
@@ -120,7 +123,7 @@ function SmiCard({ item }: { item: PublicMediaPublication }) {
       </div>
       <div style={{ padding: '20px 22px', flex: 1, display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>{new Date(item.date).toLocaleDateString('ru-RU')}</span>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>{new Date(item.date).toLocaleDateString(isKz ? 'kk-KZ' : 'ru-RU')}</span>
           <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'var(--line)', display: 'block' }} />
           <span style={{ fontSize: 11, color: '#db1f26', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>{item.sourceType}</span>
           <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'var(--line)', display: 'block' }} />
@@ -129,7 +132,7 @@ function SmiCard({ item }: { item: PublicMediaPublication }) {
         <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--text)', lineHeight: 1.35 }}>{item.title}</h3>
         <p style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, flex: 1 }}>{item.excerpt}</p>
         <span style={{ fontSize: 12, color: hovered ? '#db1f26' : 'var(--text-muted)', fontWeight: 700, transition: 'color .15s', letterSpacing: '.04em' }}>
-          Читать →
+          {isKz ? 'Оқу →' : 'Читать →'}
         </span>
       </div>
     </a>
@@ -163,6 +166,8 @@ function Pagination({ page, total, perPage, onChange }: { page: number; total: n
 
 /* ─── Page ────────────────────────────────────────────────────────── */
 export function SmiPage() {
+  const { language } = useLanguage();
+  const isKz = language === 'kz';
   const [keyword, setKeyword] = useState('');
   const [date, setDate] = useState('');
   const [source, setSource] = useState<Source>('Все');
@@ -206,7 +211,7 @@ export function SmiPage() {
       {/* Count row */}
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 clamp(16px,4vw,40px) 24px' }}>
         <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 500 }}>
-          Найдено: <strong style={{ color: 'var(--text)' }}>{filtered.length}</strong> материалов
+          {isKz ? 'Табылды:' : 'Найдено:'} <strong style={{ color: 'var(--text)' }}>{filtered.length}</strong> {isKz ? 'материал' : 'материалов'}
           {source !== 'Все' && (
             <span style={{ marginLeft: 10, padding: '3px 10px', background: 'rgba(219,31,38,.12)', border: '1px solid rgba(219,31,38,.3)', fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#ff5a60' }}>
               {source}
@@ -220,7 +225,7 @@ export function SmiPage() {
 
         <div>
           {loading ? (
-            <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--text-muted)' }}>Загрузка...</div>
+            <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--text-muted)' }}>{isKz ? 'Жүктеліп жатыр...' : 'Загрузка...'}</div>
           ) : paginated.length > 0 ? (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 2 }}>
               {paginated.map(item => <SmiCard key={item.id} item={item} />)}

@@ -79,10 +79,6 @@ const NAV: NavItem[] = [
     label: 'Контакты',
     href: '/kontakty',
   },
-  {
-    label: 'Магазин',
-    href: '/magazin',
-  },
 ];
 
 const NAV_LABEL_KEYS: Record<string, TranslationKey> = {

@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface SiteCrumb {
   label: string;
@@ -23,6 +24,39 @@ const TOP_LEVEL: Record<string, string> = {
   '/search': 'Поиск',
   '/magazin': 'Магазин',
   '/ustav': 'Устав партии',
+};
+
+const KZ_LABELS: Record<string, string> = {
+  'Главная': 'Басты бет',
+  'О партии': 'Партия туралы',
+  'Проекты': 'Жобалар',
+  'Программа': 'Бағдарлама',
+  'Кандидаты': 'Кандидаттар',
+  'Медиа': 'Медиа',
+  'Общественная приёмная': 'Қоғамдық қабылдау',
+  'Контакты': 'Байланыс',
+  'Вступить в партию': 'Партияға қосылу',
+  'Филиалы': 'Филиалдар',
+  'Руководство партии': 'Партия басшылығы',
+  'Фракция': 'Фракция',
+  'Пресс-кит': 'Баспасөз жинағы',
+  'Поиск': 'Іздеу',
+  'Магазин': 'Дүкен',
+  'Устав партии': 'Партия жарғысы',
+  'Пресс-центр': 'Баспасөз орталығы',
+  'Новости и релизы': 'Жаңалықтар мен хабарламалар',
+  'СМИ о нас': 'БАҚ біз туралы',
+  'Народное медиа': 'Халық медиасы',
+  'Профиль медиакоманды': 'Медиакоманда мүшесінің парақшасы',
+  'История партии': 'Партия тарихы',
+  'Раздел о партии': 'Партия туралы бөлім',
+  'Депутатские запросы': 'Депутаттық сауалдар',
+  'Материал': 'Материал',
+  'Профиль руководителя': 'Басшының парақшасы',
+  'Страница филиала': 'Филиал парақшасы',
+  'О проекте': 'Жоба туралы',
+  'Проверка партбилета': 'Партия билетін тексеру',
+  'Страница': 'Парақша',
 };
 
 function crumbsFor(pathname: string): SiteCrumb[] {
@@ -64,6 +98,8 @@ function crumbsFor(pathname: string): SiteCrumb[] {
 
 export function SiteBreadcrumbs() {
   const { pathname } = useLocation();
+  const { language } = useLanguage();
+  const label = (value: string) => language === 'kz' ? KZ_LABELS[value] ?? value : value;
   const crumbs = crumbsFor(pathname);
   if (crumbs.length === 0) return null;
 
@@ -72,16 +108,16 @@ export function SiteBreadcrumbs() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink asChild><Link to="/">Главная</Link></BreadcrumbLink>
+            <BreadcrumbLink asChild><Link to="/">{label('Главная')}</Link></BreadcrumbLink>
           </BreadcrumbItem>
           {crumbs.map((crumb, index) => (
             <Fragment key={`${crumb.href ?? 'current'}-${crumb.label}`}>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 {crumb.href && index < crumbs.length - 1 ? (
-                  <BreadcrumbLink asChild><Link to={crumb.href}>{crumb.label}</Link></BreadcrumbLink>
+                  <BreadcrumbLink asChild><Link to={crumb.href}>{label(crumb.label)}</Link></BreadcrumbLink>
                 ) : (
-                  <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                  <BreadcrumbPage>{label(crumb.label)}</BreadcrumbPage>
                 )}
               </BreadcrumbItem>
             </Fragment>

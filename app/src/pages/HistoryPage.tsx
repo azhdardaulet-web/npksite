@@ -2,14 +2,26 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from '@/components/ui/breadcrumb';
 import { fetchHistoryEvents, type PublicHistoryEvent } from '@/lib/api';
+import { useLanguage } from '@/i18n/LanguageContext';
 
-const FALLBACK_SECTIONS: PublicHistoryEvent[] = [
+const FALLBACK_SECTIONS_RU: PublicHistoryEvent[] = [
   { id: '1', year: 2011, title: 'VI Внеочередной Съезд КНПК', text: '26 ноября 2011 года состоялся VI Внеочередной Съезд Коммунистической Народной партии Казахстана, на котором были утверждены 23 кандидата от партии на выборы депутатов Мажилиса Парламента 2012 года, в том числе лидер партии Владислав Косарев и кандидат в Президенты на выборах 2011 года Жамбыл Ахметбеков.', imageUrl: '/images/history/2011.jpg', sortOrder: 0 },
   { id: '2', year: 2016, title: 'Избрание в Парламент', text: 'КНПК по результатам выборов 2016 года была избрана в Парламент. Предвыборную борьбу в партии оценили как честную и справедливую. Доступ к СМИ, по мнению коммунистов, был свободным для всех партий. Каких-либо нарушений наблюдатели от НПК не зафиксировали.', imageUrl: '/images/history/2016.jpg', sortOrder: 1 },
   { id: '3', year: 2020, title: 'Переименование в Народную партию', text: 'На прошедшем 11 ноября 2020 года XV Внеочередном Съезде КНПК было принято решение о переименовании Коммунистической Народной партии Казахстана в Народную партию Казахстана со внесением соответствующих изменений в устав и программу партии.', imageUrl: '/images/history/2020.jpg', sortOrder: 2 },
   { id: '4', year: 2021, title: 'XVII Съезд и фракция в Мажилисе', text: 'В Нур-Султане состоялся XVII Внеочередной Съезд Народной партии Казахстана. В ходе него партийцы подвели итоги прошедших выборов 2021 года депутатов Мажилиса Парламента РК и маслихатов, а также избрали представителей в парламентскую фракцию партии.', imageUrl: '/images/history/2021.jpg', sortOrder: 3 },
   { id: '5', year: 2022, title: 'Новое руководство партии', text: '28 марта 2022 года на XIX Внеочередном Съезде партии председателем НПК был избран Ермухамет Ертысбаев. Прежний руководитель, глава парламентской фракции НПК, депутат Мажилиса Айкын Конуров стал первым заместителем председателя.', imageUrl: '/images/history/2022.jpg', sortOrder: 4 },
   { id: '6', year: 2026, title: 'Съезд партии, новый председатель', text: 'Председатель Народной партии Казахстана Ермухамет Ертысбаев снял с себя руководящие полномочия. Новым главой НПК избран Нурсултан Шоканов. Такое решение принял Внеочередной Съезд партии, состоявшийся 27 июня.', imageUrl: '/images/history/2026.jpg', sortOrder: 5 },
+];
+
+// Казахские тексты за 2011–2022 годы сверены с официальной историей партии:
+// https://halykpartiyasy.kz/kz/partiya-tarihy
+const FALLBACK_SECTIONS_KZ: PublicHistoryEvent[] = [
+  { id: '1-kz', year: 2011, title: 'ҚКХП VI кезектен тыс съезі', text: '2011 жылғы 26 қарашада Қазақстан Коммунистік Халық партиясының VI кезектен тыс съезі өтті. Съезде 2012 жылғы Парламент Мәжілісі депутаттарының сайлауына партия атынан 23 кандидат ұсынылды. Олардың қатарында партия көшбасшысы Владислав Косарев пен 2011 жылғы президент сайлауына қатысқан Жамбыл Ахметбеков болды.', imageUrl: '/images/history/2011.jpg', sortOrder: 0 },
+  { id: '2-kz', year: 2016, title: 'Парламент Мәжілісіне сайлану', text: 'ҚКХП 2016 жылғы сайлаудың қорытындысы бойынша Парламент Мәжілісіне өтті. Партия өкілдері сайлауалды науқанды адал әрі әділ өтті деп бағалады. Олардың пікірінше, бұқаралық ақпарат құралдары барлық партияға бірдей қолжетімді болды. ҚКХП бақылаушылары сайлау барысында заң бұзушылықтарды тіркеген жоқ.', imageUrl: '/images/history/2016.jpg', sortOrder: 1 },
+  { id: '3-kz', year: 2020, title: 'Қазақстан Халық партиясы болып қайта аталды', text: '2020 жылғы 11 қарашада өткен ҚКХП XV кезектен тыс съезінде Қазақстан Коммунистік Халық партиясын Қазақстан Халық партиясы деп қайта атау туралы шешім қабылданды. Партияның Жарғысы мен Бағдарламасына тиісті өзгерістер енгізілді. Бұл қадам 2021 жылғы 10 қаңтарда өткен Парламент Мәжілісінің сайлауы қарсаңында партияны қолдайтын азаматтар қатарын кеңейтуге бағытталды.', imageUrl: '/images/history/2020.jpg', sortOrder: 2 },
+  { id: '4-kz', year: 2021, title: 'XVII съезд және Мәжілістегі фракция', text: 'Нұр-Сұлтан қаласында Қазақстан Халық партиясының XVII кезектен тыс съезі өтті. Съезде 2021 жылғы Парламент Мәжілісі мен мәслихаттар депутаттары сайлауының қорытындысы шығарылып, партияның парламенттік фракциясының құрамы бекітілді. Фракция құрамына Айқын Қоңыров, Жамбыл Ахметбеков, Ирина Смирнова, Александр Милютин, Сергей Решетников, Айбек Паяев, Ғазиз Құлахметов, Ерлан Смайлов, Файзолла Каменов және Айжан Сқақова кірді.', imageUrl: '/images/history/2021.jpg', sortOrder: 3 },
+  { id: '5-kz', year: 2022, title: 'Партияның жаңа басшылығы', text: '2022 жылғы 28 наурызда өткен партияның XIX кезектен тыс съезінде Ермұхамет Ертісбаев ҚХП төрағасы болып сайланды. ҚХП парламенттік фракциясының бұрынғы жетекшісі, Мәжіліс депутаты Айқын Қоңыров партия төрағасының бірінші орынбасары қызметіне тағайындалды.', imageUrl: '/images/history/2022.jpg', sortOrder: 4 },
+  { id: '6-kz', year: 2026, title: 'Партия съезі және жаңа төраға', text: '2026 жылғы 27 маусымда Қазақстан Халық партиясының кезектен тыс съезі өтті. Съезде Ермұхамет Ертісбаев партия төрағасы қызметін аяқтады. Делегаттар Нұрсұлтан Шоқановты ҚХП төрағасы етіп сайлады.', imageUrl: '/images/history/2026.jpg', sortOrder: 5 },
 ];
 
 function applyHistoryCorrections(items: PublicHistoryEvent[]) {
@@ -40,6 +52,19 @@ function applyHistoryCorrections(items: PublicHistoryEvent[]) {
       text = text.replace('с себа', 'с себя').replace('принял внеочередной Съезд', 'принял Внеочередной Съезд');
     }
     return { ...item, title, text };
+  });
+}
+
+function localizeHistoryItems(items: PublicHistoryEvent[], language: 'ru' | 'kz') {
+  if (language === 'ru') return applyHistoryCorrections(items);
+
+  const fallbackByYear = new Map(FALLBACK_SECTIONS_KZ.map((item) => [item.year, item]));
+  return items.map((item) => {
+    const hasKazakhText = /[ӘәҒғҚқҢңӨөҰұҮүҺһІі]/.test(`${item.title} ${item.text}`);
+    const fallback = fallbackByYear.get(item.year);
+    return hasKazakhText || !fallback
+      ? item
+      : { ...item, title: fallback.title, text: fallback.text };
   });
 }
 
@@ -74,6 +99,8 @@ function useAnimatedYear(targetYear: number, duration = 350) {
 }
 
 export function HistoryPage() {
+  const { language } = useLanguage();
+  const isKz = language === 'kz';
   const [sections, setSections] = useState<PublicHistoryEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -83,12 +110,13 @@ export function HistoryPage() {
 
   useEffect(() => {
     let cancelled = false;
-    fetchHistoryEvents()
-      .then((data) => { if (!cancelled) setSections(data.length > 0 ? applyHistoryCorrections(data) : FALLBACK_SECTIONS); })
-      .catch(() => { if (!cancelled) setSections(FALLBACK_SECTIONS); })
+    setLoading(true);
+    fetchHistoryEvents(language)
+      .then((data) => { if (!cancelled) setSections(data.length > 0 ? localizeHistoryItems(data, language) : (isKz ? FALLBACK_SECTIONS_KZ : FALLBACK_SECTIONS_RU)); })
+      .catch(() => { if (!cancelled) setSections(isKz ? FALLBACK_SECTIONS_KZ : FALLBACK_SECTIONS_RU); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, []);
+  }, [isKz, language]);
 
   const activeYear = sections[activeIndex]?.year ?? 0;
   const animatedYear = useAnimatedYear(activeYear, 400);
@@ -146,7 +174,7 @@ export function HistoryPage() {
   if (loading) {
     return (
       <div style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh', textAlign: 'center' }}>
-        <p style={{ color: 'var(--text-muted)' }}>Загрузка...</p>
+        <p style={{ color: 'var(--text-muted)' }}>{isKz ? 'Жүктеліп жатыр...' : 'Загрузка...'}</p>
       </div>
     );
   }
@@ -159,18 +187,18 @@ export function HistoryPage() {
           <BreadcrumbList style={{ color: 'var(--text-muted)' }}>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/">Главная</Link>
+                <Link to="/">{isKz ? 'Басты бет' : 'Главная'}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator style={{ color: 'var(--text-muted)' }} />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/o-partii">О партии</Link>
+                <Link to="/o-partii">{isKz ? 'Партия туралы' : 'О партии'}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator style={{ color: 'var(--text-muted)' }} />
             <BreadcrumbItem>
-              <BreadcrumbPage style={{ color: 'var(--text)' }}>История</BreadcrumbPage>
+              <BreadcrumbPage style={{ color: 'var(--text)' }}>{isKz ? 'Партия тарихы' : 'История'}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -184,7 +212,7 @@ export function HistoryPage() {
           lineHeight: 1,
           letterSpacing: '-0.04em',
           margin: '0 0 16px',
-        }}>История партии</h1>
+        }}>{isKz ? 'Партия тарихы' : 'История партии'}</h1>
       </section>
 
       {/* TICKER */}
@@ -395,7 +423,7 @@ export function HistoryPage() {
               margin: '0 0 16px',
               lineHeight: '1.1',
             }}>
-              Продолжаем путь вместе
+              {isKz ? 'Жолды бірге жалғастырамыз' : 'Продолжаем путь вместе'}
             </h2>
             <p style={{
               fontSize: '16px',
@@ -406,7 +434,9 @@ export function HistoryPage() {
               marginLeft: 'auto',
               marginRight: 'auto',
             }}>
-              История НПК — это история борьбы за права народа. Присоединяйтесь к нам.
+              {isKz
+                ? 'ҚХП тарихы халықтың құқығын қорғау жолындағы күреспен сабақтас. Бізге қосылыңыз!'
+                : 'История НПК — это история борьбы за права народа. Присоединяйтесь к нам.'}
             </p>
             <Link
               to="/vstupit"
@@ -430,7 +460,7 @@ export function HistoryPage() {
                 e.currentTarget.style.opacity = '1';
               }}
             >
-              Вступить в партию
+              {isKz ? 'Партия қатарына қосылу' : 'Вступить в партию'}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17l9.2-9.2M17 17V8H8"/></svg>
             </Link>
           </div>

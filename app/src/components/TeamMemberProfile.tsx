@@ -20,7 +20,7 @@ export function BioSections({ text }: { text: string }) {
     <div className="space-y-6">
       {blocks.map((block, index) => {
         const lines = block.split('\n').map((line) => line.trim()).filter(Boolean);
-        const isHeading = lines.length === 1 && /^[А-ЯЁ0-9\s«»()–—-]+$/.test(lines[0]);
+        const isHeading = lines.length === 1 && /^[А-ЯЁӘҒҚҢӨҰҮҺІ0-9\s«»()–—-]+$/.test(lines[0]);
         const isList = lines.every((line) => line.startsWith('• '));
 
         if (isHeading) {

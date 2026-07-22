@@ -1,5 +1,6 @@
 import branchMigration from '../../../supabase/migrations/202607190004_kz_branches.sql?raw';
 import type { BranchProfile } from '@/lib/branchProfiles';
+import { BRANCH_PROFILES_KZ } from './branchProfilesKz';
 
 export interface ApprovedBranchKz {
   city: string;
@@ -28,12 +29,35 @@ export const approvedBranchesKz: ApprovedBranchKz[] = branchMigration
 
 export function localizeBranchProfile(profile: BranchProfile, index: number, language: 'ru' | 'kz'): BranchProfile {
   const approved = approvedBranchesKz[index];
-  if (language !== 'kz' || !approved) return profile;
+  const official = BRANCH_PROFILES_KZ[profile.slug];
+  if (language !== 'kz') return profile;
+  let personIndex = 0;
+  const sectionTitleFallback: Record<string, string> = {
+    'Депутаты маслихатов': 'Мәслихат депутаттары',
+    'Депутаты областных маслихатов': 'Облыстық мәслихат депутаттары',
+    'Депутаты маслихата': 'Мәслихат депутаттары',
+    'Акимы сельских округов': 'Ауылдық округ әкімдері',
+    'Районные Акимы': 'Аудан әкімдері',
+    'Районные акимы': 'Аудан әкімдері',
+  };
+  const sections = profile.sections.map((section, sectionIndex) => ({
+    ...section,
+    title: official?.sectionTitles[sectionIndex] || sectionTitleFallback[section.title] || section.title,
+    people: section.people.map((person) => {
+      const translated = official?.people[personIndex++];
+      return translated ? {
+        ...person,
+        name: translated.name || person.name,
+        position: translated.position || person.position,
+      } : person;
+    }),
+  }));
   return {
     ...profile,
-    title: approved.fullName || profile.title,
-    chairman: approved.chairman || profile.chairman,
-    address: approved.address || profile.address,
+    title: approved?.fullName || official?.title || profile.title,
+    chairman: approved?.chairman || official?.chairman || profile.chairman,
+    address: approved?.address || official?.address || profile.address,
+    sections,
   };
 }
 

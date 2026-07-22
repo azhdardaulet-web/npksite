@@ -22,13 +22,27 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 3000);
+
+  if (options.signal) {
+    if (options.signal.aborted) controller.abort();
+    else options.signal.addEventListener('abort', () => controller.abort(), { once: true });
+  }
+
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      ...options,
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
 
   const data = await res.json().catch(() => null);
 

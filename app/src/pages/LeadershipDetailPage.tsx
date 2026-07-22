@@ -2,22 +2,24 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { fetchTeam, type PublicTeamMember } from '@/lib/api';
 import { TeamMemberProfile } from '@/components/TeamMemberProfile';
-import { FALLBACK } from './LeadershipPage';
-import { mergeLeadership } from '@/lib/leadership';
+import { getLeadershipFallback, mergeLeadership } from '@/lib/leadership';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 export function LeadershipDetailPage() {
+  const { language } = useLanguage();
+  const isKz = language === 'kz';
   const { slug } = useParams<{ slug: string }>();
   const [leaders, setLeaders] = useState<PublicTeamMember[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
-    fetchTeam('LEADERSHIP')
-      .then((data) => { if (!cancelled) setLeaders(mergeLeadership(data)); })
-      .catch(() => { if (!cancelled) setLeaders(FALLBACK); })
+    fetchTeam('LEADERSHIP', language)
+      .then((data) => { if (!cancelled) setLeaders(mergeLeadership(data, language)); })
+      .catch(() => { if (!cancelled) setLeaders(getLeadershipFallback(language)); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, []);
+  }, [language]);
 
   const leader = leaders.find((l) => l.slug === slug);
 
@@ -39,9 +41,9 @@ export function LeadershipDetailPage() {
   if (!leader) {
     return (
       <div className="pb-16 text-center">
-        <h1 className="text-heading font-bold text-text-base mb-2">Не найдено</h1>
-        <p className="text-body text-text-muted mb-6">Такой страницы руководства не существует.</p>
-        <Link to="/rukovodstvo" className="text-accent-brand font-medium">← Всё руководство</Link>
+        <h1 className="text-heading font-bold text-text-base mb-2">{isKz ? 'Табылмады' : 'Не найдено'}</h1>
+        <p className="text-body text-text-muted mb-6">{isKz ? 'Мұндай басшылық парақшасы жоқ.' : 'Такой страницы руководства не существует.'}</p>
+        <Link to="/rukovodstvo" className="text-accent-brand font-medium">{isKz ? '← Барлық басшылық' : '← Всё руководство'}</Link>
       </div>
     );
   }
@@ -49,9 +51,9 @@ export function LeadershipDetailPage() {
   return (
     <TeamMemberProfile
       member={leader}
-      crumbs={[{ label: 'Руководство партии', href: '/rukovodstvo' }]}
+      crumbs={[{ label: isKz ? 'Партия басшылығы' : 'Руководство партии', href: '/rukovodstvo' }]}
       backHref="/rukovodstvo"
-      backLabel="Назад к руководству"
+      backLabel={isKz ? 'Басшылыққа оралу' : 'Назад к руководству'}
     />
   );
 }

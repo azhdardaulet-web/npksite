@@ -4,12 +4,13 @@ import { SectionHeader } from '@/components/SectionHeader';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { ArrowUpRight } from 'lucide-react';
 import { fetchTeam, type PublicTeamMember } from '@/lib/api';
-import { leadershipFallback, mergeLeadership } from '@/lib/leadership';
+import { getLeadershipFallback, mergeLeadership } from '@/lib/leadership';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 // Данные сверены с halykpartiyasy.kz/ru/rukovodstvo-partii (20.07.2026).
 // bio — короткая подпись в карточке, fullBio — полная биография на персональной странице.
 // Экспортируется — переиспользуется в LeadershipDetailPage как запасной источник.
-export const FALLBACK: PublicTeamMember[] = leadershipFallback;
+export const FALLBACK: PublicTeamMember[] = getLeadershipFallback('ru');
 
 function LeaderSkeleton() {
   return (
@@ -58,17 +59,19 @@ function leaderHref(leader: PublicTeamMember) {
 }
 
 export function LeadershipPage() {
+  const { language } = useLanguage();
+  const isKz = language === 'kz';
   const [leaders, setLeaders] = useState<PublicTeamMember[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
-    fetchTeam('LEADERSHIP')
-      .then((data) => { if (!cancelled) setLeaders(mergeLeadership(data)); })
-      .catch(() => { if (!cancelled) setLeaders(FALLBACK); })
+    fetchTeam('LEADERSHIP', language)
+      .then((data) => { if (!cancelled) setLeaders(mergeLeadership(data, language)); })
+      .catch(() => { if (!cancelled) setLeaders(getLeadershipFallback(language)); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, []);
+  }, [language]);
 
   // Первый по sortOrder — председатель партии, выносим его отдельной карточкой сверху.
   const [chairman, ...deputies] = leaders;
@@ -76,7 +79,7 @@ export function LeadershipPage() {
   return (
     <div className="pb-16">
       <div className="max-w-[1280px] mx-auto px-4 md:px-10">
-        <SectionHeader light="Руководство" bold="партии" />
+        <SectionHeader light={isKz ? 'Партия' : 'Руководство'} bold={isKz ? 'басшылығы' : 'партии'} />
 
         {loading ? (
           <>
@@ -100,7 +103,7 @@ export function LeadershipPage() {
                     <p className="text-body-lg text-accent-brand font-semibold mt-3 mb-6">{chairman.position}</p>
                     <p className="text-body md:text-body-lg text-text-muted leading-relaxed max-w-3xl">{chairman.bio}</p>
                     <span className="inline-flex items-center gap-2 text-label font-medium text-text-base mt-7">
-                      Подробнее <ArrowUpRight size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                      {isKz ? 'Толығырақ' : 'Подробнее'} <ArrowUpRight size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                     </span>
                   </div>
                 </Link>
@@ -120,7 +123,7 @@ export function LeadershipPage() {
                       <p className="text-label text-accent-brand font-semibold mt-3">{leader.position}</p>
                       <p className="text-body text-text-muted leading-relaxed mt-5 line-clamp-4">{leader.bio}</p>
                       <span className="inline-flex items-center gap-2 text-label font-medium text-text-base mt-6">
-                        Подробнее <ArrowUpRight size={15} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                        {isKz ? 'Толығырақ' : 'Подробнее'} <ArrowUpRight size={15} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                       </span>
                     </div>
                   </Link>

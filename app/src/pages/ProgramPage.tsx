@@ -75,6 +75,7 @@ function VideoSection() {
 export function ProgramPage() {
   const t = useT();
   const { language } = useLanguage();
+  const isKz = language === 'kz';
   const location = useLocation();
   const programPdfUrl = language === 'kz' ? '/documents/program-kz.pdf' : '/documents/program-ru.pdf';
   const [blocks, setBlocks] = useState<PublicProgramBlock[]>([]);
@@ -112,12 +113,16 @@ export function ProgramPage() {
           <div className="w-full md:w-2/5 flex items-center px-6 md:pl-12 md:pr-8 lg:pl-16 lg:pr-10 xl:pl-20 xl:pr-12 py-14 md:py-20">
             <div className="max-w-[520px]">
               <div className="w-12 h-[3px] bg-accent-brand mb-7" />
-              <p className="text-label font-bold tracking-[0.16em] uppercase text-accent-brand mb-5">Предвыборная программа</p>
+              <p className="text-label font-bold tracking-[0.16em] uppercase text-accent-brand mb-5">
+                {isKz ? 'Сайлауалды бағдарлама' : 'Предвыборная программа'}
+              </p>
               <h1 className="font-formular text-[36px] sm:text-[44px] md:text-[36px] lg:text-[42px] xl:text-[52px] font-bold text-text-base leading-[1.04] tracking-tight">
                 {t('program.page.titleMain')} <span className="text-accent-brand dark:text-text-base">{t('program.page.titleAccent')}</span>
               </h1>
               <p className="text-[17px] md:text-[19px] text-text-muted leading-relaxed mt-7 max-w-[42ch]">
-                Каждый, кто честно работает, должен жить достойно.
+                {isKz ? (
+                  <>Қазақстан Халық партиясының<br />сайлауалды бағдарламасы</>
+                ) : 'Предвыборная программа Народной партии Казахстана'}
               </p>
             </div>
           </div>
@@ -125,7 +130,7 @@ export function ProgramPage() {
           <div className="w-full md:w-3/5 min-h-[310px] md:min-h-0 relative overflow-hidden bg-surface-2">
             <img
               src="/images/congress-vote.jpg"
-              alt="Предвыборная программа Народной партии Казахстана"
+              alt={isKz ? 'Қазақстан Халық партиясының сайлауалды бағдарламасы' : 'Предвыборная программа Народной партии Казахстана'}
               className="absolute inset-0 w-full h-full object-cover object-center"
             />
           </div>
@@ -188,7 +193,11 @@ export function ProgramPage() {
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,.85)' }}>Присоединяйтесь</div>
                 <h2 style={{ margin: '14px 0 0', fontSize: 'clamp(30px,4.4vw,58px)', fontWeight: 800, lineHeight: 1.0, letterSpacing: '-.03em' }}>Вступайте в Народную партию Казахстана</h2>
-                <p style={{ margin: '22px 0 0', maxWidth: '40ch', fontSize: 18, lineHeight: 1.5, color: 'rgba(255,255,255,.85)' }}>Власть — народу. Билік — халыққа. Вместе мы строим страну справедливых возможностей.</p>
+                <p style={{ margin: '22px 0 0', maxWidth: '40ch', fontSize: 18, lineHeight: 1.5, color: 'rgba(255,255,255,.85)' }}>
+                  {language === 'kz'
+                    ? 'Әділетті мүмкіндіктер еліне бірге қадам басамыз.'
+                    : 'Вместе мы строим страну справедливых возможностей.'}
+                </p>
               </div>
               <div style={{ textAlign: 'center' }}>
                 <a href="/vstupit" style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '20px 40px', background: '#050505', color: '#fff', textDecoration: 'none', fontSize: 18, fontWeight: 700 }}>Подать заявку →</a>
