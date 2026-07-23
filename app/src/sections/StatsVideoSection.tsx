@@ -13,7 +13,8 @@ export function StatsVideoSection() {
 
   const { language } = useLanguage();
   const { getBlock } = useHomeBlocks();
-  const videoUrl = getBlock<{ videoUrl?: string }>('video')?.videoUrl?.trim()
+  const videoBlock = getBlock<{ videoUrlRu?: string; videoUrlKz?: string }>('video');
+  const videoUrl = (language === 'kz' ? videoBlock?.videoUrlKz : videoBlock?.videoUrlRu)?.trim()
     || (language === 'kz' ? '/videos/home-kz.mp4' : '/videos/home-ru.mp4');
 
   // Force play on mobile — iOS Safari sometimes ignores autoPlay attribute
@@ -24,7 +25,7 @@ export function StatsVideoSection() {
     attempt();
     document.addEventListener('touchstart', attempt, { once: true, passive: true });
     return () => document.removeEventListener('touchstart', attempt);
-  }, []);
+  }, [videoUrl]);
 
   useEffect(() => {
     const isDesktop = window.matchMedia('(min-width: 1024px) and (pointer: fine)').matches;

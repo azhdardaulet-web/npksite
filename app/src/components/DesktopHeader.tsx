@@ -70,7 +70,6 @@ const NAV: NavItem[] = [
     href: '/novosti',
     children: [
       { label: 'Новости и релизы',                  href: '/novosti' },
-      { label: 'СМИ о нас',                         href: '/smi-o-nas' },
       { label: 'О портале «Халық Үні Қазақстан»',   href: '/narodnoe-media' },
       { label: 'Народный подкаст',                   href: '/podcast' },
     ],
@@ -126,7 +125,6 @@ const PATH_TO_PAGE_SLUG: Record<string, string> = {
   '/priemnaya': 'priemnaya',
   '/filialy': 'branches',
   '/novosti': 'news',
-  '/smi-o-nas': 'smi',
   '/narodnoe-media': 'press-center',
   '/media': 'media',
   '/kontakty': 'contacts',

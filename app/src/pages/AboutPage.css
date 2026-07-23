@@ -234,9 +234,16 @@
 
 .about-group__photo {
   aspect-ratio: 1;
-  background-image: url('/images/about/community-groups-v2.png');
-  background-repeat: no-repeat;
-  background-size: 400% 200%;
+  display: grid;
+  place-items: center;
+  padding: clamp(18px, 2.5vw, 34px);
+  background: var(--surface-2);
+}
+
+.about-group__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .about-group__caption {

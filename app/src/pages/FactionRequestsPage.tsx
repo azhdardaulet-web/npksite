@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { FileText } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useT } from '@/i18n/useT';
-import { loadDeputyRequests, type DeputyRequest } from '@/lib/deputyRequests';
+import { isKazakhDeputyRequest, loadDeputyRequests, type DeputyRequest } from '@/lib/deputyRequests';
 import './FactionRequestsPage.css';
 
 const PER_PAGE = 10;
@@ -94,8 +94,13 @@ export function FactionRequestsPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  const localizedRequests = language === 'kz' ? requests.filter(isKazakhDeputyRequest) : requests;
   const start = (page - 1) * PER_PAGE;
-  const visible = requests.slice(start, start + PER_PAGE);
+  const visible = localizedRequests.slice(start, start + PER_PAGE);
+
+  useEffect(() => {
+    setPage(1);
+  }, [language]);
 
   const changePage = (nextPage: number) => {
     setPage(nextPage);
@@ -117,8 +122,8 @@ export function FactionRequestsPage() {
             {loading
               ? t('factionRequests.loading')
               : language === 'kz'
-                ? t('factionRequests.found', { count: requests.length })
-                : <>Найдено: <strong>{requests.length}</strong> {materialsLabel(requests.length)}</>}
+                ? t('factionRequests.found', { count: localizedRequests.length })
+                : <>Найдено: <strong>{localizedRequests.length}</strong> {materialsLabel(localizedRequests.length)}</>}
           </span>
         </div>
 
@@ -126,7 +131,7 @@ export function FactionRequestsPage() {
           {visible.map((item) => <RequestCard key={item.slug} item={item} />)}
         </div>
 
-        <Pagination page={page} total={requests.length} onChange={changePage} />
+        <Pagination page={page} total={localizedRequests.length} onChange={changePage} />
       </section>
     </div>
   );

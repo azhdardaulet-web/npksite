@@ -495,7 +495,7 @@ export function JoinPage() {
                   независимо от темы сайта (это не UI-блок, а текст официальной бумаги). */}
               <div
                 className="rounded-card p-6 md:p-8 mb-6 leading-relaxed"
-                style={{ background: '#ffffff', color: '#181818', fontFamily: 'Georgia, "Times New Roman", serif' }}
+                style={{ background: '#ffffff', color: '#181818', fontFamily: "'Formular', sans-serif" }}
               >
                 <p className="text-center font-bold mb-5" style={{ fontSize: 18 }}>Заявление</p>
                 <p className="mb-4">

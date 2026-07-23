@@ -30,7 +30,7 @@ const MENU_SECTIONS = [
     label: 'Пресс-центр', href: '/novosti',
     children: [
       { label: 'Новости и релизы',               href: '/novosti' },
-      { label: 'СМИ о нас',                      href: '/smi-o-nas' },
+      { label: 'Народный подкаст',               href: '/podcast' },
       { label: 'О портале «Халық Үні Қазақстан»', href: '/narodnoe-media' },
     ],
   },

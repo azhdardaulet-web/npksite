@@ -121,7 +121,7 @@ export function ProjectsPage() {
           <ScrollReveal
             key={p.slug}
             delay={i * 0.08}
-            className={`npp-cell npp-cell--${p.size}`}
+            className="npp-cell"
           >
             <Link to={`/proekty/${p.slug}`} className="npp-card">
               <div className="npp-card__img">

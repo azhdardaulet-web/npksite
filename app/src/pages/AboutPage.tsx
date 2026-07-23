@@ -59,25 +59,25 @@ const principlesKz = [
 ];
 
 const communityGroups = [
-  { label: 'Трудящиеся', position: '0% 0%' },
-  { label: 'Безработные', position: '33.333% 0%' },
-  { label: 'Пенсионеры', position: '66.667% 0%' },
-  { label: 'Молодёжь', position: '100% 0%' },
-  { label: 'Бюджетники', position: '0% 100%' },
-  { label: 'Предприниматели', position: '33.333% 100%' },
-  { label: 'Многодетные семьи', position: '66.667% 100%' },
-  { label: 'Люди с инвалидностью', position: '100% 100%' },
+  { label: 'Трудящиеся', icon: '/images/about/icons/Трудящиеся.svg' },
+  { label: 'Безработные', icon: '/images/about/icons/Безработные.svg' },
+  { label: 'Пенсионеры', icon: '/images/about/icons/Пенсионеры.svg' },
+  { label: 'Молодёжь', icon: '/images/about/icons/Молодежь.svg' },
+  { label: 'Бюджетники', icon: '/images/about/icons/Госслужащие.svg' },
+  { label: 'Предприниматели', icon: '/images/about/icons/Предприниматели.svg' },
+  { label: 'Многодетные семьи', icon: '/images/about/icons/Семьи.svg' },
+  { label: 'Люди с инвалидностью', icon: '/images/about/icons/Инвалиды.svg' },
 ];
 
 const communityGroupsKz = [
-  { label: 'Еңбек адамдары', position: '0% 0%' },
-  { label: 'Жұмыссыздар', position: '33.333% 0%' },
-  { label: 'Зейнеткерлер', position: '66.667% 0%' },
-  { label: 'Жастар', position: '100% 0%' },
-  { label: 'Бюджет саласының қызметкерлері', position: '0% 100%' },
-  { label: 'Кәсіпкерлер', position: '33.333% 100%' },
-  { label: 'Көпбалалы отбасылар', position: '66.667% 100%' },
-  { label: 'Мүгедектігі бар адамдар', position: '100% 100%' },
+  { label: 'Еңбек адамдары', icon: '/images/about/icons/Трудящиеся.svg' },
+  { label: 'Жұмыссыздар', icon: '/images/about/icons/Безработные.svg' },
+  { label: 'Зейнеткерлер', icon: '/images/about/icons/Пенсионеры.svg' },
+  { label: 'Жастар', icon: '/images/about/icons/Молодежь.svg' },
+  { label: 'Бюджет саласының қызметкерлері', icon: '/images/about/icons/Госслужащие.svg' },
+  { label: 'Кәсіпкерлер', icon: '/images/about/icons/Предприниматели.svg' },
+  { label: 'Көпбалалы отбасылар', icon: '/images/about/icons/Семьи.svg' },
+  { label: 'Мүгедектігі бар адамдар', icon: '/images/about/icons/Инвалиды.svg' },
 ];
 
 const cooperation = [
@@ -174,7 +174,11 @@ export function AboutPage() {
   const { getBlock } = usePageBlocks('about');
 
   const hero = getBlock<HeroBlock>('about_hero');
-  const heroTitle = hero?.titleRu?.trim() || (isKz ? 'Халық! Жер! Әділдік!' : 'Народ! Земля! Справедливость!');
+  const cmsHeroTitle = hero?.titleRu?.trim();
+  const legacyHeroTitles = ['ХАЛЫҚ!\nЖЕР!\nӘДІЛДІК!', 'НАРОД!\nЗЕМЛЯ!\nСПРАВЕДЛИВОСТЬ!', 'Халық! Жер! Әділдік!', 'Народ! Земля! Справедливость!'];
+  const heroTitle = cmsHeroTitle && !legacyHeroTitles.includes(cmsHeroTitle)
+    ? cmsHeroTitle
+    : (isKz ? 'Ел байлығы – халық игілігіне!' : 'Богатство страны на благо народа!');
   const heroText = hero?.subtitleRu?.trim() || (isKz ? '«Қазақстан Халық партиясы» қоғамдық бірлестігі социалистік идеология мен солшыл идеяларды ұстанатын азаматтардың ерікті бірлестігі саналады. Партия қызметі қазақстандық ерекшелікті ескере отырып, «скандинавиялық» социализм құруға бағытталған.' : 'Общественное объединение Народная партия Казахстана — добровольное объединение граждан Республики Казахстан, приверженцев социалистической идеологии и левых идей. Деятельность партии направлена на создание и развитие в стране «скандинавского» социализма с казахстанской спецификой путём эволюционного прогресса общественного сознания и последующей трансформации государственных структур.');
   const heroImage = hero?.imageUrl?.trim() || heroImageUrl;
   const heroCtaLabel = hero?.ctaLabelRu?.trim() || (isKz ? 'Партияға қосылу' : 'Вступить в партию');
@@ -265,11 +269,9 @@ export function AboutPage() {
               {visibleCommunityGroups.map((group, index) => (
                 <ScrollReveal key={group.label} delay={(index % 4) * 0.04}>
                   <div className="about-group">
-                    <div
-                      className="about-group__photo"
-                      style={{ backgroundPosition: group.position }}
-                      aria-hidden="true"
-                    />
+                    <div className="about-group__photo" aria-hidden="true">
+                      <img src={group.icon} alt="" />
+                    </div>
                     <div className="about-group__caption">
                       <span>{String(index + 1).padStart(2, '0')}</span>
                       <strong>{group.label}</strong>
@@ -314,7 +316,7 @@ export function AboutPage() {
               </div>
             </ScrollReveal>
             <ScrollReveal>
-              <p className="about-callout">{isKz ? 'Мемлекеттік жүйені эволюциялық жолмен өзгертеміз!' : 'Изменим государственную систему эволюционным путём!'}</p>
+              <p className="about-callout">{isKz ? 'Ел байлығы – халық игілігіне!' : 'Богатство страны на благо народа!'}</p>
             </ScrollReveal>
           </div>
         </section>
@@ -371,7 +373,7 @@ export function AboutPage() {
               <span className="about-index">{isKz ? '05 / Миссия' : '05 / Миссия'}</span>
               <h2>{goalHeading}</h2>
               {goalParagraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-              <p className="about-mission__statement">{isKz ? 'Елді бірге жаңартамыз!' : 'Реформируем страну вместе!'}</p>
+              <p className="about-mission__statement">{isKz ? 'Ел байлығы – халық игілігіне!' : 'Богатство страны на благо народа!'}</p>
             </div>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
@@ -412,7 +414,7 @@ export function AboutPage() {
           <div className="about-final__inner">
             <div>
               <span>{isKz ? 'Қазақстан Халық партиясы' : 'Народная партия Казахстана'}</span>
-              <h2>{isKz ? 'Біз жаңа әрі әділетті Қазақстанды қолдаймыз!' : 'Мы за новый справедливый Казахстан!'}</h2>
+              <h2>{isKz ? 'Ел байлығы – халық игілігіне!' : 'Богатство страны на благо народа!'}</h2>
               <p>{isKz ? 'Құндылықтарымыз бен мақсаттарымызды қолдасаңыз, партия қатарына қосылыңыз.' : 'Если вы разделяете наши ценности и цели — присоединяйтесь к партии.'}</p>
             </div>
             <Link to="/vstupit" className="about-button about-button--light">

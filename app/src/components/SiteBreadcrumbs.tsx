@@ -64,7 +64,7 @@ function crumbsFor(pathname: string): SiteCrumb[] {
   if (TOP_LEVEL[pathname]) return [{ label: TOP_LEVEL[pathname] }];
 
   if (pathname === '/novosti') return [{ label: 'Пресс-центр', href: '/novosti' }, { label: 'Новости и релизы' }];
-  if (pathname === '/smi-o-nas') return [{ label: 'Пресс-центр', href: '/novosti' }, { label: 'СМИ о нас' }];
+  if (pathname === '/podcast') return [{ label: 'Пресс-центр', href: '/novosti' }, { label: 'Народный подкаст' }];
   if (pathname === '/narodnoe-media') return [{ label: 'Пресс-центр', href: '/novosti' }, { label: 'Народное медиа' }];
   if (pathname.startsWith('/narodnoe-media/')) return [
     { label: 'Пресс-центр', href: '/novosti' },

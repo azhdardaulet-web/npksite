@@ -19,7 +19,6 @@ import { PressKitPage } from '@/pages/PressKitPage';
 import { SearchPage } from '@/pages/SearchPage';
 import { ShopPage } from '@/pages/ShopPage';
 import { NewsArticlePage } from '@/pages/NewsArticlePage';
-import { SmiPage } from '@/pages/SmiPage';
 import { NarodnoeMediaPage } from '@/pages/NarodnoeMediaPage';
 import { MediaTeamDetailPage } from '@/pages/MediaTeamDetailPage';
 import { HistoryPage } from '@/pages/HistoryPage';
@@ -30,6 +29,7 @@ import { FactionRequestsPage } from '@/pages/FactionRequestsPage';
 import { FactionRequestDetailPage } from '@/pages/FactionRequestDetailPage';
 import { VerifyPage } from '@/pages/VerifyPage';
 import { VisiblePageRoute } from '@/components/VisiblePageRoute';
+import { PodcastPage } from '@/pages/PodcastPage';
 
 const DevPartyCardPreviewPage = import.meta.env.DEV
   ? lazy(async () => {
@@ -75,7 +75,8 @@ function App() {
         <Route path="/search" element={<VisiblePageRoute slug="search"><SearchPage /></VisiblePageRoute>} />
         <Route path="/magazin" element={<VisiblePageRoute slug="shop"><ShopPage /></VisiblePageRoute>} />
         <Route path="/novosti/:slug" element={<VisiblePageRoute slug="news"><NewsArticlePage /></VisiblePageRoute>} />
-        <Route path="/smi-o-nas" element={<VisiblePageRoute slug="smi"><SmiPage /></VisiblePageRoute>} />
+        <Route path="/smi-o-nas" element={<Navigate to="/novosti" replace />} />
+        <Route path="/podcast" element={<VisiblePageRoute slug="press-center"><PodcastPage /></VisiblePageRoute>} />
         <Route path="/narodnoe-media" element={<VisiblePageRoute slug="press-center"><NarodnoeMediaPage /></VisiblePageRoute>} />
         <Route path="/narodnoe-media/:slug" element={<VisiblePageRoute slug="press-center"><MediaTeamDetailPage /></VisiblePageRoute>} />
         <Route path="/verify/:id" element={<VerifyPage />} />

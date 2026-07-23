@@ -31,8 +31,10 @@ export function ScrollReveal({
     if (!el) return;
 
     const fromVars: gsap.TweenVars = { opacity: 0 };
-    if (direction === 'up') fromVars.y = distance;
-    else if (direction === 'left') fromVars.x = -distance;
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+    if (direction === 'up' || (isMobile && (direction === 'left' || direction === 'right'))) {
+      fromVars.y = distance;
+    } else if (direction === 'left') fromVars.x = -distance;
     else if (direction === 'right') fromVars.x = distance;
     else if (direction === 'scale') fromVars.scale = 0.95;
 

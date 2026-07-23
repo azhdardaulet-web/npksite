@@ -1,44 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { TickerSection } from '@/sections/TickerSection';
-import { fetchProgramBlocks, type PublicProgramBlock } from '@/lib/api';
 import { ArrowUpRight, FileText } from 'lucide-react';
 import { useT } from '@/i18n/useT';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useLocation } from 'react-router-dom';
 import { getLenis } from '@/hooks/useLenis';
-
-const FALLBACK_BLOCKS: PublicProgramBlock[] = [
-  { id: '1', n: 1, keyword: 'ТРУД', title: 'Человек труда', lead1: 'Страна держится не на должностях.', lead2: 'Страна держится на людях труда.', points: ['Рабочие профессии — почёт, уважение и достойный доход', 'Национальная программа «Человек труда»', 'Жилищные, образовательные и соцпрограммы для рабочих, инженеров, учителей, врачей', 'Рост производительности = рост зарплат', 'Государство защищает права каждого работника', 'Новые профессии — через массовую переподготовку кадров'], imageUrl: null, sortOrder: 0 },
-  { id: '2', n: 2, keyword: 'СЛОВО', title: 'Государство, которое держит слово', lead1: 'Если принимаются законы — они должны работать.', lead2: 'Если даются обещания — они должны выполняться.', points: ['Государство держит слово', 'Человек важнее отчёта', 'Оценка чиновников — только по реальной жизни людей', 'Персональная ответственность за каждую госпрограмму', 'Открытый бюджет: каждый теңге на виду у общества', 'Общественный контроль и прозрачность решений'], imageUrl: null, sortOrder: 1 },
-  { id: '3', n: 3, keyword: 'ЗАКОН', title: 'Справедливость работает', lead1: 'Один закон для всех.', lead2: 'Не должность. Не влияние. Только закон.', points: ['Закон одинаков для всех', 'Успех зависит от знаний и труда, а не от связей', 'Справедливость — не лозунг, а основа государственной политики', 'Территориальная справедливость: одинаковые возможности в каждом регионе', 'Рост экономики должен положительно ощущаться в жизни каждой семьи'], imageUrl: null, sortOrder: 2 },
-  { id: '4', n: 4, keyword: 'ЛЮДИ', title: 'Экономика для людей', lead1: 'Экономика должна работать не ради отчётов —', lead2: 'ради человека.', points: ['Главная цель — рост доходов и благополучия семей', 'Честная конкуренция без административных привилегий', 'Сильный средний класс — стратегическая цель государства', 'Новые рабочие места во всех регионах страны', 'Предпринимательство — главная социальная сила', 'Доходы от природных богатств — на образование, медицину, инфраструктуру'], imageUrl: null, sortOrder: 3 },
-  { id: '5', n: 5, keyword: 'ЖИЛЬЁ', title: 'Жильё для работающей семьи', lead1: 'Собственное жильё — не мечта.', lead2: 'Это достижимая цель работающей семьи.', points: ['Народная ипотека для работающих семей, молодых специалистов, учителей и врачей', 'Доступная аренда с правом выкупа', 'Жилищное строительство по всей стране — не только в мегаполисах', 'Прозрачные жилищные программы без бюрократии'], imageUrl: null, sortOrder: 4 },
-  { id: '6', n: 6, keyword: 'ЗНАНИЯ', title: 'Образование и социальные лифты', lead1: 'Будущее ребёнка не должно зависеть', lead2: 'от почтового индекса его дома.', points: ['Образование — главный инструмент справедливости возможностей', 'Качественная школа — в каждом городе и ауле страны', 'Развитие технического и профессионального образования', 'Обучение на протяжении всей жизни — норма нового времени', 'Поддержка талантливой молодёжи из всех регионов', 'Молодёжь строит будущее через знания, а не через знакомства'], imageUrl: null, sortOrder: 5 },
-  { id: '7', n: 7, keyword: 'РЕГИОНЫ', title: 'Сильные регионы — сильный Казахстан', lead1: 'Не должно быть Казахстана', lead2: 'первого и второго сорта.', points: ['Рабочие места — рядом с домом', 'Доступная медицина в каждом районном центре', 'Современная школа, дорога и интернет — по всей стране', 'Новые центры роста во всех регионах'], imageUrl: null, sortOrder: 6 },
-  { id: '8', n: 8, keyword: 'БУДУЩЕЕ', title: 'Экономика будущего', lead1: 'Будущее нельзя ждать.', lead2: 'Его нужно создавать.', points: ['Технологии должны работать на человека', 'От сырьевой экономики — к экономике знаний', 'Переподготовка кадров для профессий нового времени', 'Инновационные кластеры и технопарки'], imageUrl: null, sortOrder: 7 },
-  { id: '9', n: 9, keyword: 'ЗДОРОВЬЕ', title: 'Здоровье и достойная жизнь', lead1: 'Никто не должен становиться', lead2: 'беднее из-за болезни.', points: ['Доступная медицина — базовое право каждого гражданина', 'Единые стандарты помощи от аула до столицы', 'Профилактика и ранняя диагностика', 'Достойные условия труда для врачей и медсестёр'], imageUrl: null, sortOrder: 8 },
-  { id: '10', n: 10, keyword: 'СЕМЬЯ', title: 'Семья и дети', lead1: 'Сильная семья — сильная страна.', lead2: 'Дети — главный национальный капитал.', points: ['Поддержка семьи — приоритет государственной политики', 'Жильё и работа для молодых семей', 'Доступные детские сады, секции и кружки', 'Равные возможности для каждого ребёнка'], imageUrl: null, sortOrder: 9 },
-];
-
-const PROGRAM_POINT_CORRECTIONS: Record<string, string> = {
-  'Открытый бюджет: каждый тенге на виду у общества': 'Открытый бюджет: каждый теңге на виду у общества',
-  'Закон одинаков для всех — от гражданина до чиновника': 'Закон одинаков для всех',
-  'Успех зависит от знаний и труда, не от связей': 'Успех зависит от знаний и труда, а не от связей',
-  'Рост экономики должен ощущаться в жизни каждой семьи': 'Рост экономики должен положительно ощущаться в жизни каждой семьи',
-  'Природные богатства — на образование, медицину, инфраструктуру': 'Доходы от природных богатств — на образование, медицину, инфраструктуру',
-  'Молодёжь строит будущее через знания, а не знакомства': 'Молодёжь строит будущее через знания, а не через знакомства',
-};
-
-function applyProgramCorrections(items: PublicProgramBlock[]) {
-  return items.map((item) => ({
-    ...item,
-    points: item.points.map((point) => PROGRAM_POINT_CORRECTIONS[point] ?? point),
-  }));
-}
+import { PROGRAM_BLOCKS_KZ, PROGRAM_BLOCKS_RU } from '@/lib/programData';
 
 function VideoSection() {
   const { language } = useLanguage();
+  const isKz = language === 'kz';
   const [playing, setPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoUrl = language === 'kz' ? '/videos/home-kz.mp4' : '/videos/home-ru.mp4';
@@ -55,15 +27,15 @@ function VideoSection() {
     <section style={{ maxWidth: 1180, margin: 'clamp(64px,9vw,120px) auto 0', padding: '0 clamp(16px,4vw,44px)' }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 26 }}>
         <div>
-          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: '#db1f26' }}>Агитационный ролик</div>
-          <h2 style={{ margin: '14px 0 0', fontSize: 'clamp(28px,4vw,50px)', fontWeight: 800, lineHeight: 1.03, letterSpacing: '-.025em' }}>Смотрите и делитесь</h2>
+          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: '#db1f26' }}>{isKz ? 'Үгіт-насихат бейнеролигі' : 'Агитационный ролик'}</div>
+          <h2 style={{ margin: '14px 0 0', fontSize: 'clamp(28px,4vw,50px)', fontWeight: 700, lineHeight: 1.03, letterSpacing: '-.025em' }}>{isKz ? 'Көріңіз және бөлісіңіз' : 'Смотрите и делитесь'}</h2>
         </div>
-        <a href="/vstupit" style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '15px 26px', background: 'transparent', border: '1.5px solid rgba(255,255,255,.24)', color: '#fff', textDecoration: 'none', fontSize: 15, fontWeight: 700 }}>Присоединиться →</a>
+        <a href="/vstupit" style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '15px 26px', background: 'transparent', border: '1.5px solid rgba(255,255,255,.24)', color: '#fff', textDecoration: 'none', fontSize: 15, fontWeight: 700 }}>{isKz ? 'Қосылу →' : 'Присоединиться →'}</a>
       </div>
       <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden', border: '1px solid rgba(255,255,255,.12)', background: '#000' }}>
         <video ref={videoRef} src={videoUrl} playsInline preload="metadata" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
         {!playing && (
-          <button type="button" onClick={play} aria-label="Воспроизвести" style={{ position: 'absolute', inset: 0, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.5))' }}>
+          <button type="button" onClick={play} aria-label={isKz ? 'Ойнату' : 'Воспроизвести'} style={{ position: 'absolute', inset: 0, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.5))' }}>
             <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 'clamp(72px,9vw,110px)', height: 'clamp(72px,9vw,110px)', borderRadius: '50%', background: '#db1f26', color: '#fff', fontSize: 'clamp(24px,3vw,34px)', paddingLeft: 6 }}>▶</span>
           </button>
         )}
@@ -78,17 +50,8 @@ export function ProgramPage() {
   const isKz = language === 'kz';
   const location = useLocation();
   const programPdfUrl = language === 'kz' ? '/documents/program-kz.pdf' : '/documents/program-ru.pdf';
-  const [blocks, setBlocks] = useState<PublicProgramBlock[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchProgramBlocks()
-      .then((data) => { if (!cancelled) setBlocks(data.length > 0 ? applyProgramCorrections(data) : FALLBACK_BLOCKS); })
-      .catch(() => { if (!cancelled) setBlocks(FALLBACK_BLOCKS); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
+  const blocks = isKz ? PROGRAM_BLOCKS_KZ : PROGRAM_BLOCKS_RU;
+  const loading = false;
 
   useEffect(() => {
     if (loading || !location.hash) return;
@@ -142,8 +105,8 @@ export function ProgramPage() {
 
       {/* PROGRAM HEADER */}
       <div style={{ maxWidth: 1180, margin: '0 auto', padding: 'clamp(64px,9vw,120px) clamp(16px,4vw,44px) clamp(24px,4vw,52px)' }}>
-        <div style={{ display: 'inline-block', fontSize: 13, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: '#db1f26' }}>Программа партии</div>
-        <h2 style={{ margin: '16px 0 0', fontSize: 'clamp(30px,4.6vw,58px)', fontWeight: 800, lineHeight: 1.02, letterSpacing: '-.025em', maxWidth: '20ch' }}>Десять направлений справедливой страны</h2>
+        <div style={{ display: 'inline-block', fontSize: 13, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: '#db1f26' }}>{isKz ? 'Партия бағдарламасы' : 'Программа партии'}</div>
+        <h2 style={{ margin: '16px 0 0', fontSize: 'clamp(30px,4.6vw,58px)', fontWeight: 700, lineHeight: 1.02, letterSpacing: '-.025em', maxWidth: '20ch' }}>{isKz ? 'Әділетті елдің он бағыты' : 'Десять направлений справедливой страны'}</h2>
       </div>
 
       {/* PROGRAM BLOCKS */}
@@ -162,7 +125,7 @@ export function ProgramPage() {
                   <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: isRed ? 'rgba(255,255,255,.78)' : 'rgba(255,255,255,.5)' }}>{b.title}</span>
                 </div>
                 <h3 style={{ margin: '22px 0 0', fontSize: 'clamp(28px,4.2vw,56px)', fontWeight: 800, lineHeight: 1.04, letterSpacing: '-.025em', maxWidth: '18ch' }}>
-                  {b.lead1}{' '}<span style={{ color: isRed ? '#0a0a0a' : '#db1f26' }}>{b.lead2}</span>
+                  {b.lead1}{b.lead2 ? <> <span style={{ color: isRed ? '#0a0a0a' : '#db1f26' }}>{b.lead2}</span></> : null}
                 </h3>
                 <div style={{ marginTop: 'clamp(30px,3.4vw,48px)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: '14px 40px' }}>
                   {b.points.map((p, j) => (
@@ -191,8 +154,8 @@ export function ProgramPage() {
             <span aria-hidden style={{ position: 'absolute', bottom: '-.34em', right: '.02em', fontSize: 'clamp(140px,24vw,360px)', fontWeight: 800, lineHeight: 1, color: 'rgba(0,0,0,.08)', pointerEvents: 'none' }}>НПК</span>
             <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(320px,1fr))', gap: 'clamp(30px,4vw,56px)', alignItems: 'center' }}>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,.85)' }}>Присоединяйтесь</div>
-                <h2 style={{ margin: '14px 0 0', fontSize: 'clamp(30px,4.4vw,58px)', fontWeight: 800, lineHeight: 1.0, letterSpacing: '-.03em' }}>Вступайте в Народную партию Казахстана</h2>
+                <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,.85)' }}>{isKz ? 'Бізге қосылыңыз' : 'Присоединяйтесь'}</div>
+                <h2 style={{ margin: '14px 0 0', fontSize: 'clamp(30px,4.4vw,58px)', fontWeight: 700, lineHeight: 1.0, letterSpacing: '-.03em' }}>{isKz ? 'Қазақстан Халық партиясына қосылыңыз' : 'Вступайте в Народную партию Казахстана'}</h2>
                 <p style={{ margin: '22px 0 0', maxWidth: '40ch', fontSize: 18, lineHeight: 1.5, color: 'rgba(255,255,255,.85)' }}>
                   {language === 'kz'
                     ? 'Әділетті мүмкіндіктер еліне бірге қадам басамыз.'
@@ -200,7 +163,7 @@ export function ProgramPage() {
                 </p>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <a href="/vstupit" style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '20px 40px', background: '#050505', color: '#fff', textDecoration: 'none', fontSize: 18, fontWeight: 700 }}>Подать заявку →</a>
+                <a href="/vstupit" style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '20px 40px', background: '#050505', color: '#fff', textDecoration: 'none', fontSize: 18, fontWeight: 700 }}>{isKz ? 'Өтінім беру →' : 'Подать заявку →'}</a>
               </div>
             </div>
           </div>

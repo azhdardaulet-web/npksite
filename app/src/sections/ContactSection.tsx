@@ -7,7 +7,7 @@ const ICONS = [Mail, Phone, MapPin];
 
 const FALLBACK_CONTACTS = [
   { labelRu: 'Почта', value: 'info@halykpartiyasy.kz', href: 'mailto:info@halykpartiyasy.kz' },
-  { labelRu: 'Телефон', value: '+7 700 088 19 17', href: 'tel:+77000881917' },
+  { labelRu: 'Телефон', value: '+77002202020', href: 'tel:+77002202020' },
   { labelRu: 'Офис', value: 'Астана, ул. Желтоксан, 16, Казахстан', href: 'https://maps.google.com/?q=Астана+Желтоксан+16' },
 ];
 

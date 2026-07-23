@@ -10,6 +10,7 @@ import {
   type AppealTopic, type PublicTestimonial, type PublicBranch, type PublicDocument, type AppealAttachment,
 } from '@/lib/api';
 import { usePageBlocks } from '@/hooks/usePageBlocks';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 // Полная секция «Общественная приёмная» — используется и как отдельная страница
 // (ReceptionPage, /priemnaya), и как секция на главной (ReceptionSection),
@@ -17,6 +18,30 @@ import { usePageBlocks } from '@/hooks/usePageBlocks';
 
 const FALLBACK_TOPICS = ['Общий вопрос', 'Социальная помощь', 'ЖКХ и инфраструктура', 'Образование', 'Медицина', 'Труд и занятость', 'Другое'];
 const FALLBACK_TESTIMONIALS: PublicTestimonial[] = fallbackTestimonials.map((t) => ({ id: String(t.id), quote: t.quote, author: t.author }));
+const FALLBACK_SAMPLES: PublicDocument[] = [
+  {
+    id: 'appeal-sample-ru',
+    type: 'appeal_sample',
+    title: 'Образец письменного обращения',
+    description: null,
+    fileName: 'obrazec-obrashcheniya.docx',
+    fileUrl: '/documents/obrazec-obrashcheniya.docx',
+    fileSize: 0,
+    year: null,
+    publishedAt: null,
+  },
+  {
+    id: 'appeal-sample-kz',
+    type: 'appeal_sample',
+    title: 'Жазбаша өтініш үлгісі',
+    description: null,
+    fileName: 'otinish-ulgisi.docx',
+    fileUrl: '/documents/otinish-ulgisi.docx',
+    fileSize: 0,
+    year: null,
+    publishedAt: null,
+  },
+];
 const KZ_PHONE_RE = /^\+7\s?7\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/;
 
 const WA_TEMPLATES = [
@@ -52,6 +77,8 @@ interface ReceptionStepsBlock {
 }
 
 export function ReceptionFull() {
+  const { language } = useLanguage();
+  const isKz = language === 'kz';
   const { getBlock } = usePageBlocks('priemnaya');
   const cms = getBlock<ReceptionHeaderBlock>('reception_header');
   const stepsItems = getBlock<ReceptionStepsBlock>('reception_steps')?.items;
@@ -60,13 +87,16 @@ export function ReceptionFull() {
 
   const heading   = cms?.headingRu?.trim()  || 'Общественная приёмная';
   const subtitle  = cms?.subtitleRu?.trim() || 'Направьте обращение в Народную партию Казахстана — письменно или на видеоприёме';
-  const waNumber  = cms?.whatsappNumber?.trim() || '+7 700 088 19 17';
+  const waNumber  = '+77002202020';
   const waNote    = cms?.whatsappNoteRu?.trim() || 'ответ обычно в течение дня';
   const waHref    = `https://wa.me/${waNumber.replace(/[^\d]/g, '')}`;
   const stat1Lab  = cms?.counterLabelRu?.trim()  || 'обращений решено';
   const stat2Lab  = cms?.stat2LabelRu?.trim() || 'средний срок ответа';
   const stat3Lab  = cms?.stat3LabelRu?.trim() || 'филиалов принимают';
-  const mockupCap = cms?.mockupCaptionRu?.trim() || 'Ссылка на видеовстречу придёт на почту и по SMS после согласования времени.';
+  const rawMockupCap = cms?.mockupCaptionRu?.trim();
+  const mockupCap = isKz && (!rawMockupCap || rawMockupCap.startsWith('Ссылка на видеовстречу'))
+    ? 'Бейнеқабылдау уақыты келісілгеннен кейін кездесу сілтемесі электрондық пошта мен SMS арқылы жіберіледі.'
+    : (rawMockupCap || 'Ссылка на видеовстречу придёт на почту и по SMS после согласования времени.');
 
   // Статистика: «обращений решено» — из БД (кэш на бэкенде 1 час), остальные
   // два значения и кадр видеоприёма — из site_settings (CMS → Настройки).
@@ -75,7 +105,10 @@ export function ReceptionFull() {
   useEffect(() => { fetchAppealsResolvedCount().then(d => setResolvedCount(d.count)).catch(() => {}); }, []);
   useEffect(() => { fetchSettings().then(setSettings).catch(() => {}); }, []);
   const stat1Val = resolvedCount ?? 847;
-  const stat2Val = settings.reception_avg_response_time?.trim() || '5 дней';
+  const rawResponseTime = settings.reception_avg_response_time?.trim();
+  const stat2Val = isKz
+    ? (rawResponseTime === '5 дней' || !rawResponseTime ? '5 күн' : rawResponseTime)
+    : (rawResponseTime || '5 дней');
   const stat3Val = settings.reception_branches_accepting?.trim() || '20';
   const mockupSrc = settings.video_preview_image?.trim() || cms?.mockupImageUrl?.trim() || '/images/reception-mockup.png';
 
@@ -107,8 +140,13 @@ export function ReceptionFull() {
     : '';
 
   // Заявление + доп. документы к письменному обращению, образцы обращения
-  const [samples, setSamples] = useState<PublicDocument[]>([]);
-  useEffect(() => { fetchDocuments('appeal_sample').then(setSamples).catch(() => {}); }, []);
+  const fallbackSamples = FALLBACK_SAMPLES.filter((sample) => sample.id.endsWith(language));
+  const [samples, setSamples] = useState<PublicDocument[]>(fallbackSamples);
+  useEffect(() => {
+    fetchDocuments('appeal_sample', language)
+      .then((documents) => setSamples(documents.length ? documents : fallbackSamples))
+      .catch(() => setSamples(fallbackSamples));
+  }, [language]);
 
   const [statementFile, setStatementFile] = useState<{ url: string; fileName: string; fileSize: number } | null>(null);
   const [statementUploading, setStatementUploading] = useState(false);

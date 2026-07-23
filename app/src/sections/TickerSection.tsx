@@ -6,27 +6,29 @@ interface TickerBlock {
 }
 
 const PHRASES_RU = [
-  'Человек труда',
-  'Государство, которое держит слово',
-  'Один закон для всех',
-  'Экономика для людей',
-  'Жильё для работающей семьи',
-  'Образование и социальные лифты',
-  'Сильные регионы — сильный Казахстан',
-  'Экономика будущего',
-  'Здоровье и семья',
+  'Достойный труд',
+  'Равные возможности',
+  'Доступная медицина',
+  'Качественное образование',
+  'Единство и культура',
+  'Справедливое государство',
+  'Чистая среда',
+  'Сильные регионы',
+  'Экономика для человека',
+  'Мир и сотрудничество',
 ];
 
 const PHRASES_KZ = [
-  'Еңбек адамы',
-  'Уәдесіне берік мемлекет',
-  'Заң бәріне ортақ',
+  'Әділ еңбек',
+  'Тең мүмкіндіктер',
+  'Қолжетімді медицина',
+  'Сапалы білім',
+  'Бірлік пен мәдениет',
+  'Әділ мемлекет',
+  'Таза орта',
+  'Қуатты өңірлер',
   'Адамға қызмет ететін экономика',
-  'Еңбек ететін отбасыға баспана',
-  'Білім және әлеуметтік өрлеу мүмкіндіктері',
-  'Қуатты өңірлер — қуатты Қазақстан',
-  'Болашақ экономикасы',
-  'Денсаулық пен отбасы',
+  'Бейбітшілік пен ынтымақтастық',
 ];
 
 export function TickerSection() {
@@ -34,8 +36,10 @@ export function TickerSection() {
   const { getBlock } = useHomeBlocks();
   const cms = getBlock<TickerBlock>('ticker');
 
-  const phrases = cms?.phrasesRu?.filter(Boolean).length
-    ? cms.phrasesRu.filter(Boolean)
+  const cmsPhrases = cms?.phrasesRu?.filter(Boolean) ?? [];
+  const hasLegacyProgram = cmsPhrases.some((phrase) => phrase === 'Человек труда' || phrase === 'Еңбек адамы');
+  const phrases = cmsPhrases.length && !hasLegacyProgram
+    ? cmsPhrases
     : (language === 'kz' ? PHRASES_KZ : PHRASES_RU);
 
   const allPhrases = [...phrases, ...phrases, ...phrases, ...phrases];

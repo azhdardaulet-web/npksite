@@ -101,7 +101,7 @@ export function FactionPage() {
           <div className="npf-hero__img">
             <img src="/images/faction/faction-hero.jpg" alt="Мажилис Парламента РК" />
             <div className="npf-hero__badge">
-              <span className="npf-hero__badge-num">8</span>
+              <span className="npf-hero__badge-num">VIII</span>
               <span className="npf-hero__badge-label">созыв<br/>Мажилиса</span>
             </div>
           </div>
@@ -161,7 +161,7 @@ export function FactionPage() {
 
           <ScrollReveal delay={300}>
             <div className="npf-num npf-num--red">
-              <div className="npf-num__value">8</div>
+              <div className="npf-num__value">VIII</div>
               <div className="npf-num__label">созыв Мажилиса</div>
             </div>
           </ScrollReveal>
@@ -206,7 +206,7 @@ export function FactionPage() {
               Чего добилась фракция НПК
             </h2>
             <p className="npf-section__text">
-              На текущий момент работы 8 созыва депутаты парламентской фракции НПК добились конкретных результатов:
+              На текущий момент работы VIII созыва депутаты парламентской фракции НПК добились конкретных результатов:
             </p>
           </div>
         </ScrollReveal>

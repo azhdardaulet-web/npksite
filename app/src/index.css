@@ -188,10 +188,51 @@
 
   body {
     font-family: 'Formular', 'Helvetica Neue', -apple-system, sans-serif;
+    font-weight: 400;
     background-color: var(--bg);
     color: var(--text);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Formular', sans-serif !important;
+    font-weight: 700 !important;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font-family: 'Formular', sans-serif;
+  }
+
+  /* В бренд-системе используются только Regular, Medium и Bold. */
+  .font-light,
+  [style*="font-weight: 300"],
+  [style*="font-weight:300"] {
+    font-weight: 400 !important;
+  }
+
+  .font-semibold,
+  [style*="font-weight: 600"],
+  [style*="font-weight:600"] {
+    font-weight: 500 !important;
+  }
+
+  .font-extrabold,
+  .font-black,
+  [style*="font-weight: 800"],
+  [style*="font-weight:800"],
+  [style*="font-weight: 900"],
+  [style*="font-weight:900"] {
+    font-weight: 700 !important;
   }
 
   * {

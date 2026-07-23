@@ -3,7 +3,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ExternalLink, FileText } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useT } from '@/i18n/useT';
-import { getDeputyRequest, type DeputyRequest } from '@/lib/deputyRequests';
+import { getDeputyRequest, isKazakhDeputyRequest, type DeputyRequest } from '@/lib/deputyRequests';
 import './FactionRequestsPage.css';
 
 export function FactionRequestDetailPage() {
@@ -18,7 +18,9 @@ export function FactionRequestDetailPage() {
   }, [slug]);
 
   if (request === undefined) return <div className="npr-detail npr-detail--loading">{t('factionRequests.materialLoading')}</div>;
-  if (request === null) return <Navigate to="/frakciya/zaprosy" replace />;
+  if (request === null || (language === 'kz' && !isKazakhDeputyRequest(request))) {
+    return <Navigate to="/frakciya/zaprosy" replace />;
+  }
 
   const localizedSourceUrl = language === 'kz'
     ? request.sourceUrl.replace('/ru/', '/kz/')

@@ -61,7 +61,7 @@ export function FactionCompositionPage() {
           lineHeight: 0.95, letterSpacing: '-0.04em', margin: 0, color: 'var(--text)',
         }}>
           {isKazakh ? 'Қазақстан Республикасы Парламенті Мәжілісінің ' : 'Состав фракции '}
-          <span style={{ color: '#db1f26' }}>{isKazakh ? 'VIII шақырылымы' : '8 созыва Мажилиса Парламента'}</span>
+          <span style={{ color: '#db1f26' }}>{isKazakh ? 'VIII шақырылымы' : 'VIII созыва Мажилиса Парламента'}</span>
         </h1>
         <p style={{
           fontSize: 16, color: 'var(--text-muted)', lineHeight: 1.65,

@@ -58,7 +58,7 @@ export function ReceptionSection() {
 
   const heading  = cms?.headingRu?.trim()  || 'Общественная приёмная';
   const subtitle = cms?.subtitleRu?.trim() || 'Направьте обращение в Народную партию Казахстана — письменно или на видеоприёме';
-  const waNumber = cms?.whatsappNumber?.trim() || '+7 700 088 19 17';
+  const waNumber = '+77002202020';
   const waNote   = cms?.whatsappNoteRu?.trim() || 'ответ обычно в течение дня';
   const waHref   = `https://wa.me/${waNumber.replace(/[^\d]/g, '')}`;
   const stat1Lab = cms?.counterLabelRu?.trim()  || 'обращений решено';

@@ -1,8 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useHomeBlocks } from '@/hooks/useHomeBlocks';
-import { useT } from '@/i18n/useT';
-
-interface ProgramIntroBlock { headingRu?: string; textRu?: string; }
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const GAP = 16;
 
@@ -84,11 +81,12 @@ const MOBILE_STYLES = `
 `;
 
 export function ProgramSection() {
-  const t = useT();
-  const { getBlock } = useHomeBlocks();
-  const cms = getBlock<ProgramIntroBlock>('program_intro');
-  const heading = cms?.headingRu?.trim() || 'Предвыборная программа Народной партии Казахстана';
-  const subtitle = cms?.textRu?.trim() || 'Мы собрали ключевые акценты новой политической программы Народной партии Казахстана: человек труда, справедливые возможности, ответственная власть, экономика для людей, поддержка семьи и будущее детей.';
+  const { language } = useLanguage();
+  const isKz = language === 'kz';
+  const heading = isKz ? 'Ел байлығы – халық игілігіне!' : 'Богатство страны на благо народа!';
+  const subtitle = isKz
+    ? 'Қазақстан Халық партиясының сайлауалды бағдарламасы әр азаматтың лайықты өмірі, тең мүмкіндігі және қауіпсіз болашағы үшін нақты шешімдер ұсынады.'
+    : 'Предвыборная программа Народной партии Казахстана предлагает конкретные решения для достойной жизни, равных возможностей и безопасного будущего каждого гражданина.';
 
   return (
     <section
@@ -99,7 +97,7 @@ export function ProgramSection() {
 
         {/* ── Header ────────────────────────────────────── */}
         <div className="max-w-[860px] mx-auto text-center mb-10">
-          <p className="text-[15px] text-accent-brand mb-3">Программа</p>
+          <p className="text-[15px] text-accent-brand mb-3">{isKz ? 'Бағдарлама' : 'Программа'}</p>
           <h2
             className="font-bold uppercase text-text-base"
             style={{ fontSize: 'clamp(32px, 5vw, 64px)', lineHeight: '88%', letterSpacing: '-0.035em' }}
@@ -119,7 +117,7 @@ export function ProgramSection() {
           gap: GAP,
         }}>
 
-          {/* 01 — Ответственная власть | person-suit | red left, rows 1+2 */}
+          {/* 01 — Государство | person-suit | red left, rows 1+2 */}
           <article className="prog-card-1 relative transition-transform duration-300 hover:-translate-y-1"
             style={{ gridColumn:'1/2', gridRow:'1/3', borderRadius:0, overflow:'hidden', background:'linear-gradient(135deg,#db1f26 0%,#c81721 100%)' }}>
             <Diamond />
@@ -128,16 +126,16 @@ export function ProgramSection() {
               style={{ right:0, bottom:0, width:'58%', height:'86%', objectFit:'contain', objectPosition:'center bottom' }} />
             <div className="prog-text absolute z-[4] left-6 bottom-6" style={{ maxWidth:'52%' }}>
               <h3 className="font-bold text-white leading-[90%]" style={{ fontSize:'clamp(22px,1.9vw,30px)', letterSpacing:'-0.03em' }}>
-                Ответственная власть
+                {isKz ? 'Әділ заң және тиімді басқару' : 'Справедливое и эффективное государство'}
               </h3>
               <p className="mt-3 text-[13px] leading-[138%]" style={{ color:'rgba(255,255,255,0.88)' }}>
-                {t('home.program.responsibleText')}
+                {isKz ? 'Заң бәріне бірдей қолданылып, мемлекеттік органдар нақты нәтиже үшін жауап беруі тиіс.' : 'Закон должен быть одинаковым для всех, а государственные органы — отвечать за конкретный результат.'}
               </p>
               <Cta to="/programma#program-02" />
             </div>
           </article>
 
-          {/* 02 — Казахстан справедливых возможностей | person-athlete | white top center */}
+          {/* 02 — Равенство | person-athlete | white top center */}
           <article className="prog-card-2 relative transition-transform duration-300 hover:-translate-y-1"
             style={{ gridColumn:'2/3', gridRow:'1/2', borderRadius:0, overflow:'hidden', background:'#ffffff' }}>
             <div className="absolute inset-0 pointer-events-none" style={{ borderRadius:'inherit',
@@ -147,16 +145,16 @@ export function ProgramSection() {
               style={{ right:0, bottom:0, width:'62%', height:'100%', objectFit:'contain', objectPosition:'center bottom' }} />
             <div className="prog-text relative z-[4] p-6" style={{ maxWidth:'48%' }}>
               <h3 className="font-bold leading-[90%]" style={{ fontSize:'clamp(18px,1.6vw,24px)', letterSpacing:'-0.03em', color:'#000001' }}>
-                Казахстан справедливых возможностей
+                {isKz ? 'Тең мүмкіндіктер' : 'Равные возможности'}
               </h3>
               <p className="mt-3 text-[12px] leading-[138%]" style={{ color:'rgba(0,0,0,0.68)' }}>
-                Страна, где успех зависит от труда, знаний и ответственности, а не от связей, должности или места рождения.
+                {isKz ? 'Жасы, жынысы немесе денсаулық жағдайы адамның дамуына кедергі болмауы тиіс.' : 'Возраст, пол и состояние здоровья не должны ограничивать возможности человека.'}
               </p>
               <Cta to="/programma#program-01" dark />
             </div>
           </article>
 
-          {/* 03 — Экономика для людей | person-speaker | red right, rows 1+2 */}
+          {/* 03 — Развитие | person-speaker | red right, rows 1+2 */}
           <article className="prog-card-3 relative transition-transform duration-300 hover:-translate-y-1"
             style={{ gridColumn:'3/4', gridRow:'1/3', borderRadius:0, overflow:'hidden', background:'linear-gradient(135deg,#db1f26 0%,#b9141d 100%)' }}>
             <Diamond />
@@ -165,16 +163,16 @@ export function ProgramSection() {
               style={{ right:0, bottom:0, width:'70%', height:'98%', objectFit:'contain', objectPosition:'center bottom' }} />
             <div className="prog-text absolute z-[4] left-6 bottom-6" style={{ maxWidth:'54%' }}>
               <h3 className="font-bold text-white leading-[90%]" style={{ fontSize:'clamp(22px,1.9vw,30px)', letterSpacing:'-0.03em' }}>
-                Экономика для людей
+                {isKz ? 'Адамға қызмет ететін экономика' : 'Экономика для человека'}
               </h3>
               <p className="mt-3 text-[13px] leading-[138%]" style={{ color:'rgba(255,255,255,0.88)' }}>
-                Рост экономики должен положительно ощущаться в жизни каждой семьи: в доходах, жилье, рабочих местах и уверенности в будущем.
+                {isKz ? 'Экономикалық өсім азаматтардың табысын арттырып, лайықты жұмыс орындарын ашуы керек.' : 'Экономический рост должен повышать доходы граждан и создавать достойные рабочие места.'}
               </p>
-              <Cta to="/programma#program-04" />
+              <Cta to="/programma#program-09" />
             </div>
           </article>
 
-          {/* 04 — Здоровье, семья и дети | 08_QARLYGASH | white bottom left */}
+          {/* 04 — Здоровье | 08_QARLYGASH | white bottom left */}
           <article className="prog-card-4 relative transition-transform duration-300 hover:-translate-y-1"
             style={{ gridColumn:'1/2', gridRow:'3/4', borderRadius:0, overflow:'hidden', background:'#ffffff' }}>
             <div className="absolute inset-0 pointer-events-none" style={{ borderRadius:'inherit',
@@ -184,16 +182,16 @@ export function ProgramSection() {
               style={{ right:0, bottom:0, width:'50%', height:'100%', objectFit:'contain', objectPosition:'center bottom' }} />
             <div className="prog-text relative z-[4] p-6" style={{ maxWidth:'56%' }}>
               <h3 className="font-bold leading-[90%]" style={{ fontSize:'clamp(18px,1.6vw,24px)', letterSpacing:'-0.03em', color:'#000001' }}>
-                Здоровье, семья и дети
+                {isKz ? 'Қолжетімді денсаулық сақтау' : 'Доступное здравоохранение'}
               </h3>
               <p className="mt-3 text-[12px] leading-[138%]" style={{ color:'rgba(0,0,0,0.68)' }}>
-                Сильная страна начинается со здоровых людей, крепких семей и равных возможностей для каждого ребенка.
+                {isKz ? 'Сапалы медицина тұрғылықты жері мен табыс деңгейіне қарамастан баршаға қолжетімді болуы керек.' : 'Качественная медицина должна быть доступна независимо от дохода и места проживания.'}
               </p>
-              <Cta to="/programma#program-09" dark />
+              <Cta to="/programma#program-03" dark />
             </div>
           </article>
 
-          {/* 05 — Человек труда | 10_SHOKAN | red center, rows 2+3 */}
+          {/* 05 — Труд | 10_SHOKAN | red center, rows 2+3 */}
           <article className="prog-card-5 relative transition-transform duration-300 hover:-translate-y-1"
             style={{ gridColumn:'2/3', gridRow:'2/4', borderRadius:0, overflow:'hidden',
               background:`radial-gradient(circle at 86% 68%, #FFB000 0%, #FFB000 22%, transparent 23%),
@@ -204,16 +202,16 @@ export function ProgramSection() {
               style={{ right:-4, bottom:0, width:'64%', height:'96%', objectFit:'contain', objectPosition:'center bottom' }} />
             <div className="prog-text relative z-[4] p-6" style={{ maxWidth:'52%' }}>
               <h3 className="font-bold text-white leading-[90%]" style={{ fontSize:'clamp(20px,1.8vw,28px)', letterSpacing:'-0.03em' }}>
-                Человек труда
+                {isKz ? 'Әділ еңбек' : 'Достойный труд'}
               </h3>
               <p className="mt-3 text-[13px] leading-[138%]" style={{ color:'rgba(255,255,255,0.88)' }}>
-                {t('home.program.labourText')}
+                {isKz ? 'Адал еңбек лайықты табыс, қауіпсіздік және болашаққа сенім әкелуі тиіс.' : 'Честная работа должна обеспечивать достойную жизнь, безопасность и уверенность в будущем.'}
               </p>
               <Cta to="/programma#program-01" />
             </div>
           </article>
 
-          {/* 06 — Полная программа НПК | 07_ISLAM | dark bottom right */}
+          {/* 06 — Полная программа | 07_ISLAM | dark bottom right */}
           <article className="prog-card-6 relative transition-all duration-300 hover:-translate-y-1 group"
             style={{ gridColumn:'3/4', gridRow:'3/4', borderRadius:0, overflow:'hidden', padding:24,
               background:'linear-gradient(135deg,#111111 0%,#000001 100%)',
@@ -228,14 +226,14 @@ export function ProgramSection() {
                 maskImage:'radial-gradient(ellipse 80% 85% at 55% 55%, black 55%, transparent 100%)' }} />
             <div className="prog-text relative z-[4]" style={{ maxWidth:'52%' }}>
               <h3 className="font-bold text-white leading-[90%]" style={{ fontSize:'clamp(18px,1.6vw,24px)', letterSpacing:'-0.03em' }}>
-                Полная программа НПК
+                {isKz ? 'ҚХП толық бағдарламасы' : 'Полная программа НПК'}
               </h3>
               <p className="mt-3 text-[12px] leading-[138%]" style={{ color:'rgba(255,255,255,0.72)' }}>
-                {t('home.program.fullText')}
+                {isKz ? 'Әділетті елді дамытудың барлық он бағытымен танысыңыз.' : 'Ознакомьтесь со всеми десятью направлениями развития справедливой страны.'}
               </p>
               <Link to="/programma#full-program" className="prog-cta inline-flex items-center gap-2 font-bold text-white hover:bg-[#b9141d] transition-colors"
                 style={{ marginTop:18, background:'#db1f26', padding:'10px 16px', borderRadius:0, fontSize:13, textDecoration:'none' }}>
-                Читать программу →
+                {isKz ? 'Бағдарламаны оқу →' : 'Читать программу →'}
               </Link>
             </div>
           </article>
@@ -255,10 +253,11 @@ function Diamond() {
 }
 
 function Cta({ to, dark = false }: { to: string; dark?: boolean }) {
+  const { language } = useLanguage();
   return (
     <Link to={to} className="prog-cta inline-flex items-center gap-3 mt-4 font-bold text-[14px] transition-all hover:gap-4"
       style={{ color: dark ? '#db1f26' : 'white', textDecoration:'none' }}>
-      Читать →
+      {language === 'kz' ? 'Толығырақ →' : 'Подробнее →'}
     </Link>
   );
 }

@@ -16,6 +16,10 @@ export function loadDeputyRequests(): Promise<DeputyRequest[]> {
   return archivePromise;
 }
 
+export function isKazakhDeputyRequest(item: DeputyRequest): boolean {
+  return /[әіңғүұқөһ]/i.test(item.title);
+}
+
 export async function getDeputyRequest(slug: string): Promise<DeputyRequest | undefined> {
   const requests = await loadDeputyRequests();
   return requests.find((item) => item.slug === slug);
